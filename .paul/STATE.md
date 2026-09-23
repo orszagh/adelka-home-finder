@@ -5,7 +5,7 @@
 See: .paul/PROJECT.md (updated 2026-09-23)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.1 Initial Release dokončený v kóde – čaká na konfiguráciu Vercelu a reálny zdroj dát
+**Current focus:** v0.1 beží naostro na adelka-home-finder.vercel.app – ďalej napojenie reálneho zdroja dát
 
 ## Current Position
 
@@ -13,7 +13,7 @@ Milestone: v0.1 Initial Release (v0.1.0)
 Phase: 4 of 4 (Produkčné nasadenie) – Complete
 Plan: 04-01 complete
 Status: Complete
-Last activity: 2026-09-23 22:40 — Všetky 4 fázy dokončené, push na GitHub
+Last activity: 2026-09-24 — Produkcia live: 8 env premenných vo Verceli, prihlásenie funguje, zápis do Supabase potvrdený
 
 Progress:
 - Milestone: [██████████] 100%
@@ -47,22 +47,20 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Výber poskytovateľa realitných dát (PRD §7) | Init | M | Ďalší milestone |
 | Prenájom vs. len kúpa (PRD §7) | Init | S | Ďalší milestone |
 | Mesačný rozpočet na API (PRD §7) | Init | S | Pred reálnym pollingom |
-| Overiť SupabaseRepository proti živej DB | 1 | S | Po nasadení na Vercel |
-| Overiť živé volanie Claude API a Resend | 2 | S | Po nastavení kľúčov vo Verceli |
+| Otestovať naživo: AI prehľad lokality, draft emailu, cron sync, odoslanie cez Resend | 2 | S | Teraz (kľúče sú nastavené) |
 | P1: porovnanie inzerátov, push notifikácie, história cien, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Blockers/Concerns
 
 | Blocker | Impact | Resolution Path |
 |---------|--------|-----------------|
-| Chýbajú env premenné vo Verceli | Produkcia vracia 503 (zamknuté) | Nastaviť podľa README → Redeploy |
 | DNS adel.orszagh.online | Doména nesmeruje na Vercel | Vercel → Domains, CNAME na Webglobe |
 
 ## Session Continuity
 
-Last session: 2026-09-23 22:40
-Stopped at: Milestone v0.1 complete in code
-Next action: Nastaviť Vercel env premenné a overiť nasadenie; potom /paul:discuss-milestone (reálny dátový zdroj)
+Last session: 2026-09-24
+Stopped at: Produkcia overená (prihlásenie, mapa, Supabase)
+Next action: Nový milestone – napojenie reálneho poskytovateľa dát (čaká sa na výber poskytovateľa a API prístup)
 Resume context: README.md, .paul/phases/04-nasadenie/04-01-SUMMARY.md
 
 ---

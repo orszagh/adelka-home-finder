@@ -18,6 +18,7 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 | Last Updated | 2026-09-23 |
 
 **Production URLs:**
+- https://adelka-home-finder.vercel.app: produkcia (live od 2026-09-24)
 - adel.orszagh.online: cieľová doména (DNS na Webglobe ešte nie je presmerované na Vercel)
 
 ## Requirements
@@ -111,7 +112,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Notifikácia o novom inzeráte / zmene ceny | Do 24h | cron 1× denne, email po nastavení Resend | On track |
 | AI prehľad lokality | Na jedno kliknutie | hotové, živé volanie neoverené | On track |
 | Draft správy realitke | Nikdy sa neodošle bez potvrdenia | len mailto/kopírovanie | Achieved |
-| Build a nasadenie | `npm run build` prejde, Vercel deploy zelený | build + 23 testov OK | On track |
+| Build a nasadenie | `npm run build` prejde, Vercel deploy zelený | live na Verceli, 26 testov OK | Achieved |
 
 ## Tech Stack / Tools
 
@@ -136,4 +137,4 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 
 ---
 *Created: 2026-09-23*
-*Last updated: 2026-09-23*
+*Last updated: 2026-09-24*
