@@ -5,18 +5,18 @@
 See: .paul/PROJECT.md (updated 2026-09-23)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.1 Initial Release, Phase 3 (Komunikačný modul)
+**Current focus:** v0.1 Initial Release, Phase 4 (Produkčné nasadenie)
 
 ## Current Position
 
 Milestone: v0.1 Initial Release (v0.1.0)
-Phase: 3 of 4 (Komunikačný modul)
-Plan: 03-01 of 1 in current phase
+Phase: 4 of 4 (Produkčné nasadenie)
+Plan: 04-01 of 1 in current phase
 Status: Ready to plan
-Last activity: 2026-09-23 22:31 — Fáza 2 dokončená (cron + email, AI prehľad lokality)
+Last activity: 2026-09-23 22:36 — Fáza 3 dokončená (AI drafty správ, odoslanie len manuálne)
 
 Progress:
-- Milestone: [█████░░░░░] 50%
+- Milestone: [███████▌░░] 75%
 - Phase: [░░░░░░░░░░] 0%
 
 ## Loop Position
@@ -24,7 +24,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Phase 2 complete - ready for next PLAN]
+  ✓        ✓        ✓     [Phase 3 complete - ready for next PLAN]
 ```
 
 ## Accumulated Context
@@ -55,8 +55,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-09-23 22:27
-Stopped at: Phase 2 complete
-Next action: Plán 03-01 (drafty správ)
+Stopped at: Phase 3 complete
+Next action: Plán 04-01 (ochrana prístupu, README, nasadenie)
 Resume context: .paul/phases/01-mvp-mapa-ponuky/01-02-SUMMARY.md
 
 ---

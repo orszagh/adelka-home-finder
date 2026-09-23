@@ -8,7 +8,7 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 
 **v0.1 Initial Release** (v0.1.0)
 Status: In progress
-Phases: 2 of 4 complete
+Phases: 3 of 4 complete
 
 ## Phases
 
@@ -16,7 +16,7 @@ Phases: 2 of 4 complete
 |-------|------|-------|--------|-----------|
 | 1 | MVP: mapa a ponuky | 2 | Complete | 2026-09-23 |
 | 2 | Automatizácia a AI prehľad lokality | 2 | Complete | 2026-09-23 |
-| 3 | Komunikačný modul | 1 | Not started | - |
+| 3 | Komunikačný modul | 1 | Complete | 2026-09-23 |
 | 4 | Produkčné nasadenie | 1 | Not started | - |
 
 ## Phase Details
@@ -63,7 +63,7 @@ Phases: 2 of 4 complete
 - Odoslanie výhradne cez akciu Adelky (mailto / kopírovanie), nič automaticky
 
 **Plans:**
-- [ ] 03-01: Draft správ s manuálnym odoslaním
+- [x] 03-01: Draft správ s manuálnym odoslaním
 
 ### Phase 4: Produkčné nasadenie
 

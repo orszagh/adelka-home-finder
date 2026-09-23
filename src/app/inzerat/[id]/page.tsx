@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/Gallery";
 import { LocationSummary } from "@/components/LocationSummary";
+import { MessageDraft } from "@/components/MessageDraft";
 import { isAiConfigured } from "@/lib/ai/claude";
 import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
@@ -100,6 +101,8 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
         initialNote={locationNote}
         aiEnabled={isAiConfigured()}
       />
+
+      <MessageDraft propertyId={property.id} aiEnabled={isAiConfigured()} />
     </main>
   );
 }
