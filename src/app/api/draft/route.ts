@@ -2,11 +2,13 @@ import { AiError, generateStructured } from "@/lib/ai/claude";
 import { DRAFT_SYSTEM_PROMPT, MessageDraftSchema, draftPrompt } from "@/lib/ai/draft";
 import { getRepo } from "@/lib/db/repo";
 import { MAX_INTENT, MAX_SIGNATURE } from "@/lib/message";
+import { hasSession, unauthorized } from "@/lib/session";
 
 export const maxDuration = 120;
 
 /** Returns a draft only. Sending is always done by Adelka herself, outside the app. */
 export async function POST(request: Request) {
+  if (!(await hasSession())) return unauthorized();
   const body = (await request.json().catch(() => null)) as {
     propertyId?: unknown;
     intent?: unknown;

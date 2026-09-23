@@ -38,6 +38,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | claude-opus-5, structured outputs, fallbacks "default" | 2 | AI len na serveri, cache prehľadov v DB |
 | Odoslanie správ len cez mailto/kopírovanie | 3 | Server nemá žiadnu odosielaciu cestu |
 | Heslo + HMAC cookie, produkcia bez hesla zamknutá | 4 | Chráni service_role zápisy aj AI kredit |
+| Overenie prihlásenia aj v každej stránke, route a server action (nielen proxy) | 4 | Defense in depth podľa odporúčania Next.js |
 
 ### Deferred Issues
 

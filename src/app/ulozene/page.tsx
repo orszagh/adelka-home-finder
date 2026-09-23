@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { NoteForm } from "@/components/NoteForm";
+import { redirect } from "next/navigation";
 import { getRepo } from "@/lib/db/repo";
+import { hasSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function SavedPage() {
+  if (!(await hasSession())) redirect("/prihlasenie?next=/ulozene");
   const repo = getRepo();
   const saved = await repo.listSaved();
   const entries = (

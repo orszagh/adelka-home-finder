@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Gallery } from "@/components/Gallery";
 import { LocationSummary } from "@/components/LocationSummary";
 import { MessageDraft } from "@/components/MessageDraft";
@@ -8,6 +8,7 @@ import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
 import { getRepo } from "@/lib/db/repo";
 import { formatDate, formatPrice, roomsLabel } from "@/lib/format";
+import { hasSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ const SOURCE_LABELS: Record<string, string> = {
 
 export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">) {
   const { id } = await params;
+  if (!(await hasSession())) redirect(`/prihlasenie?next=${encodeURIComponent(`/inzerat/${id}`)}`);
   const repo = getRepo();
   const [property, saved] = await Promise.all([repo.getProperty(id), repo.listSaved()]);
   if (!property) notFound();

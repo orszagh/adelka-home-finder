@@ -60,7 +60,7 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 - **Sync a notifikácie:** `src/lib/sync.ts` porovná ponuky s DB (nové inzeráty, zmeny cien), `src/lib/notify.ts` zostaví email len z Adelkiných oblastí. Prvý import do prázdnej DB sa nehlási.
 - **AI:** `src/lib/ai` – Claude cez `@anthropic-ai/sdk` so štruktúrovaným výstupom (Zod). Pri odmietnutí požiadavky API samo skúsi záložný model (`fallbacks: "default"`). Prehľad lokality sa ukladá do `location_notes` a pre ďalší inzerát v rovnakom meste sa už negeneruje.
 - **Emaily realitkám:** server vracia len návrh. Odoslanie je vždy na Adelke (tlačidlo otvorí jej emailovú aplikáciu, prípadne kopírovanie textu).
-- **Prístup:** `src/proxy.ts` pustí ďalej len prihlásené zariadenie (cookie na 1 rok). Výnimky sú `/api/cron/*` (vlastné tajomstvo) a `/mock-photo/*` (obrázky v emailoch).
+- **Prístup:** `src/proxy.ts` pustí ďalej len prihlásené zariadenie (cookie na 1 rok). Výnimky sú `/api/cron/*` (vlastné tajomstvo) a `/mock-photo/*` (obrázky v emailoch). Nezávisle od proxy si prihlásenie overuje aj každá stránka, API route a server action (`src/lib/session.ts`), takže obídenie proxy nič nesprístupní.
 
 ## Otvorené body
 

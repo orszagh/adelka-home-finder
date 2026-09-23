@@ -6,10 +6,12 @@ import {
   toLocationNote,
 } from "@/lib/ai/location";
 import { getRepo } from "@/lib/db/repo";
+import { hasSession, unauthorized } from "@/lib/session";
 
 export const maxDuration = 120;
 
 export async function POST(request: Request) {
+  if (!(await hasSession())) return unauthorized();
   const body = (await request.json().catch(() => null)) as { propertyId?: unknown; refresh?: unknown } | null;
   if (typeof body?.propertyId !== "string") {
     return Response.json({ error: "Chýba propertyId" }, { status: 400 });
