@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --color-sea-50: #ecfeff;
+  --color-sea-100: #cffafe;
+  --color-sea-600: #0891b2;
+  --color-sea-700: #0e7490;
+  --color-sea-800: #155e75;
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Price markers on the map (Leaflet divIcon). */
+.price-marker {
+  background: none;
+  border: none;
+}
+.price-marker > span {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font: 600 12px/1.4 var(--font-geist-sans), system-ui, sans-serif;
+  background: #ffffff;
+  color: #155e75;
+  border: 1px solid #0e7490;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+.price-marker.is-selected > span {
+  background: #0e7490;
+  color: #ffffff;
+}
+.price-marker.is-saved > span::before {
+  content: "♥ ";
+  color: #e11d48;
+}
+.price-marker.is-selected.is-saved > span::before {
+  color: #ffe4e6;
+}
+.price-marker.is-dot > span {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: #0e7490;
+  border: 2px solid #ffffff;
+}
+.price-marker.is-dot.is-saved > span {
+  background: #e11d48;
+}
+.price-marker.is-dot > span::before {
+  content: none;
+}
