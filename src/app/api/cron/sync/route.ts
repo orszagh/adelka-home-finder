@@ -2,7 +2,7 @@ import { getRepo } from "@/lib/db/repo";
 import { isEmailConfigured, notifyRecipients, sendEmail } from "@/lib/email";
 import { buildDigest, getAppUrl } from "@/lib/notify";
 import { getProvider } from "@/lib/providers";
-import { safeEqual } from "@/lib/secrets";
+import { rejectUnlessCronSecret } from "@/lib/secrets";
 import { syncFromProvider } from "@/lib/sync";
 
 export const dynamic = "force-dynamic";
@@ -13,14 +13,8 @@ export const maxDuration = 60;
  * `Authorization: Bearer $CRON_SECRET`. n8n or any scheduler can call it too.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      return Response.json({ error: "CRON_SECRET nie je nastavený" }, { status: 500 });
-    }
-  } else if (!safeEqual(request.headers.get("authorization") ?? "", `Bearer ${secret}`)) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const rejected = rejectUnlessCronSecret(request);
+  if (rejected) return rejected;
 
   const repo = getRepo();
   const provider = getProvider();
