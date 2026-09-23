@@ -31,7 +31,8 @@ export async function syncFromProvider(
   provider: PropertyProvider,
 ): Promise<SyncResult> {
   const incoming = dedupe(await provider.fetchListings());
-  const { newIds, previousPrices } = diffListings(await repo.listProperties(), incoming);
+  const existing = await repo.listProperties();
+  const { newIds, previousPrices } = diffListings(existing, incoming);
   const stored = await repo.upsertProperties(incoming);
 
   const inserted: Property[] = [];
@@ -45,7 +46,7 @@ export async function syncFromProvider(
       });
     }
   }
-  return { total: stored.length, inserted, priceChanged };
+  return { total: stored.length, initialImport: existing.length === 0, inserted, priceChanged };
 }
 
 function dedupe(listings: ProviderListing[]): ProviderListing[] {

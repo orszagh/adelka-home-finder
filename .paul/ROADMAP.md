@@ -8,14 +8,14 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 
 **v0.1 Initial Release** (v0.1.0)
 Status: In progress
-Phases: 1 of 4 complete
+Phases: 2 of 4 complete
 
 ## Phases
 
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
 | 1 | MVP: mapa a ponuky | 2 | Complete | 2026-09-23 |
-| 2 | Automatizácia a AI prehľad lokality | 2 | Not started | - |
+| 2 | Automatizácia a AI prehľad lokality | 2 | Complete | 2026-09-23 |
 | 3 | Komunikačný modul | 1 | Not started | - |
 | 4 | Produkčné nasadenie | 1 | Not started | - |
 
@@ -49,8 +49,8 @@ Phases: 1 of 4 complete
 - AI prehľad lokality cez Claude API, cache v `location_notes`
 
 **Plans:**
-- [ ] 02-01: Sync + notifikácie + cron
-- [ ] 02-02: AI prehľad lokality
+- [x] 02-01: Sync + notifikácie + cron
+- [x] 02-02: AI prehľad lokality
 
 ### Phase 3: Komunikačný modul
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/Gallery";
+import { LocationSummary } from "@/components/LocationSummary";
+import { isAiConfigured } from "@/lib/ai/claude";
 import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
 import { getRepo } from "@/lib/db/repo";
@@ -18,6 +20,7 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
   const repo = getRepo();
   const [property, saved] = await Promise.all([repo.getProperty(id), repo.listSaved()]);
   if (!property) notFound();
+  const locationNote = await repo.getLocationNote(property.city, property.region);
   const savedEntry = saved.find((s) => s.property_id === property.id) ?? null;
 
   const facts = [
@@ -90,6 +93,13 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
           <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
         </section>
       )}
+
+      <LocationSummary
+        propertyId={property.id}
+        city={property.city}
+        initialNote={locationNote}
+        aiEnabled={isAiConfigured()}
+      />
     </main>
   );
 }

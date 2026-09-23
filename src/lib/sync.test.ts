@@ -33,6 +33,7 @@ describe("syncFromProvider", () => {
     const first = await syncFromProvider(repo, providerOf(listings));
     expect(first.inserted).toHaveLength(listings.length);
     expect(first.priceChanged).toHaveLength(0);
+    expect(first.initialImport).toBe(true);
 
     const [firstStored] = await repo.listProperties();
     const cheaper = listings.map((l) =>
@@ -41,6 +42,7 @@ describe("syncFromProvider", () => {
     const extra: ProviderListing = { ...listings[0], external_id: "new-1", title: "Nuovo" };
 
     const second = await syncFromProvider(repo, providerOf([...cheaper, extra]));
+    expect(second.initialImport).toBe(false);
     expect(second.inserted.map((p) => p.external_id)).toEqual(["new-1"]);
     expect(second.priceChanged).toHaveLength(1);
     expect(second.priceChanged[0].previousPrice).toBe(firstStored.price);

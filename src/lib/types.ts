@@ -59,6 +59,8 @@ export type PriceChange = { property: Property; previousPrice: number | null };
 
 export type SyncResult = {
   total: number;
+  /** The database was empty before this sync, so nothing in it is news. */
+  initialImport: boolean;
   inserted: Property[];
   priceChanged: PriceChange[];
 };
