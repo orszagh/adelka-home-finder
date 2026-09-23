@@ -11,7 +11,7 @@ See: .paul/PROJECT.md (updated 2026-09-23)
 
 Milestone: v0.2 Reálne dáta a privítanie (mimo pôvodnej roadmapy, na požiadanie)
 Status: Implemented, not yet switched on in production
-Last activity: 2026-09-25 — Apify provider (Idealista + Immobiliare), overovanie aktuálnosti, ranné privítanie, Pozrieť teraz, testovací email
+Last activity: 2026-09-24 — Apify provider (Idealista + Immobiliare), overovanie aktuálnosti, ranné privítanie, Pozrieť teraz, testovací email
 
 Progress:
 - v0.1: [██████████] 100%
@@ -62,7 +62,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 ## Session Continuity
 
-Last session: 2026-09-25
+Last session: 2026-09-24
 Stopped at: v0.2 implementované a pushnuté
 Next action: Zapnúť Apify vo Verceli, spustiť migráciu, rozhodnúť o regiónoch
 Resume context: README.md, supabase/migrations/20260924_privitanie.sql
