@@ -5,26 +5,26 @@
 See: .paul/PROJECT.md (updated 2026-09-23)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.1 Initial Release, Phase 4 (Produkčné nasadenie)
+**Current focus:** v0.1 Initial Release dokončený v kóde – čaká na konfiguráciu Vercelu a reálny zdroj dát
 
 ## Current Position
 
 Milestone: v0.1 Initial Release (v0.1.0)
-Phase: 4 of 4 (Produkčné nasadenie)
-Plan: 04-01 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-09-23 22:36 — Fáza 3 dokončená (AI drafty správ, odoslanie len manuálne)
+Phase: 4 of 4 (Produkčné nasadenie) – Complete
+Plan: 04-01 complete
+Status: Complete
+Last activity: 2026-09-23 22:40 — Všetky 4 fázy dokončené, push na GitHub
 
 Progress:
-- Milestone: [███████▌░░] 75%
-- Phase: [░░░░░░░░░░] 0%
+- Milestone: [██████████] 100%
+- Phase: [██████████] 100%
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Phase 3 complete - ready for next PLAN]
+  ✓        ✓        ✓     [Milestone complete]
 ```
 
 ## Accumulated Context
@@ -33,31 +33,36 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 | Decision | Phase | Impact |
 |----------|-------|--------|
-| PAUL s importom PRD (bez SEED) | Init | PRD je zdroj pravdy pre požiadavky |
 | Mock dáta za rozhraním PropertyProvider | 1 | Reálny poskytovateľ sa doplní bez zmeny UI |
-| In-memory fallback bez Supabase env | 1 | Lokálny vývoj bez kľúčov |
-| Vlastné kreslenie polygónu ťukaním | 1 | Bez leaflet-draw, mobil-first |
-| Vercel Cron + Resend, claude-opus-5 so structured outputs | 2 | Bez n8n; AI len na serveri |
+| Vercel Cron + Resend (bez n8n) | 2 | Menej infraštruktúry; n8n môže volať ten istý endpoint |
+| claude-opus-5, structured outputs, fallbacks "default" | 2 | AI len na serveri, cache prehľadov v DB |
+| Odoslanie správ len cez mailto/kopírovanie | 3 | Server nemá žiadnu odosielaciu cestu |
+| Heslo + HMAC cookie, produkcia bez hesla zamknutá | 4 | Chráni service_role zápisy aj AI kredit |
 
 ### Deferred Issues
 
 | Issue | Origin | Effort | Revisit |
 |-------|--------|--------|---------|
-| Výber poskytovateľa realitných dát (PRD §7) | Init | M | Pred nasadením reálnych dát |
-| Prenájom vs. len kúpa (PRD §7) | Init | S | Po MVP |
-| Mesačný rozpočet na API (PRD §7) | Init | S | Pred zapnutím reálneho pollingu |
+| Výber poskytovateľa realitných dát (PRD §7) | Init | M | Ďalší milestone |
+| Prenájom vs. len kúpa (PRD §7) | Init | S | Ďalší milestone |
+| Mesačný rozpočet na API (PRD §7) | Init | S | Pred reálnym pollingom |
 | Overiť SupabaseRepository proti živej DB | 1 | S | Po nasadení na Vercel |
 | Overiť živé volanie Claude API a Resend | 2 | S | Po nastavení kľúčov vo Verceli |
+| P1: porovnanie inzerátov, push notifikácie, história cien, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Blockers/Concerns
-None yet.
+
+| Blocker | Impact | Resolution Path |
+|---------|--------|-----------------|
+| Chýbajú env premenné vo Verceli | Produkcia vracia 503 (zamknuté) | Nastaviť podľa README → Redeploy |
+| DNS adel.orszagh.online | Doména nesmeruje na Vercel | Vercel → Domains, CNAME na Webglobe |
 
 ## Session Continuity
 
-Last session: 2026-09-23 22:27
-Stopped at: Phase 3 complete
-Next action: Plán 04-01 (ochrana prístupu, README, nasadenie)
-Resume context: .paul/phases/01-mvp-mapa-ponuky/01-02-SUMMARY.md
+Last session: 2026-09-23 22:40
+Stopped at: Milestone v0.1 complete in code
+Next action: Nastaviť Vercel env premenné a overiť nasadenie; potom /paul:discuss-milestone (reálny dátový zdroj)
+Resume context: README.md, .paul/phases/04-nasadenie/04-01-SUMMARY.md
 
 ---
 *STATE.md — Updated after every significant action*

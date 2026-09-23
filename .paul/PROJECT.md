@@ -13,8 +13,8 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.0.0 |
-| Status | Initializing |
+| Version | 0.1.0 |
+| Status | MVP (v0.1 hotové v kóde) |
 | Last Updated | 2026-09-23 |
 
 **Production URLs:**
@@ -32,16 +32,17 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 - AI draft komunikácie s realitkou, odoslanie výhradne po explicitnom potvrdení Adelkou
 
 ### Validated (Shipped)
-None yet.
+- [x] Mapa s oblasťami (kreslenie + regióny), ponuky, detail, obľúbené s poznámkami — v0.1
+- [x] Denný sync + email notifikácie (nové inzeráty, zmeny cien) — v0.1
+- [x] AI prehľad lokality s cache — v0.1
+- [x] AI draft správy realitke, odoslanie len Adelkou — v0.1
+- [x] Prístup chránený heslom — v0.1
 
 ### Active (In Progress)
 None yet.
 
 ### Planned (Next)
-- Fáza 1: základ appky, mapa s oblasťami, zobrazenie ponúk (mock dáta), obľúbené
-- Fáza 2: automatizácia (polling + email notifikácie) a AI prehľad lokality
-- Fáza 3: komunikačný modul (AI draft správ, manuálne odoslanie)
-- Fáza 4: produkčné nasadenie (ochrana prístupu, dokumentácia, doména)
+- Napojenie reálneho poskytovateľa realitných dát
 
 ### Nice-to-Have (P1)
 - Porovnanie viacerých inzerátov vedľa seba
@@ -98,16 +99,19 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Komerčné API namiesto vlastného scrapera | ToS riziko a nestabilita scrapingu | 2026-08 | Active |
 | PAUL namiesto SEED, import z PRD | PRD už pokrýva plánovanie | 2026-09-23 | Active |
 | Dátový zdroj za rozhraním `PropertyProvider`, default mock | Poskytovateľ ešte nie je vybraný | 2026-09-23 | Active |
+| Vercel Cron + Resend namiesto n8n | Menej infraštruktúry | 2026-09-23 | Active |
+| claude-opus-5 so structured outputs | Spoľahlivý JSON, server-side fallback | 2026-09-23 | Active |
+| Heslo + HMAC cookie | Chráni zápisy a AI kredit | 2026-09-23 | Active |
 
 ## Success Metrics
 
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
-| Adelka vie nakresliť oblasť a vidí v nej ponuky | Funguje na mobile | - | Not started |
-| Notifikácia o novom inzeráte / zmene ceny | Do 24h | - | Not started |
-| AI prehľad lokality | Na jedno kliknutie | - | Not started |
-| Draft správy realitke | Nikdy sa neodošle bez potvrdenia | - | Not started |
-| Build a nasadenie | `npm run build` prejde, Vercel deploy zelený | - | Not started |
+| Adelka vie nakresliť oblasť a vidí v nej ponuky | Funguje na mobile | overené na 375 px | Achieved |
+| Notifikácia o novom inzeráte / zmene ceny | Do 24h | cron 1× denne, email po nastavení Resend | On track |
+| AI prehľad lokality | Na jedno kliknutie | hotové, živé volanie neoverené | On track |
+| Draft správy realitke | Nikdy sa neodošle bez potvrdenia | len mailto/kopírovanie | Achieved |
+| Build a nasadenie | `npm run build` prejde, Vercel deploy zelený | build + 23 testov OK | On track |
 
 ## Tech Stack / Tools
 

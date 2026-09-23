@@ -7,8 +7,8 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 ## Current Milestone
 
 **v0.1 Initial Release** (v0.1.0)
-Status: In progress
-Phases: 3 of 4 complete
+Status: Complete (v kóde; čaká na Vercel env)
+Phases: 4 of 4 complete
 
 ## Phases
 
@@ -17,7 +17,7 @@ Phases: 3 of 4 complete
 | 1 | MVP: mapa a ponuky | 2 | Complete | 2026-09-23 |
 | 2 | Automatizácia a AI prehľad lokality | 2 | Complete | 2026-09-23 |
 | 3 | Komunikačný modul | 1 | Complete | 2026-09-23 |
-| 4 | Produkčné nasadenie | 1 | Not started | - |
+| 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
 
 ## Phase Details
 
@@ -77,7 +77,7 @@ Phases: 3 of 4 complete
 - Push na GitHub → Vercel deploy
 
 **Plans:**
-- [ ] 04-01: Ochrana prístupu, dokumentácia, nasadenie
+- [x] 04-01: Ochrana prístupu, dokumentácia, nasadenie
 
 ---
 *Roadmap created: 2026-09-23*
