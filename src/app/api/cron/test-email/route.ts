@@ -28,6 +28,8 @@ export async function POST(request: Request) {
   const sample = {
     total: 3,
     initialImport: false,
+    removed: 0,
+    errors: [] as string[],
     inserted: [first, second].filter((p) => p !== undefined),
     priceChanged: third
       ? [{ property: third, previousPrice: third.price === null ? null : third.price + SAMPLE_PRICE_DROP }]

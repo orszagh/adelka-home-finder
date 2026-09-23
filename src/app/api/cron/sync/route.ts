@@ -6,7 +6,8 @@ import { rejectUnlessCronSecret } from "@/lib/secrets";
 import { syncFromProvider } from "@/lib/sync";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+/** Apify runs for all areas happen in parallel; each is capped at 240 s. */
+export const maxDuration = 300;
 
 /**
  * Called daily by Vercel Cron (see vercel.json), which sends
@@ -18,8 +19,9 @@ export async function GET(request: Request) {
 
   const repo = getRepo();
   const provider = getProvider();
-  const result = await syncFromProvider(repo, provider);
-  const digest = buildDigest(result, await repo.listSearchAreas(), getAppUrl());
+  const areas = await repo.listSearchAreas();
+  const result = await syncFromProvider(repo, provider, areas);
+  const digest = buildDigest(result, areas, getAppUrl());
 
   let email: { sent: boolean; detail: string } = { sent: false, detail: "nič nové na hlásenie" };
   if (digest) {
@@ -33,10 +35,14 @@ export async function GET(request: Request) {
 
   return Response.json({
     provider: provider.id,
+    areas: areas.length,
     total: result.total,
     inserted: result.inserted.length,
     priceChanged: result.priceChanged.length,
+    removed: result.removed,
+    initialImport: result.initialImport,
     reported: digest?.count ?? 0,
+    errors: result.errors,
     email,
   });
 }

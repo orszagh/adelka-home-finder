@@ -1,20 +1,31 @@
-import type { ProviderListing } from "../types";
+import type { ProviderListing, SearchArea } from "../types";
+import { apifyProvider } from "./apify";
 import { mockProvider } from "./mock";
 
+export type FetchResult = {
+  listings: ProviderListing[];
+  /** Partial failures (e.g. one portal down); the rest of the listings are still usable. */
+  errors: string[];
+};
+
 /**
- * Source of real-estate listings. A commercial API (RealtyAPI, PropAPIS,
- * Apify, ...) plugs in by implementing this interface and registering it
- * in `PROVIDERS`; the rest of the app does not change.
+ * Source of real-estate listings. Another data source plugs in by
+ * implementing this interface and registering it in `PROVIDERS`;
+ * the rest of the app does not change.
  */
 export interface PropertyProvider {
   id: string;
   label: string;
   isMock: boolean;
-  fetchListings(): Promise<ProviderListing[]>;
+  /** Whether a stored listing came from this provider (by its external_id). */
+  ownsExternalId(externalId: string): boolean;
+  /** Listings within (or around) Adelka's search areas. */
+  fetchListings(areas: SearchArea[]): Promise<FetchResult>;
 }
 
 const PROVIDERS: Record<string, PropertyProvider> = {
   [mockProvider.id]: mockProvider,
+  [apifyProvider.id]: apifyProvider,
 };
 
 export function getProvider(): PropertyProvider {

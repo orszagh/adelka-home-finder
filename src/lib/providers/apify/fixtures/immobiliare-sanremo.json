@@ -1,0 +1,197 @@
+[
+  {
+    "id": 128080462,
+    "title": "Appartamento",
+    "contract": {
+      "id": 1,
+      "name": "Vendita",
+      "isHidden": false
+    },
+    "price": {
+      "raw": 690000,
+      "value": "€ 690.000",
+      "isHidden": false
+    },
+    "topology": {
+      "typology": {
+        "id": 4,
+        "name": "Appartamento"
+      },
+      "surface": {
+        "size": 104,
+        "unitOfMeasure": "m²"
+      },
+      "rooms": "5",
+      "bathrooms": "2"
+    },
+    "geography": {
+      "municipality": {
+        "id": 6943,
+        "name": "Sanremo"
+      },
+      "province": {
+        "id": "IM",
+        "name": "Imperia"
+      },
+      "street": "Via Roccasterone",
+      "geolocation": {
+        "latitude": 43.8141,
+        "longitude": 7.76519,
+        "visibilityType": "exact_location",
+        "geoHash": null
+      }
+    },
+    "description": {
+      "caption": "Appartamento con terrazzo e vista sul golfo di Sanremo"
+    },
+    "media": {
+      "images": [
+        {
+          "sd": "https://pwm.im-cdn.it/image/1899994586/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1899994586/xxl.jpg",
+          "label": "Terrazzo"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/1899994672/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1899994672/xxl.jpg",
+          "label": "Terrazzo"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/1899994686/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1899994686/xxl.jpg",
+          "label": "Salone"
+        }
+      ]
+    }
+  },
+  {
+    "id": 131246982,
+    "title": "Appartamento",
+    "contract": {
+      "id": 1,
+      "name": "Vendita",
+      "isHidden": false
+    },
+    "price": {
+      "raw": 550000,
+      "value": "€ 550.000",
+      "isHidden": false
+    },
+    "topology": {
+      "typology": {
+        "id": 4,
+        "name": "Appartamento"
+      },
+      "surface": {
+        "size": 183,
+        "unitOfMeasure": "m²"
+      },
+      "rooms": "5",
+      "bathrooms": "2"
+    },
+    "geography": {
+      "municipality": {
+        "id": 6943,
+        "name": "Sanremo"
+      },
+      "province": {
+        "id": "IM",
+        "name": "Imperia"
+      },
+      "street": "Via Padre Semeria, 278",
+      "geolocation": {
+        "latitude": 43.8083,
+        "longitude": 7.7497,
+        "visibilityType": "exact_location",
+        "geoHash": null
+      }
+    },
+    "description": {
+      "caption": "Sanremo – Elegante appartamento con giardino privato"
+    },
+    "media": {
+      "images": [
+        {
+          "sd": "https://pwm.im-cdn.it/image/1976527732/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1976527732/xxl.jpg",
+          "label": "Vista"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/1976527654/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1976527654/xxl.jpg",
+          "label": "Piscina"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/1976527664/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/1976527664/xxl.jpg",
+          "label": "Piscina"
+        }
+      ]
+    }
+  },
+  {
+    "id": 132429744,
+    "title": "Appartamento",
+    "contract": {
+      "id": 1,
+      "name": "Vendita",
+      "isHidden": false
+    },
+    "price": {
+      "raw": 258000,
+      "value": "€ 258.000",
+      "isHidden": false
+    },
+    "topology": {
+      "typology": {
+        "id": 4,
+        "name": "Appartamento"
+      },
+      "surface": {
+        "size": 85,
+        "unitOfMeasure": "m²"
+      },
+      "rooms": "3",
+      "bathrooms": "1"
+    },
+    "geography": {
+      "municipality": {
+        "id": 6943,
+        "name": "Sanremo"
+      },
+      "province": {
+        "id": "IM",
+        "name": "Imperia"
+      },
+      "street": "Strada alla Colla, 52",
+      "geolocation": {
+        "latitude": 43.8107,
+        "longitude": 7.7522,
+        "visibilityType": "exact_location",
+        "geoHash": null
+      }
+    },
+    "description": {
+      "caption": "Sanremo – Strada alla Colla"
+    },
+    "media": {
+      "images": [
+        {
+          "sd": "https://pwm.im-cdn.it/image/2004696028/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/2004696028/xxl.jpg",
+          "label": "Facciata"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/2004696438/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/2004696438/xxl.jpg",
+          "label": "Vista"
+        },
+        {
+          "sd": "https://pwm.im-cdn.it/image/2004695938/m-c.jpg",
+          "hd": "https://pwm.im-cdn.it/image/2004695938/xxl.jpg",
+          "label": "Facciata"
+        }
+      ]
+    }
+  }
+]

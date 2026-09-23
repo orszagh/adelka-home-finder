@@ -1,0 +1,107 @@
+[
+  {
+    "propertyCode": "36915294",
+    "operation": "sale",
+    "propertyType": "chalet",
+    "price": 325000,
+    "size": 175,
+    "rooms": 5,
+    "bathrooms": 3,
+    "address": "Casa indipendente in Via Galileo Galilei, 180, Corso degli Inglesi, Sanremo",
+    "municipality": "Sanremo",
+    "province": "Imperia",
+    "latitude": 43.8238518,
+    "longitude": 7.7633031,
+    "url": "https://www.idealista.it/immobile/36915294/",
+    "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ee/dc/37/840476811.jpg",
+    "suggestedTexts": {
+      "title": "Casa indipendente in Via Galileo Galilei, 180, Corso degli Inglesi, Sanremo"
+    },
+    "multimedia": {
+      "images": [
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ee/dc/37/840476811.jpg",
+          "tag": "facade"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ef/34/f8/840476812.jpg",
+          "tag": "unknown"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1a/ba/be/840476833.jpg",
+          "tag": "terrace"
+        }
+      ]
+    }
+  },
+  {
+    "propertyCode": "36914097",
+    "operation": "sale",
+    "propertyType": "penthouse",
+    "price": 280000,
+    "size": 113,
+    "rooms": 4,
+    "bathrooms": 1,
+    "address": "Attico in Via Galileo Galilei, Corso degli Inglesi, Sanremo",
+    "municipality": "Sanremo",
+    "province": "Imperia",
+    "latitude": 43.8203581,
+    "longitude": 7.7700906,
+    "url": "https://www.idealista.it/immobile/36914097/",
+    "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7d/a6/06/840446483.jpg",
+    "suggestedTexts": {
+      "title": "Attico in Via Galileo Galilei, Corso degli Inglesi, Sanremo"
+    },
+    "multimedia": {
+      "images": [
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7d/a6/06/840446483.jpg",
+          "tag": "terrace"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/e6/83/ef/840446448.jpg",
+          "tag": "livingRoom"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/77/3b/b8/840446453.jpg",
+          "tag": "livingRoom"
+        }
+      ]
+    }
+  },
+  {
+    "propertyCode": "36910855",
+    "operation": "sale",
+    "propertyType": "flat",
+    "price": 249000,
+    "size": 72,
+    "rooms": 3,
+    "bathrooms": 1,
+    "address": "Trilocale in Strada San Martino, 18, San Martino, Sanremo",
+    "municipality": "Sanremo",
+    "province": "Imperia",
+    "latitude": 43.8234134,
+    "longitude": 7.7941933,
+    "url": "https://www.idealista.it/immobile/36910855/",
+    "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2e/95/31/840436316.jpg",
+    "suggestedTexts": {
+      "title": "Trilocale in Strada San Martino, 18, San Martino, Sanremo"
+    },
+    "multimedia": {
+      "images": [
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2e/95/31/840436316.jpg",
+          "tag": "livingRoom"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/5e/5e/be/840436342.jpg",
+          "tag": "views"
+        },
+        {
+          "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/06/48/cf/840436317.jpg",
+          "tag": "balcony"
+        }
+      ]
+    }
+  }
+]

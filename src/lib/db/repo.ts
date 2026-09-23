@@ -20,6 +20,8 @@ export interface Repository {
   getProperty(id: string): Promise<Property | null>;
   /** Inserts new listings and refreshes existing ones (matched by external_id). */
   upsertProperties(listings: ProviderListing[]): Promise<Property[]>;
+  /** Deletes listings together with any saved entries pointing at them. */
+  deleteProperties(ids: string[]): Promise<void>;
 
   listSearchAreas(): Promise<SearchArea[]>;
   createSearchArea(name: string, polygon: AreaGeometry): Promise<SearchArea>;

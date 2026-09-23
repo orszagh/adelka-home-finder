@@ -50,6 +50,12 @@ export class MemoryRepository implements Repository {
     });
   }
 
+  async deleteProperties(ids: string[]) {
+    const gone = new Set(ids);
+    this.saved = this.saved.filter((s) => !gone.has(s.property_id));
+    for (const id of ids) this.properties.delete(id);
+  }
+
   async listSearchAreas() {
     return [...this.areas];
   }

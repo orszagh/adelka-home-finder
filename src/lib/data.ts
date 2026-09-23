@@ -5,14 +5,17 @@ import { syncFromProvider } from "./sync";
 import type { Property } from "./types";
 
 /**
- * Listings for the UI. On an empty database (first run) this pulls the
- * provider once so the map is never empty.
+ * Listings for the UI, only from the active provider (leftover demo data
+ * disappears the moment a real provider is switched on). Demo data is
+ * generated on first use; real listings arrive through area creation and
+ * the daily cron, never during a page render.
  */
 export async function getProperties(): Promise<Property[]> {
   const repo = getRepo();
-  const properties = await repo.listProperties();
-  if (properties.length > 0) return properties;
-  await syncFromProvider(repo, getProvider());
+  const provider = getProvider();
+  const properties = (await repo.listProperties()).filter((p) => provider.ownsExternalId(p.external_id));
+  if (properties.length > 0 || !provider.isMock) return properties;
+  await syncFromProvider(repo, provider, []);
   return repo.listProperties();
 }
 

@@ -89,3 +89,44 @@ export function toLatLngRings(geometry: AreaGeometry): [number, number][][] {
     geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
   return polys.map((rings) => rings[0].map(([lng, lat]) => [lat, lng]));
 }
+
+/** Outer ring of every polygon in the area, as [lng, lat] positions. */
+export function outerRings(geometry: AreaGeometry): Position[][] {
+  return geometry.type === "Polygon"
+    ? [geometry.coordinates[0]]
+    : geometry.coordinates.map((poly) => poly[0]);
+}
+
+const EARTH_RADIUS_KM = 6371;
+
+export function distanceKm([lng1, lat1]: Position, [lng2, lat2]: Position): number {
+  const rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad;
+  const dLng = (lng2 - lng1) * rad;
+  const a =
+    Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+}
+
+/** Circle around the ring's bounding-box center that contains every vertex. */
+export function enclosingCircle(ring: Position[]): { center: Position; radiusKm: number } {
+  const lngs = ring.map(([lng]) => lng);
+  const lats = ring.map(([, lat]) => lat);
+  const center: Position = [
+    (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    (Math.min(...lats) + Math.max(...lats)) / 2,
+  ];
+  const radiusKm = Math.max(...ring.map((p) => distanceKm(center, p)));
+  return { center, radiusKm };
+}
+
+/** Keeps at most `max` vertices (evenly spaced), dropping the closing duplicate. */
+export function sampleRing(ring: Position[], max: number): Position[] {
+  const open =
+    ring.length > 1 && ring[0][0] === ring.at(-1)![0] && ring[0][1] === ring.at(-1)![1]
+      ? ring.slice(0, -1)
+      : ring;
+  if (open.length <= max) return open;
+  const step = open.length / max;
+  return Array.from({ length: max }, (_, i) => open[Math.floor(i * step)]);
+}

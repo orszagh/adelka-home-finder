@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { createPresetArea, deleteArea } from "@/app/actions";
+import { createPresetArea, deleteArea, type AreaResult } from "@/app/actions";
 import { REGION_PRESETS } from "@/lib/regions";
 import type { SearchArea } from "@/lib/types";
 
@@ -10,12 +10,16 @@ export function AreaBar({
   activeAreaIds,
   onToggle,
   onStartDrawing,
+  onAreaCreating,
+  onAreaCreated,
   drawing,
 }: {
   areas: SearchArea[];
   activeAreaIds: string[];
   onToggle: (id: string) => void;
   onStartDrawing: () => void;
+  onAreaCreating: () => void;
+  onAreaCreated: (result: AreaResult) => void;
   drawing: boolean;
 }) {
   const [pending, startTransition] = useTransition();
@@ -84,7 +88,12 @@ export function AreaBar({
             key={preset.id}
             type="button"
             disabled={pending}
-            onClick={() => startTransition(async () => void (await createPresetArea(preset.id)))}
+            onClick={() =>
+              startTransition(async () => {
+                onAreaCreating();
+                onAreaCreated(await createPresetArea(preset.id));
+              })
+            }
             className="rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:border-sea-600 hover:text-sea-800 disabled:opacity-50"
           >
             + {preset.name}

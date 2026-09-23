@@ -63,4 +63,8 @@ export type SyncResult = {
   initialImport: boolean;
   inserted: Property[];
   priceChanged: PriceChange[];
+  /** Stale listings from another provider that were deleted. */
+  removed: number;
+  /** Partial failures reported by the provider. */
+  errors: string[];
 };

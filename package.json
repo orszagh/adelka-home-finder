@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:live": "node --env-file=.env.local node_modules/vitest/vitest.mjs run src/test/apify-live.test.ts --silent=false --reporter=verbose"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

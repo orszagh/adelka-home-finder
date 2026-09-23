@@ -41,13 +41,15 @@ const outside = property({ id: "out", latitude: 40.1, longitude: 18.4, city: "Ot
 
 describe("buildDigest", () => {
   it("returns null when nothing changed", () => {
-    expect(buildDigest({ total: 5, initialImport: false, inserted: [], priceChanged: [] }, [liguria], "https://x")).toBeNull();
+    expect(buildDigest({ total: 5, initialImport: false, removed: 0, errors: [], inserted: [], priceChanged: [] }, [liguria], "https://x")).toBeNull();
   });
 
   it("keeps only listings inside Adelka's areas", () => {
     const result: SyncResult = {
       total: 2,
       initialImport: false,
+      removed: 0,
+      errors: [],
       inserted: [inside, outside],
       priceChanged: [{ property: property({ id: "drop", price: 180_000 }), previousPrice: 200_000 }],
     };
@@ -62,17 +64,17 @@ describe("buildDigest", () => {
   });
 
   it("reports everything when no areas are defined", () => {
-    const digest = buildDigest({ total: 2, initialImport: false, inserted: [inside, outside], priceChanged: [] }, [], "https://x")!;
+    const digest = buildDigest({ total: 2, initialImport: false, removed: 0, errors: [], inserted: [inside, outside], priceChanged: [] }, [], "https://x")!;
     expect(digest.count).toBe(2);
     expect(digest.subject).toContain("2 nové inzeráty");
   });
 
   it("stays quiet about the very first import", () => {
-    expect(buildDigest({ total: 1, initialImport: true, inserted: [inside], priceChanged: [] }, [], "https://x")).toBeNull();
+    expect(buildDigest({ total: 1, initialImport: true, removed: 0, errors: [], inserted: [inside], priceChanged: [] }, [], "https://x")).toBeNull();
   });
 
   it("escapes listing text in HTML", () => {
-    const digest = buildDigest({ total: 1, initialImport: false, inserted: [inside], priceChanged: [] }, [], "https://x")!;
+    const digest = buildDigest({ total: 1, initialImport: false, removed: 0, errors: [], inserted: [inside], priceChanged: [] }, [], "https://x")!;
     expect(digest.html).toContain("Villetta &lt;b&gt;");
     expect(digest.html).not.toContain("Villetta <b>");
   });

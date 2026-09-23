@@ -19,6 +19,7 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `npm test` | unit testy (Vitest) |
 | `npm run lint` | ESLint |
 | `npm run build` | produkčný build |
+| `npm run test:live` | živý test Apify pre Sanremo (míňa cca 0,03 USD, potrebuje `APIFY_TOKEN` v `.env.local`) |
 
 ## Premenné prostredia
 
@@ -33,7 +34,9 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `RESEND_API_KEY`, `NOTIFY_EMAIL` | pre notifikácie | Odoslanie upozornení. Bez nich sync beží, len sa neposiela email. |
 | `EMAIL_FROM` | nie | Odosielateľ. Vlastná adresa vyžaduje overenú doménu v Resende. |
 | `APP_URL` | nie | Adresa pre odkazy v emailoch (predvolene produkčná Vercel URL). |
-| `PROPERTY_PROVIDER` | nie | Zdroj inzerátov, zatiaľ len `mock`. |
+| `PROPERTY_PROVIDER` | nie | `mock` (ukážkové dáta, predvolené) alebo `apify` (reálne inzeráty z Idealista.it a Immobiliare.it). |
+| `APIFY_TOKEN` | pre `apify` | Apify API token. |
+| `APIFY_MAX_ITEMS`, `APIFY_MAX_CHARGE_USD` | nie | Limit inzerátov na portál a oblasť (50) a max. cena jedného behu (0,25 USD). |
 
 ## Nasadenie (Vercel)
 
@@ -55,7 +58,7 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 ## Ako to funguje
 
 - **Next.js 16 (App Router), TypeScript, Tailwind 4**, mapa **Leaflet + OpenStreetMap**.
-- **Dáta:** `src/lib/providers` definuje rozhranie `PropertyProvider`. Zatiaľ existuje len `mock` (36 ukážkových inzerátov z Ligúrie, Toskánska a Apúlie s ilustračnými obrázkami). Reálny poskytovateľ (RealtyAPI, PropAPIS, Apify…) sa pridá implementovaním rozhrania a registráciou v `PROVIDERS`, UI sa nemení.
+- **Dáta:** `src/lib/providers` definuje rozhranie `PropertyProvider`. `mock` generuje 36 ukážkových inzerátov. `apify` volá cez Apify REST API dva scrapery pre každú Adelkinu oblasť: [igolaizola/idealista-scraper](https://apify.com/igolaizola/idealista-scraper) (kruh okolo oblasti) a [memo23/immobiliare-scraper](https://apify.com/memo23/immobiliare-scraper) (presne polygón oblasti cez `vrt`), zoradené od najnovších. Nová oblasť stiahne ponuky hneď, ostatné dopĺňa denný cron. Pri prepnutí zdroja sa ukážkové inzeráty zmažú a prvý import sa nehlási emailom.
 - **Databáza:** `src/lib/db` – Supabase repozitár (service_role, len server, `import "server-only"`) a pamäťový fallback pre vývoj. Schéma je v PRD §5.3 a nemenila sa.
 - **Sync a notifikácie:** `src/lib/sync.ts` porovná ponuky s DB (nové inzeráty, zmeny cien), `src/lib/notify.ts` zostaví email len z Adelkiných oblastí. Prvý import do prázdnej DB sa nehlási.
 - **AI:** `src/lib/ai` – Claude cez `@anthropic-ai/sdk` so štruktúrovaným výstupom (Zod). Pri odmietnutí požiadavky API samo skúsi záložný model (`fallbacks: "default"`). Prehľad lokality sa ukladá do `location_notes` a pre ďalší inzerát v rovnakom meste sa už negeneruje.
@@ -64,6 +67,6 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 
 ## Otvorené body
 
-- Výber poskytovateľa reálnych dát o nehnuteľnostiach (cena, pokrytie, licencia) – PRD §7.
+- Rovnaký dom na oboch portáloch sa zobrazí dvakrát (bez deduplikácie).
 - Mesačný rozpočet na API (určí frekvenciu pollingu).
 - Prenájom vs. len kúpa.

@@ -3,8 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { getRepo } from "@/lib/db/repo";
 import { normalizeGeometry } from "@/lib/geo";
+import { getProvider } from "@/lib/providers";
 import { REGION_PRESETS } from "@/lib/regions";
 import { assertSession } from "@/lib/session";
+import { syncFromProvider } from "@/lib/sync";
+import type { SearchArea } from "@/lib/types";
 
 const MAX_NAME = 80;
 const MAX_NOTE = 2000;
@@ -19,22 +22,52 @@ function refreshAll() {
   revalidatePath("/", "layout");
 }
 
-export async function createArea(name: string, geometry: unknown) {
+export type AreaResult = {
+  areaId: string;
+  /** Listings fetched for the new area, or null when nothing was fetched (demo data). */
+  fetched: number | null;
+  error: string | null;
+};
+
+/** A new area gets its listings right away instead of waiting for the daily cron. */
+async function withListings(area: SearchArea): Promise<AreaResult> {
+  const provider = getProvider();
+  if (provider.isMock) return { areaId: area.id, fetched: null, error: null };
+  try {
+    const result = await syncFromProvider(getRepo(), provider, [area]);
+    return {
+      areaId: area.id,
+      fetched: result.total,
+      error: result.errors.length > 0 ? "Časť ponúk sa nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole." : null,
+    };
+  } catch (error) {
+    console.error("Fetching listings for new area failed", error);
+    return {
+      areaId: area.id,
+      fetched: 0,
+      error: "Ponuky sa teraz nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole.",
+    };
+  }
+}
+
+export async function createArea(name: string, geometry: unknown): Promise<AreaResult> {
   await assertSession();
   const polygon = normalizeGeometry(geometry);
   if (!polygon) throw new Error("Neplatný tvar oblasti");
   const area = await getRepo().createSearchArea(cleanText(name, MAX_NAME) ?? "Moja oblasť", polygon);
+  const result = await withListings(area);
   refreshAll();
-  return area;
+  return result;
 }
 
-export async function createPresetArea(presetId: string) {
+export async function createPresetArea(presetId: string): Promise<AreaResult> {
   await assertSession();
   const preset = REGION_PRESETS.find((p) => p.id === presetId);
   if (!preset) throw new Error("Neznámy región");
   const area = await getRepo().createSearchArea(preset.name, preset.polygon);
+  const result = await withListings(area);
   refreshAll();
-  return area;
+  return result;
 }
 
 export async function deleteArea(id: string) {

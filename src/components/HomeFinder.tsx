@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { createArea } from "@/app/actions";
+import { createArea, type AreaResult } from "@/app/actions";
 import { formatPrice } from "@/lib/format";
 import { pointInArea, polygonFromLatLngs } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
@@ -43,6 +43,7 @@ export function HomeFinder({
   const [draftPoints, setDraftPoints] = useState<LatLng[]>([]);
   const [draftName, setDraftName] = useState("");
   const [saving, startSaving] = useTransition();
+  const [areaStatus, setAreaStatus] = useState<{ tone: "info" | "error"; text: string } | null>(null);
 
   const activeAreas = useMemo(
     () => areas.filter((a) => !inactiveAreaIds.includes(a.id)),
@@ -85,9 +86,19 @@ export function HomeFinder({
     setDraftName("");
   };
 
+  const onAreaCreating = () =>
+    setAreaStatus({ tone: "info", text: "Sťahujem ponuky pre novú oblasť… môže to trvať do minúty." });
+
+  const onAreaCreated = (result: AreaResult) => {
+    if (result.error) setAreaStatus({ tone: "error", text: result.error });
+    else if (result.fetched === null) setAreaStatus(null);
+    else setAreaStatus({ tone: "info", text: `Hotovo, v oblasti som našiel ${result.fetched} ponúk.` });
+  };
+
   const saveDraft = () =>
     startSaving(async () => {
-      await createArea(draftName, polygonFromLatLngs(draftPoints));
+      onAreaCreating();
+      onAreaCreated(await createArea(draftName, polygonFromLatLngs(draftPoints)));
       stopDrawing();
     });
 
@@ -181,8 +192,23 @@ export function HomeFinder({
           activeAreaIds={activeAreaIds}
           onToggle={toggleArea}
           onStartDrawing={() => setDrawing(true)}
+          onAreaCreating={onAreaCreating}
+          onAreaCreated={onAreaCreated}
           drawing={drawing}
         />
+
+        {areaStatus && (
+          <p
+            role="status"
+            className={`rounded-xl px-3 py-2 text-sm ring-1 ${
+              areaStatus.tone === "error"
+                ? "bg-rose-50 text-rose-800 ring-rose-200"
+                : "bg-sea-50 text-sea-800 ring-sea-600/30"
+            }`}
+          >
+            {areaStatus.text}
+          </p>
+        )}
 
         <div className="grid grid-cols-3 gap-2">
           <label className="text-xs text-slate-500">

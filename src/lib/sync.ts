@@ -1,6 +1,6 @@
 import type { Repository } from "./db/repo";
 import type { PropertyProvider } from "./providers";
-import type { PriceChange, Property, ProviderListing, SyncResult } from "./types";
+import type { PriceChange, Property, ProviderListing, SearchArea, SyncResult } from "./types";
 
 export type ListingDiff = {
   newIds: Set<string>;
@@ -26,18 +26,30 @@ export function diffListings(
   return { newIds, previousPrices };
 }
 
+/**
+ * Pulls listings for the given areas and stores them. Listings left over
+ * from a different provider (e.g. the demo data) are removed, and the first
+ * import from a provider is flagged so it is not reported as news.
+ */
 export async function syncFromProvider(
   repo: Repository,
   provider: PropertyProvider,
+  areas: SearchArea[],
 ): Promise<SyncResult> {
-  const incoming = dedupe(await provider.fetchListings());
-  const existing = await repo.listProperties();
+  const { listings, errors } = await provider.fetchListings(areas);
+  const incoming = dedupe(listings);
+
+  const stored = await repo.listProperties();
+  const foreign = stored.filter((p) => !provider.ownsExternalId(p.external_id));
+  if (foreign.length > 0) await repo.deleteProperties(foreign.map((p) => p.id));
+  const existing = stored.filter((p) => provider.ownsExternalId(p.external_id));
+
   const { newIds, previousPrices } = diffListings(existing, incoming);
-  const stored = await repo.upsertProperties(incoming);
+  const saved = await repo.upsertProperties(incoming);
 
   const inserted: Property[] = [];
   const priceChanged: PriceChange[] = [];
-  for (const property of stored) {
+  for (const property of saved) {
     if (newIds.has(property.external_id)) inserted.push(property);
     else if (previousPrices.has(property.external_id)) {
       priceChanged.push({
@@ -46,7 +58,14 @@ export async function syncFromProvider(
       });
     }
   }
-  return { total: stored.length, initialImport: existing.length === 0, inserted, priceChanged };
+  return {
+    total: saved.length,
+    initialImport: existing.length === 0,
+    inserted,
+    priceChanged,
+    removed: foreign.length,
+    errors,
+  };
 }
 
 function dedupe(listings: ProviderListing[]): ProviderListing[] {

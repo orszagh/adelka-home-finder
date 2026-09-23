@@ -89,7 +89,8 @@ export const mockProvider: PropertyProvider = {
   id: "mock",
   label: "Ukážkové dáta",
   isMock: true,
+  ownsExternalId: (id) => id.startsWith("mock-"),
   async fetchListings() {
-    return buildMockListings();
+    return { listings: buildMockListings(), errors: [] };
   },
 };

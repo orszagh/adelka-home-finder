@@ -71,6 +71,16 @@ export class SupabaseRepository implements Repository {
     return saved;
   }
 
+  async deleteProperties(ids: string[]) {
+    const db = getSupabase();
+    // Keeps URLs (and PostgREST's `in` filter) short.
+    for (let i = 0; i < ids.length; i += 100) {
+      const chunk = ids.slice(i, i + 100);
+      check(await db.from("saved_listings").delete().in("property_id", chunk));
+      check(await db.from("properties").delete().in("id", chunk));
+    }
+  }
+
   async listSearchAreas() {
     return check(
       await getSupabase()

@@ -6,6 +6,8 @@ import { getDataNotices } from "@/lib/notices";
 import { hasSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+/** Creating an area fetches its listings from Apify inside the server action. */
+export const maxDuration = 300;
 
 export default async function Home() {
   if (!(await hasSession())) redirect("/prihlasenie");
@@ -22,7 +24,7 @@ export default async function Home() {
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
       newIds={findNewIds(properties)}
-      notices={getDataNotices()}
+      notices={getDataNotices({ areaCount: areas.length })}
     />
   );
 }
