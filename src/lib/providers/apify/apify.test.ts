@@ -150,6 +150,40 @@ describe("apifyProvider", () => {
     await expect(apifyProvider.fetchListings([sanremo])).rejects.toThrow("Všetky Apify behy zlyhali");
   });
 
+  it("re-checks listings by id on both portals", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    const known = [
+      ...idealistaFixture.slice(0, 2).map(mapIdealistaItem),
+      ...immobiliareFixture.slice(0, 2).map(mapImmobiliareItem),
+    ].map((l, i) => ({ ...l!, id: `p${i}`, first_seen_at: "2026-09-20T00:00:00Z", last_seen_at: "2026-09-21T00:00:00Z" }));
+
+    const inputs: Record<string, unknown> = {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const actor = url.includes(IDEALISTA_ACTOR) ? "idealista" : "immobiliare";
+        inputs[actor] = JSON.parse(String(init?.body));
+        // Real recheck output shapes: idealista returns { propertyCode, _details }, one listing is gone.
+        return Response.json(
+          actor === "idealista"
+            ? [{ propertyCode: "36915294", _details: { price: 310000 } }]
+            : immobiliareFixture.slice(0, 2),
+        );
+      }),
+    );
+
+    const { listings, errors } = await apifyProvider.recheck!(known);
+    expect(errors).toEqual([]);
+    expect(inputs.idealista).toMatchObject({ propertyCodes: ["36915294", "36914097"], maxItems: 2 });
+    expect(inputs.immobiliare).toMatchObject({
+      startUrls: ["https://www.immobiliare.it/annunci/128080462/", "https://www.immobiliare.it/annunci/131246982/"],
+    });
+    expect(listings.map((l) => l.external_id).sort()).toEqual(
+      ["idealista-36915294", "immobiliare-128080462", "immobiliare-131246982"].sort(),
+    );
+    expect(listings.find((l) => l.external_id === "idealista-36915294")!.price).toBe(310000);
+  });
+
   it("does nothing without areas and owns only portal ids", async () => {
     expect(await apifyProvider.fetchListings([])).toEqual({ listings: [], errors: [] });
     expect(apifyProvider.ownsExternalId("idealista-1")).toBe(true);

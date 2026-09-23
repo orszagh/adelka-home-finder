@@ -28,6 +28,9 @@ export type Property = ProviderListing & {
   id: string;
   first_seen_at: string;
   last_seen_at: string;
+  /** Price before the last change; null until a change was seen (or before the migration). */
+  previous_price?: number | null;
+  price_changed_at?: string | null;
 };
 
 export type SearchArea = {
@@ -67,4 +70,6 @@ export type SyncResult = {
   removed: number;
   /** Partial failures reported by the provider. */
   errors: string[];
+  /** Older listings asked about directly, and how many are still on offer. */
+  rechecked?: { checked: number; alive: number };
 };

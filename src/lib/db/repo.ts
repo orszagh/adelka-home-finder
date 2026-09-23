@@ -22,6 +22,12 @@ export interface Repository {
   upsertProperties(listings: ProviderListing[]): Promise<Property[]>;
   /** Deletes listings together with any saved entries pointing at them. */
   deleteProperties(ids: string[]): Promise<void>;
+  /** Remembers the old price of listings whose price just changed (no-op before the migration). */
+  recordPriceChanges(changes: { id: string; previousPrice: number | null }[]): Promise<void>;
+
+  /** Small key/value store; returns null / false when the app_state table does not exist yet. */
+  getState<T>(key: string): Promise<T | null>;
+  setState(key: string, value: unknown): Promise<boolean>;
 
   listSearchAreas(): Promise<SearchArea[]>;
   createSearchArea(name: string, polygon: AreaGeometry): Promise<SearchArea>;

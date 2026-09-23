@@ -7,7 +7,10 @@ import { createArea, type AreaResult } from "@/app/actions";
 import { formatPrice } from "@/lib/format";
 import { pointInArea, polygonFromLatLngs } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
+import type { Greeting } from "@/lib/greeting";
 import { AreaBar } from "./AreaBar";
+import { CheckNowButton } from "./CheckNowButton";
+import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
 import type { LatLng } from "./MapView";
 
@@ -25,12 +28,18 @@ export function HomeFinder({
   areas,
   savedIds,
   newIds,
+  priceDrops,
+  greeting,
+  manualSync,
   notices,
 }: {
   properties: Property[];
   areas: SearchArea[];
   savedIds: string[];
   newIds: string[];
+  priceDrops: Record<string, number>;
+  greeting: Greeting | null;
+  manualSync: { waitMinutes: number } | null;
   notices: string[];
 }) {
   const [inactiveAreaIds, setInactiveAreaIds] = useState<string[]>([]);
@@ -43,6 +52,9 @@ export function HomeFinder({
   const [draftPoints, setDraftPoints] = useState<LatLng[]>([]);
   const [draftName, setDraftName] = useState("");
   const [saving, startSaving] = useTransition();
+  const [showGreeting, setShowGreeting] = useState(greeting !== null);
+  /** "Ukázať mi ich": only the listings from the greeting, regardless of areas and filters. */
+  const [highlightIds, setHighlightIds] = useState<string[] | null>(null);
   const [areaStatus, setAreaStatus] = useState<{ tone: "info" | "error"; text: string } | null>(null);
 
   const activeAreas = useMemo(
@@ -53,6 +65,10 @@ export function HomeFinder({
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
 
   const visible = useMemo(() => {
+    if (highlightIds) {
+      const wanted = new Set(highlightIds);
+      return properties.filter((p) => wanted.has(p.id));
+    }
     const filtered = properties.filter(
       (p) =>
         (activeAreas.length === 0 || activeAreas.some((a) => pointInArea(p.longitude, p.latitude, a.polygon))) &&
@@ -67,7 +83,7 @@ export function HomeFinder({
           ? byPrice(b) - byPrice(a)
           : b.first_seen_at.localeCompare(a.first_seen_at),
     );
-  }, [properties, activeAreas, maxPrice, minRooms, sort]);
+  }, [properties, activeAreas, maxPrice, minRooms, sort, highlightIds]);
 
   const fresh = useMemo(() => new Set(newIds), [newIds]);
   const selected = visible.find((p) => p.id === selectedId) ?? null;
@@ -95,20 +111,37 @@ export function HomeFinder({
     else setAreaStatus({ tone: "info", text: `Hotovo, v oblasti som našiel ${result.fetched} ponúk.` });
   };
 
-  const saveDraft = () =>
+  const saveDraft = () => {
+    onAreaCreating();
     startSaving(async () => {
-      onAreaCreating();
       onAreaCreated(await createArea(draftName, polygonFromLatLngs(draftPoints)));
       stopDrawing();
     });
+  };
+
+  // Rendered twice: above the map on phones (so it is seen first), atop the list on desktop.
+  const greetingCard = (className: string) =>
+    greeting && showGreeting ? (
+      <GreetingCard
+        greeting={greeting}
+        className={className}
+        onDismiss={() => setShowGreeting(false)}
+        onShow={() => {
+          setShowGreeting(false);
+          setHighlightIds(greeting.ids);
+          setSelectedId(null);
+        }}
+      />
+    ) : null;
 
   return (
     <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_57px)] lg:flex-none lg:flex-row">
+      {greetingCard("m-3 mb-0 lg:hidden")}
       <section className="relative isolate h-[50dvh] shrink-0 lg:order-2 lg:h-auto lg:flex-1" aria-label="Mapa">
         <MapView
           properties={visible}
           areas={areas}
-          activeAreaIds={activeAreaIds}
+          activeAreaIds={highlightIds ? [] : activeAreaIds}
           savedIds={savedIds}
           selectedId={selectedId}
           onSelect={selectFromMap}
@@ -181,6 +214,17 @@ export function HomeFinder({
       </section>
 
       <section className="space-y-4 p-4 lg:order-1 lg:w-[440px] lg:overflow-y-auto lg:border-r lg:border-slate-200">
+        {greetingCard("hidden lg:block")}
+
+        {highlightIds && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sea-50 px-3 py-2 text-sm text-sea-800 ring-1 ring-sea-600/30">
+            <span>Zobrazujem novinky od Lubka ({visible.length})</span>
+            <button type="button" onClick={() => setHighlightIds(null)} className="font-medium underline">
+              Zobraziť všetky ponuky
+            </button>
+          </div>
+        )}
+
         {notices.map((notice) => (
           <p key={notice} className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
             {notice}
@@ -255,11 +299,14 @@ export function HomeFinder({
           </label>
         </div>
 
-        <p className="text-sm text-slate-600" aria-live="polite">
-          {visible.length === 0
-            ? "V zvolených oblastiach a filtroch nie sú žiadne ponuky."
-            : `${visible.length} ${visible.length === 1 ? "ponuka" : visible.length < 5 ? "ponuky" : "ponúk"}`}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-600" aria-live="polite">
+            {visible.length === 0
+              ? "V zvolených oblastiach a filtroch nie sú žiadne ponuky."
+              : `${visible.length} ${visible.length === 1 ? "ponuka" : visible.length < 5 ? "ponuky" : "ponúk"}`}
+          </p>
+          {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
+        </div>
 
         <div className="space-y-3">
           {visible.map((p) => (
@@ -269,6 +316,7 @@ export function HomeFinder({
               saved={saved.has(p.id)}
               selected={p.id === selectedId}
               isNew={fresh.has(p.id)}
+              previousPrice={priceDrops[p.id] ?? null}
               onSelect={setSelectedId}
             />
           ))}

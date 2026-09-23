@@ -1,4 +1,4 @@
-import type { ProviderListing, SearchArea } from "../types";
+import type { Property, ProviderListing, SearchArea } from "../types";
 import { apifyProvider } from "./apify";
 import { mockProvider } from "./mock";
 
@@ -21,6 +21,11 @@ export interface PropertyProvider {
   ownsExternalId(externalId: string): boolean;
   /** Listings within (or around) Adelka's search areas. */
   fetchListings(areas: SearchArea[]): Promise<FetchResult>;
+  /**
+   * Asks the source directly about listings the regular search no longer
+   * returned. Returns current data for those still on offer; missing ones are gone.
+   */
+  recheck?(listings: Property[]): Promise<FetchResult>;
 }
 
 const PROVIDERS: Record<string, PropertyProvider> = {

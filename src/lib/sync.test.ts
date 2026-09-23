@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MemoryRepository } from "./db/memory-repo";
 import type { PropertyProvider } from "./providers";
 import { buildMockListings, mockProvider } from "./providers/mock";
 import { diffListings, syncFromProvider } from "./sync";
-import type { ProviderListing } from "./types";
+import type { Property, ProviderListing } from "./types";
 
 function providerOf(listings: ProviderListing[], prefix = "mock-"): PropertyProvider {
   return {
@@ -73,6 +73,47 @@ describe("syncFromProvider", () => {
     expect(result.initialImport).toBe(true);
     expect((await repo.listProperties()).map((p) => p.external_id)).toEqual(["idealista-1"]);
     expect(await repo.listSaved()).toEqual([]);
+  });
+
+  it("re-checks listings the search stopped returning and remembers price drops", async () => {
+    const repo = new MemoryRepository();
+    const [a, b, c] = buildMockListings();
+    await syncFromProvider(repo, providerOf([a, b, c]), []);
+    // Pretend the last search saw them three days ago.
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    for (const p of await repo.listProperties()) p.last_seen_at = threeDaysAgo;
+
+    const recheck = vi.fn(async (listings: Property[]) => ({
+      // b is still on offer, now cheaper; c is gone.
+      listings: listings.filter((p) => p.external_id === b.external_id).map((p) => ({ ...p, price: 100_000 })),
+      errors: [],
+    }));
+    const provider: PropertyProvider = { ...providerOf([a]), recheck };
+
+    const result = await syncFromProvider(repo, provider, [], { recheck: true });
+    expect(recheck.mock.calls[0][0].map((p) => p.external_id).sort()).toEqual([b.external_id, c.external_id].sort());
+    expect(result.rechecked).toEqual({ checked: 2, alive: 1 });
+    expect(result.priceChanged.map((ch) => ch.property.external_id)).toEqual([b.external_id]);
+
+    const byExternal = new Map((await repo.listProperties()).map((p) => [p.external_id, p]));
+    expect(byExternal.get(b.external_id)).toMatchObject({ price: 100_000, previous_price: b.price });
+    expect(Date.parse(byExternal.get(b.external_id)!.last_seen_at)).toBeGreaterThan(Date.parse(threeDaysAgo));
+    expect(byExternal.get(c.external_id)!.last_seen_at).toBe(threeDaysAgo);
+  });
+
+  it("does not re-check without the option or when a recheck fails", async () => {
+    const repo = new MemoryRepository();
+    const [a] = buildMockListings();
+    await syncFromProvider(repo, providerOf([a]), []);
+    for (const p of await repo.listProperties()) p.last_seen_at = new Date(Date.now() - 3 * 86_400_000).toISOString();
+
+    const recheck = vi.fn(async (): Promise<never> => {
+      throw new Error("Apify down");
+    });
+    const provider: PropertyProvider = { ...providerOf([]), recheck };
+    expect((await syncFromProvider(repo, provider, [])).rechecked).toBeUndefined();
+    expect(recheck).not.toHaveBeenCalled();
+    expect((await syncFromProvider(repo, provider, [], { recheck: true })).errors).toEqual(["Apify down"]);
   });
 
   it("passes provider errors through", async () => {

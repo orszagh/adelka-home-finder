@@ -23,8 +23,23 @@ function toProperty(row: Record<string, unknown>): Property {
     ...(row as unknown as Property),
     price: row.price === null ? null : Number(row.price),
     area_sqm: row.area_sqm === null ? null : Number(row.area_sqm),
+    previous_price: row.previous_price == null ? null : Number(row.previous_price),
     photos: Array.isArray(row.photos) ? (row.photos as string[]) : [],
   };
+}
+
+/** Postgres/PostgREST codes for a table or column that does not exist (migration not run yet). */
+const MISSING_SCHEMA_CODES = new Set(["42P01", "42703", "PGRST204", "PGRST205"]);
+
+let warnedMissingMigration = false;
+
+function isMissingSchema(error: { code?: string } | null): boolean {
+  if (!error?.code || !MISSING_SCHEMA_CODES.has(error.code)) return false;
+  if (!warnedMissingMigration) {
+    warnedMissingMigration = true;
+    console.warn("Supabase migration supabase/migrations/20260924_privitanie.sql has not been run yet");
+  }
+  return true;
 }
 
 export class SupabaseRepository implements Repository {
@@ -79,6 +94,35 @@ export class SupabaseRepository implements Repository {
       check(await db.from("saved_listings").delete().in("property_id", chunk));
       check(await db.from("properties").delete().in("id", chunk));
     }
+  }
+
+  async recordPriceChanges(changes: { id: string; previousPrice: number | null }[]) {
+    const db = getSupabase();
+    const now = new Date().toISOString();
+    for (const { id, previousPrice } of changes) {
+      const { error } = await db
+        .from("properties")
+        .update({ previous_price: previousPrice, price_changed_at: now })
+        .eq("id", id);
+      if (isMissingSchema(error)) return;
+      if (error) throw new Error(`Supabase: ${error.message}`);
+    }
+  }
+
+  async getState<T>(key: string) {
+    const { data, error } = await getSupabase().from("app_state").select("value").eq("key", key).maybeSingle();
+    if (isMissingSchema(error)) return null;
+    if (error) throw new Error(`Supabase: ${error.message}`);
+    return (data?.value as T | undefined) ?? null;
+  }
+
+  async setState(key: string, value: unknown) {
+    const { error } = await getSupabase()
+      .from("app_state")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (isMissingSchema(error)) return false;
+    if (error) throw new Error(`Supabase: ${error.message}`);
+    return true;
   }
 
   async listSearchAreas() {

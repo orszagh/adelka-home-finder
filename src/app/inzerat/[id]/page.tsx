@@ -8,6 +8,8 @@ import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
 import { getRepo } from "@/lib/db/repo";
 import { formatDate, formatPrice, roomsLabel } from "@/lib/format";
+import { isStale } from "@/lib/freshness";
+import { getProvider } from "@/lib/providers";
 import { hasSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +46,13 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
       <Link href="/" className="text-sm font-medium text-sea-700 hover:underline">
         ‹ Späť na ponuky
       </Link>
+
+      {!getProvider().isMock && isStale(property) && (
+        <p className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-700 ring-1 ring-slate-200">
+          Tento inzerát už na portáli nie je (naposledy videný {formatDate(property.last_seen_at)}). Dom je
+          pravdepodobne predaný alebo stiahnutý z ponuky.
+        </p>
+      )}
 
       <Gallery photos={property.photos} title={property.title} />
 

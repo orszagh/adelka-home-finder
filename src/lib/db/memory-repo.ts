@@ -20,11 +20,13 @@ export class MemoryRepository implements Repository {
   private areas: SearchArea[] = [];
   private saved: SavedListing[] = [];
   private notes: LocationNote[] = [];
+  private state = new Map<string, unknown>();
 
   static shared(): MemoryRepository {
-    const g = globalThis as Record<symbol, MemoryRepository | undefined>;
-    g[GLOBAL_KEY] ??= new MemoryRepository();
-    return g[GLOBAL_KEY];
+    const g = globalThis as Record<symbol, unknown>;
+    // After a hot reload the stored instance may come from an older version of this class.
+    if (!(g[GLOBAL_KEY] instanceof MemoryRepository)) g[GLOBAL_KEY] = new MemoryRepository();
+    return g[GLOBAL_KEY] as MemoryRepository;
   }
 
   async listProperties() {
@@ -54,6 +56,23 @@ export class MemoryRepository implements Repository {
     const gone = new Set(ids);
     this.saved = this.saved.filter((s) => !gone.has(s.property_id));
     for (const id of ids) this.properties.delete(id);
+  }
+
+  async recordPriceChanges(changes: { id: string; previousPrice: number | null }[]) {
+    const now = new Date().toISOString();
+    for (const { id, previousPrice } of changes) {
+      const row = this.properties.get(id);
+      if (row) Object.assign(row, { previous_price: previousPrice, price_changed_at: now });
+    }
+  }
+
+  async getState<T>(key: string) {
+    return (this.state.get(key) as T | undefined) ?? null;
+  }
+
+  async setState(key: string, value: unknown) {
+    this.state.set(key, value);
+    return true;
   }
 
   async listSearchAreas() {

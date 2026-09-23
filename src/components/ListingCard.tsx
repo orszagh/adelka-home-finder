@@ -10,12 +10,18 @@ export function ListingCard({
   saved,
   selected = false,
   isNew = false,
+  previousPrice = null,
+  gone = false,
   onSelect,
 }: {
   property: Property;
   saved: boolean;
   selected?: boolean;
   isNew?: boolean;
+  /** Price before a recent drop. */
+  previousPrice?: number | null;
+  /** No longer on offer (sold or withdrawn). */
+  gone?: boolean;
   onSelect?: (id: string) => void;
 }) {
   const photo = property.photos[0];
@@ -32,6 +38,11 @@ export function ListingCard({
           {photo && (
             <img src={photo} alt="" loading="lazy" className="h-full w-full object-cover" />
           )}
+          {gone && (
+            <span className="absolute inset-x-0 bottom-0 bg-slate-900/75 px-2 py-1 text-center text-[11px] font-medium text-white">
+              Už nie je v ponuke
+            </span>
+          )}
           {isNew && (
             <span className="absolute left-1.5 top-1.5 rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-semibold text-amber-950">
               Nové
@@ -39,7 +50,14 @@ export function ListingCard({
           )}
         </div>
         <div className="min-w-0 flex-1 py-1 pr-10">
-          <p className="text-lg font-semibold text-slate-900">{formatPrice(property.price)}</p>
+          <p className={`text-lg font-semibold ${gone ? "text-slate-400 line-through" : "text-slate-900"}`}>
+            {formatPrice(property.price)}
+            {previousPrice !== null && (
+              <span className="ml-2 align-middle text-sm font-medium text-emerald-700">
+                <span className="text-slate-400 line-through">{formatPrice(previousPrice)}</span> ▼
+              </span>
+            )}
+          </p>
           <p className="truncate text-sm text-slate-700">{property.title}</p>
           <p className="mt-1 text-sm text-slate-500">
             {[

@@ -90,6 +90,15 @@ export function toLatLngRings(geometry: AreaGeometry): [number, number][][] {
   return polys.map((rings) => rings[0].map(([lng, lat]) => [lat, lng]));
 }
 
+/** Listings inside at least one of the areas; with no areas, all of them. */
+export function insideAreas<T extends { latitude: number; longitude: number }>(
+  items: T[],
+  areas: { polygon: AreaGeometry }[],
+): T[] {
+  if (areas.length === 0) return items;
+  return items.filter((i) => areas.some((a) => pointInArea(i.longitude, i.latitude, a.polygon)));
+}
+
 /** Outer ring of every polygon in the area, as [lng, lat] positions. */
 export function outerRings(geometry: AreaGeometry): Position[][] {
   return geometry.type === "Polygon"

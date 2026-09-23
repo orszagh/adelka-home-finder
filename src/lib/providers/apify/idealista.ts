@@ -20,6 +20,20 @@ export function idealistaInput(ring: Position[], maxItems: number) {
   };
 }
 
+/** Looks up specific listings; ones no longer on offer are simply absent from the output. */
+export function idealistaRecheckInput(codes: string[]) {
+  return { country: "it", operation: "sale", propertyType: "homes", propertyCodes: codes, maxItems: codes.length };
+}
+
+/** Recheck output is `{ propertyCode, _details }`; returns the code and current price. */
+export function readIdealistaRecheck(raw: unknown): { code: string; price: number | null } | null {
+  if (!raw || typeof raw !== "object") return null;
+  const item = raw as { propertyCode?: unknown; _details?: { price?: unknown; priceInfo?: { amount?: unknown } } };
+  const code = str(item.propertyCode);
+  if (!code) return null;
+  return { code, price: num(item._details?.price) ?? num(item._details?.priceInfo?.amount) };
+}
+
 /** WEB_DETAIL-M is 1365 px wide; the default XL variant is ~2700 px. */
 function resizeImage(url: string): string {
   return url.replace(/\/blur\/[A-Z_-]+\//, "/blur/WEB_DETAIL-M/");

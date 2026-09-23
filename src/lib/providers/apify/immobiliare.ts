@@ -21,6 +21,11 @@ export function immobiliareInput(ring: Position[], maxItems: number) {
   return { startUrls: [immobiliareSearchUrl(ring)], maxItems, sortBy: "mostRecent" };
 }
 
+/** Detail pages return the same item shape as searches; removed listings return nothing. */
+export function immobiliareRecheckInput(ids: string[]) {
+  return { startUrls: ids.map((id) => `https://www.immobiliare.it/annunci/${id}/`), maxItems: ids.length };
+}
+
 type ImmobiliareItem = {
   id?: unknown;
   title?: unknown;

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getRepo } from "@/lib/db/repo";
 import { normalizeGeometry } from "@/lib/geo";
+import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/greeting";
 import { getProvider } from "@/lib/providers";
 import { REGION_PRESETS } from "@/lib/regions";
 import { assertSession } from "@/lib/session";
@@ -34,7 +35,10 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
   const provider = getProvider();
   if (provider.isMock) return { areaId: area.id, fetched: null, error: null };
   try {
-    const result = await syncFromProvider(getRepo(), provider, [area]);
+    const repo = getRepo();
+    const result = await syncFromProvider(repo, provider, [area]);
+    // Adelka is looking at these right now; they are not news for tomorrow's greeting.
+    await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
     return {
       areaId: area.id,
       fetched: result.total,
@@ -47,6 +51,43 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
       fetched: 0,
       error: "Ponuky sa teraz nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole.",
     };
+  }
+}
+
+/** Adelka has seen the news from the greeting (or dismissed it). */
+export async function markNewsSeen() {
+  await assertSession();
+  await getRepo().setState(LAST_SEEN_KEY, new Date().toISOString());
+}
+
+export type CheckNowResult = { ok: true } | { ok: false; error: string };
+
+/** "Pozrieť teraz": an on-demand sync, at most once an hour because every run costs Apify credit. */
+export async function checkNow(): Promise<CheckNowResult> {
+  await assertSession();
+  const repo = getRepo();
+  const provider = getProvider();
+  if (provider.isMock) return { ok: false, error: "Pri ukážkových dátach nie je čo sťahovať." };
+
+  const areas = await repo.listSearchAreas();
+  if (areas.length === 0) return { ok: false, error: "Najprv si pridaj oblasť." };
+
+  const last = await repo.getState<string>(MANUAL_SYNC_KEY);
+  const waitMs = last ? Date.parse(last) + MANUAL_SYNC_COOLDOWN_MS - Date.now() : 0;
+  if (waitMs > 0) return { ok: false, error: `Znova to pôjde o ${Math.ceil(waitMs / 60_000)} min.` };
+  if (!(await repo.setState(MANUAL_SYNC_KEY, new Date().toISOString()))) {
+    return { ok: false, error: "Ručné sťahovanie potrebuje databázovú migráciu (pozri README)." };
+  }
+
+  try {
+    const result = await syncFromProvider(repo, provider, areas);
+    refreshAll();
+    return result.errors.length > 0 && result.total === 0
+      ? { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." }
+      : { ok: true };
+  } catch (error) {
+    console.error("Manual sync failed", error);
+    return { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." };
   }
 }
 

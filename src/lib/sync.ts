@@ -1,4 +1,5 @@
 import type { Repository } from "./db/repo";
+import { recheckCandidates } from "./freshness";
 import type { PropertyProvider } from "./providers";
 import type { PriceChange, Property, ProviderListing, SearchArea, SyncResult } from "./types";
 
@@ -35,15 +36,32 @@ export async function syncFromProvider(
   repo: Repository,
   provider: PropertyProvider,
   areas: SearchArea[],
+  options: { recheck?: boolean } = {},
 ): Promise<SyncResult> {
   const { listings, errors } = await provider.fetchListings(areas);
-  const incoming = dedupe(listings);
 
   const stored = await repo.listProperties();
   const foreign = stored.filter((p) => !provider.ownsExternalId(p.external_id));
   if (foreign.length > 0) await repo.deleteProperties(foreign.map((p) => p.id));
   const existing = stored.filter((p) => provider.ownsExternalId(p.external_id));
 
+  const rechecked: ProviderListing[] = [];
+  let checked = 0;
+  if (options.recheck && provider.recheck) {
+    const candidates = recheckCandidates(existing, new Set(listings.map((l) => l.external_id)));
+    if (candidates.length > 0) {
+      checked = candidates.length;
+      try {
+        const result = await provider.recheck(candidates);
+        rechecked.push(...result.listings);
+        errors.push(...result.errors);
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : String(error));
+      }
+    }
+  }
+
+  const incoming = dedupe([...listings, ...rechecked]);
   const { newIds, previousPrices } = diffListings(existing, incoming);
   const saved = await repo.upsertProperties(incoming);
 
@@ -58,12 +76,19 @@ export async function syncFromProvider(
       });
     }
   }
+  if (priceChanged.length > 0) {
+    await repo.recordPriceChanges(
+      priceChanged.map((c) => ({ id: c.property.id, previousPrice: c.previousPrice })),
+    );
+  }
+
   return {
     total: saved.length,
     initialImport: existing.length === 0,
     inserted,
     priceChanged,
     removed: foreign.length,
+    rechecked: checked > 0 ? { checked, alive: rechecked.length } : undefined,
     errors,
   };
 }

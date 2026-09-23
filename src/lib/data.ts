@@ -1,5 +1,6 @@
 import "server-only";
 import { getRepo } from "./db/repo";
+import { isStale, recentPriceDrop } from "./freshness";
 import { getProvider } from "./providers";
 import { syncFromProvider } from "./sync";
 import type { Property } from "./types";
@@ -14,10 +15,24 @@ export async function getProperties(): Promise<Property[]> {
   const repo = getRepo();
   const provider = getProvider();
   const properties = (await repo.listProperties()).filter((p) => provider.ownsExternalId(p.external_id));
-  if (properties.length > 0 || !provider.isMock) return properties;
+  if (!provider.isMock) return properties.filter((p) => !isStale(p));
+  if (properties.length > 0) return properties;
   await syncFromProvider(repo, provider, []);
   return repo.listProperties();
 }
+
+/** Remembered price before a recent drop, per listing id (for the "zlacnené" badge). */
+export function findPriceDrops(properties: Property[], now = Date.now()): Record<string, number> {
+  const since = now - PRICE_DROP_BADGE_MS;
+  const drops: Record<string, number> = {};
+  for (const p of properties) {
+    const previous = recentPriceDrop(p, since);
+    if (previous !== null) drops[p.id] = previous;
+  }
+  return drops;
+}
+
+const PRICE_DROP_BADGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const NEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const FIRST_IMPORT_GRACE_MS = 60 * 60 * 1000;

@@ -37,6 +37,7 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `PROPERTY_PROVIDER` | nie | `mock` (ukážkové dáta, predvolené) alebo `apify` (reálne inzeráty z Idealista.it a Immobiliare.it). |
 | `APIFY_TOKEN` | pre `apify` | Apify API token. |
 | `APIFY_MAX_ITEMS`, `APIFY_MAX_CHARGE_USD` | nie | Limit inzerátov na portál a oblasť (50) a max. cena jedného behu (0,25 USD). |
+| `APIFY_RECHECK_MAX` | nie | Koľko starších ponúk denne overiť priamo podľa ID (100). |
 
 ## Nasadenie (Vercel)
 
@@ -44,8 +45,9 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 
 1. **Vercel → Settings → Environment Variables** (Production aj Preview): pridaj `APP_PASSWORD`, `ANTHROPIC_API_KEY`, `CRON_SECRET` (napr. výstup `openssl rand -hex 32`), `RESEND_API_KEY` a `NOTIFY_EMAIL`. Supabase premenné už sú nastavené.
 2. Po pridaní premenných daj **Redeploy** (premenné sa načítajú až pri novom nasadení).
-3. **Cron** sa zapne sám podľa [vercel.json](vercel.json): denne o 6:00 UTC zavolá `/api/cron/sync`. Na Hobby pláne je možný najviac 1× denne; častejšie ho môže volať napr. n8n s hlavičkou `Authorization: Bearer <CRON_SECRET>`.
-4. **Resend:** založ účet na resend.com a vytvor API kľúč. Kým neoveríš doménu `orszagh.online` (DNS záznamy na Webglobe), odosielateľ `onboarding@resend.dev` dokáže posielať len na email, ktorým si sa v Resende registroval.
+3. **Databázová migrácia:** v Supabase → SQL Editor spusti raz [supabase/migrations/20260924_privitanie.sql](supabase/migrations/20260924_privitanie.sql). Pridá pôvodnú cenu pri zlacnení a tabuľku `app_state` (ranné privítanie, limit ručného sťahovania). Bez nej appka beží, len tieto funkcie sú vypnuté.
+4. **Cron** sa zapne sám podľa [vercel.json](vercel.json): denne o 3:00 UTC (5:00 letného, 4:00 zimného času; Hobby plán ho spustí kedykoľvek v rámci tej hodiny) zavolá `/api/cron/sync`. Na Hobby pláne je možný najviac 1× denne; častejšie ho môže volať napr. n8n s hlavičkou `Authorization: Bearer <CRON_SECRET>`.
+5. **Resend:** založ účet na resend.com a vytvor API kľúč. Kým neoveríš doménu `orszagh.online` (DNS záznamy na Webglobe), odosielateľ `onboarding@resend.dev` dokáže posielať len na email, ktorým si sa v Resende registroval.
 
 ### Doména adel.orszagh.online
 
@@ -59,8 +61,11 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 
 - **Next.js 16 (App Router), TypeScript, Tailwind 4**, mapa **Leaflet + OpenStreetMap**.
 - **Dáta:** `src/lib/providers` definuje rozhranie `PropertyProvider`. `mock` generuje 36 ukážkových inzerátov. `apify` volá cez Apify REST API dva scrapery pre každú Adelkinu oblasť: [igolaizola/idealista-scraper](https://apify.com/igolaizola/idealista-scraper) (kruh okolo oblasti) a [memo23/immobiliare-scraper](https://apify.com/memo23/immobiliare-scraper) (presne polygón oblasti cez `vrt`), zoradené od najnovších. Nová oblasť stiahne ponuky hneď, ostatné dopĺňa denný cron. Pri prepnutí zdroja sa ukážkové inzeráty zmažú a prvý import sa nehlási emailom.
-- **Databáza:** `src/lib/db` – Supabase repozitár (service_role, len server, `import "server-only"`) a pamäťový fallback pre vývoj. Schéma je v PRD §5.3 a nemenila sa.
+- **Databáza:** `src/lib/db` – Supabase repozitár (service_role, len server, `import "server-only"`) a pamäťový fallback pre vývoj. Pôvodná schéma je v PRD §5.3, doplnky sú v `supabase/migrations`.
 - **Sync a notifikácie:** `src/lib/sync.ts` porovná ponuky s DB (nové inzeráty, zmeny cien), `src/lib/notify.ts` zostaví email len z Adelkiných oblastí. Prvý import do prázdnej DB sa nehlási.
+- **Ranné privítanie:** po otvorení appky „Dobré ráno, Adelka ☕ Lubko ti v noci našiel X nových inzerátov (a Y zlacnených)…“ podľa dennej doby (časové pásmo Bratislava). Počítajú sa len ponuky v jej oblastiach, ktoré pribudli alebo zlacneli od chvíle, keď naposledy ťukla „Ukázať mi ich“ alebo privítanie zavrela. Tlačidlo ukáže len tieto ponuky.
+- **Aktuálnosť ponúk:** denný cron overí podľa ID ponuky, ktoré vyhľadávanie 36 h nevrátilo. Čo 4 dni nikto nepotvrdí, považuje sa za predané: zo zoznamu zmizne, v uložených ostane s označením „Už nie je v ponuke“. Pri overovaní sa zachytia aj zlacnenia starších ponúk.
+- **Pozrieť teraz:** ručné stiahnutie čerstvých ponúk, najviac raz za hodinu (kontroluje sa na serveri, kvôli cene Apify).
 - **AI:** `src/lib/ai` – Claude cez `@anthropic-ai/sdk` so štruktúrovaným výstupom (Zod). Pri odmietnutí požiadavky API samo skúsi záložný model (`fallbacks: "default"`). Prehľad lokality sa ukladá do `location_notes` a pre ďalší inzerát v rovnakom meste sa už negeneruje.
 - **Emaily realitkám:** server vracia len návrh. Odoslanie je vždy na Adelke (tlačidlo otvorí jej emailovú aplikáciu, prípadne kopírovanie textu).
 - **Prístup:** `src/proxy.ts` pustí ďalej len prihlásené zariadenie (cookie na 1 rok). Výnimky sú `/api/cron/*` (vlastné tajomstvo) a `/mock-photo/*` (obrázky v emailoch). Nezávisle od proxy si prihlásenie overuje aj každá stránka, API route a server action (`src/lib/session.ts`), takže obídenie proxy nič nesprístupní.

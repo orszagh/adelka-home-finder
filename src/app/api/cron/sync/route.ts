@@ -1,5 +1,6 @@
 import { getRepo } from "@/lib/db/repo";
 import { isEmailConfigured, notifyRecipients, sendEmail } from "@/lib/email";
+import { LAST_SEEN_KEY } from "@/lib/greeting";
 import { buildDigest, getAppUrl } from "@/lib/notify";
 import { getProvider } from "@/lib/providers";
 import { rejectUnlessCronSecret } from "@/lib/secrets";
@@ -20,8 +21,10 @@ export async function GET(request: Request) {
   const repo = getRepo();
   const provider = getProvider();
   const areas = await repo.listSearchAreas();
-  const result = await syncFromProvider(repo, provider, areas);
+  const result = await syncFromProvider(repo, provider, areas, { recheck: true });
   const digest = buildDigest(result, areas, getAppUrl());
+  // A first import (e.g. switching away from demo data) must not greet Adelka with hundreds of "new" listings.
+  if (result.initialImport) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
 
   let email: { sent: boolean; detail: string } = { sent: false, detail: "nič nové na hlásenie" };
   if (digest) {
@@ -41,6 +44,7 @@ export async function GET(request: Request) {
     priceChanged: result.priceChanged.length,
     removed: result.removed,
     initialImport: result.initialImport,
+    rechecked: result.rechecked ?? null,
     reported: digest?.count ?? 0,
     errors: result.errors,
     email,
