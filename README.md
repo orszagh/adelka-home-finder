@@ -19,6 +19,7 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `npm test` | unit testy (Vitest) |
 | `npm run lint` | ESLint |
 | `npm run build` | produkčný build |
+| `npm run geo:build` | znovu vygeneruje hranice regiónov a provincií do `src/data` (ISTAT cez openpolis) |
 | `npm run test:live` | živý test Apify pre Sanremo (míňa cca 0,03 USD, potrebuje `APIFY_TOKEN` v `.env.local`) |
 
 ## Premenné prostredia
@@ -60,6 +61,7 @@ Vercel projekt je prepojený s týmto repozitárom, takže každý push na `main
 ## Ako to funguje
 
 - **Next.js 16 (App Router), TypeScript, Tailwind 4**, mapa **Leaflet + OpenStreetMap**.
+- **Výber oblastí:** „🗺️ Vybrať na mape“ ukáže farebné regióny pri mori (vnútrozemie sivé) s počtom ponúk a najnižšou cenou. Po ťuknutí na región sa ukážu jeho provincie; ťuknutie na provinciu ju začne sledovať, ďalšie ťuknutie sledovanie zruší. Dá sa sledovať aj celý región. Vlastné kreslenie ostalo ako „✏️ Nakresliť“. Hranice: ISTAT (stav k 1. 1. 2026) cez [openpolis/geojson-italy](https://github.com/openpolis/geojson-italy), CC BY 4.0, zjednodušené na približne 170 KB. Pri oblasti s ostrovmi sa na portáloch hľadá v 3 najväčších častiach.
 - **Dáta:** `src/lib/providers` definuje rozhranie `PropertyProvider`. `mock` generuje 36 ukážkových inzerátov. `apify` volá cez Apify REST API dva scrapery pre každú Adelkinu oblasť: [igolaizola/idealista-scraper](https://apify.com/igolaizola/idealista-scraper) (kruh okolo oblasti) a [memo23/immobiliare-scraper](https://apify.com/memo23/immobiliare-scraper) (presne polygón oblasti cez `vrt`), zoradené od najnovších. Nová oblasť stiahne ponuky hneď, ostatné dopĺňa denný cron. Pri prepnutí zdroja sa ukážkové inzeráty zmažú a prvý import sa nehlási emailom.
 - **Databáza:** `src/lib/db` – Supabase repozitár (service_role, len server, `import "server-only"`) a pamäťový fallback pre vývoj. Pôvodná schéma je v PRD §5.3, doplnky sú v `supabase/migrations`.
 - **Sync a notifikácie:** `src/lib/sync.ts` porovná ponuky s DB (nové inzeráty, zmeny cien), `src/lib/notify.ts` zostaví email len z Adelkiných oblastí. Prvý import do prázdnej DB sa nehlási.

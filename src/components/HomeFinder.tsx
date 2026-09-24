@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { createArea, type AreaResult } from "@/app/actions";
+import { addPlaceArea, createArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice } from "@/lib/format";
 import { pointInArea, polygonFromLatLngs } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
 import type { Greeting } from "@/lib/greeting";
+import { type Place, REGIONS, areaNameFor } from "@/lib/italy";
 import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
@@ -55,6 +56,10 @@ export function HomeFinder({
   const [showGreeting, setShowGreeting] = useState(greeting !== null);
   /** "Ukázať mi ich": only the listings from the greeting, regardless of areas and filters. */
   const [highlightIds, setHighlightIds] = useState<string[] | null>(null);
+  /** Picking regions/provinces on the map; opens by itself while Adelka has no areas yet. */
+  const [chooserOpen, setChooserOpen] = useState(areas.length === 0);
+  const [chooserRegion, setChooserRegion] = useState<string | null>(null);
+  const [placeBusy, startPlace] = useTransition();
   const [areaStatus, setAreaStatus] = useState<{ tone: "info" | "error"; text: string } | null>(null);
 
   const activeAreas = useMemo(
@@ -102,14 +107,35 @@ export function HomeFinder({
     setDraftName("");
   };
 
-  const onAreaCreating = () =>
-    setAreaStatus({ tone: "info", text: "Sťahujem ponuky pre novú oblasť… môže to trvať do minúty." });
+  const onAreaCreating = (name = "novú oblasť") =>
+    setAreaStatus({ tone: "info", text: `Sťahujem ponuky pre ${name}… môže to trvať do minúty.` });
 
   const onAreaCreated = (result: AreaResult) => {
     if (result.error) setAreaStatus({ tone: "error", text: result.error });
     else if (result.fetched === null) setAreaStatus(null);
     else setAreaStatus({ tone: "info", text: `Hotovo, v oblasti som našiel ${result.fetched} ponúk.` });
   };
+
+  const areaByName = (place: Place) => areas.find((a) => a.name === areaNameFor(place));
+
+  /** Adds the place as an area, or removes it when Adelka already follows it. */
+  const togglePlace = (place: Place) => {
+    const existing = areaByName(place);
+    if (existing) {
+      setAreaStatus({ tone: "info", text: `${place.name} už nesleduješ.` });
+      startPlace(() => deleteArea(existing.id));
+      return;
+    }
+    onAreaCreating(place.name);
+    startPlace(async () => onAreaCreated(await addPlaceArea(place.kind, place.code)));
+  };
+
+  const pickPlace = (place: Place) => {
+    if (place.kind === "region" && chooserRegion === null) setChooserRegion(place.code);
+    else togglePlace(place);
+  };
+
+  const chooserRegionPlace = REGIONS.find((r) => r.code === chooserRegion) ?? null;
 
   const saveDraft = () => {
     onAreaCreating();
@@ -137,7 +163,10 @@ export function HomeFinder({
   return (
     <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_57px)] lg:flex-none lg:flex-row">
       {greetingCard("m-3 mb-0 lg:hidden")}
-      <section className="relative isolate h-[50dvh] shrink-0 lg:order-2 lg:h-auto lg:flex-1" aria-label="Mapa">
+      <section
+        className={`relative isolate ${chooserOpen ? "h-[65dvh]" : "h-[50dvh]"} shrink-0 lg:order-2 lg:h-auto lg:flex-1`}
+        aria-label="Mapa"
+      >
         <MapView
           properties={visible}
           areas={areas}
@@ -148,9 +177,68 @@ export function HomeFinder({
           drawing={drawing}
           draftPoints={draftPoints}
           onAddPoint={(pt) => setDraftPoints((pts) => [...pts, pt])}
+          chooser={
+            chooserOpen
+              ? {
+                  regionCode: chooserRegion,
+                  areaNames: areas.map((a) => a.name),
+                  properties,
+                  busy: placeBusy,
+                  onPick: pickPlace,
+                }
+              : null
+          }
         />
 
-        {drawing && (
+        {chooserOpen && (
+          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-white/95 p-3 shadow-lg ring-1 ring-slate-200">
+            <div className="flex items-center justify-between gap-2">
+              {chooserRegionPlace ? (
+                <button
+                  type="button"
+                  onClick={() => setChooserRegion(null)}
+                  className="text-sm font-medium text-sea-700 hover:underline"
+                >
+                  ‹ Celé Taliansko
+                </button>
+              ) : (
+                <p className="font-semibold text-slate-900">Kde hľadáš domček?</p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setChooserOpen(false);
+                  setChooserRegion(null);
+                }}
+                className="rounded-full bg-sea-700 px-3 py-1 text-sm font-medium text-white hover:bg-sea-800"
+              >
+                Hotovo
+              </button>
+            </div>
+            {chooserRegionPlace ? (
+              <>
+                <p className="text-sm text-slate-700">
+                  <strong>{chooserRegionPlace.name}:</strong> ťukni na provinciu pri mori, ktorú chceš sledovať. Ďalším
+                  ťuknutím ju zrušíš.
+                </p>
+                <button
+                  type="button"
+                  disabled={placeBusy}
+                  onClick={() => togglePlace(chooserRegionPlace)}
+                  className="text-sm font-medium text-sea-800 underline disabled:opacity-50"
+                >
+                  {areaByName(chooserRegionPlace) ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-slate-700">
+                Ťukni na región, ukážem ti jeho provincie. Farebné sú regióny pri mori.
+              </p>
+            )}
+          </div>
+        )}
+
+        {drawing && !chooserOpen && (
           <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-white/95 p-3 shadow-lg ring-1 ring-slate-200">
             <p className="text-sm text-slate-700">
               {draftPoints.length < 3
@@ -235,10 +323,15 @@ export function HomeFinder({
           areas={areas}
           activeAreaIds={activeAreaIds}
           onToggle={toggleArea}
-          onStartDrawing={() => setDrawing(true)}
-          onAreaCreating={onAreaCreating}
-          onAreaCreated={onAreaCreated}
-          drawing={drawing}
+          onOpenChooser={() => {
+            setDrawing(false);
+            setChooserOpen(true);
+          }}
+          onStartDrawing={() => {
+            setChooserOpen(false);
+            setDrawing(true);
+          }}
+          busy={drawing || chooserOpen || placeBusy}
         />
 
         {areaStatus && (

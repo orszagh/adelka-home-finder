@@ -56,3 +56,53 @@ body {
 .price-marker.is-dot > span::before {
   content: none;
 }
+
+/* Region / province labels in the place chooser. */
+.place-label-icon {
+  background: none;
+  border: none;
+}
+.place-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  font: 600 13px/1.25 var(--font-geist-sans), system-ui, sans-serif;
+  color: #0f172a;
+  cursor: pointer;
+}
+.place-label small {
+  font-weight: 500;
+  font-size: 11px;
+  color: #155e75;
+}
+.place-label.is-inland {
+  background: rgb(255 255 255 / 0.65);
+  color: #64748b;
+  font-weight: 500;
+}
+.place-label.is-inland small {
+  color: #94a3b8;
+}
+.place-label.is-selected {
+  background: #0e7490;
+  color: #ffffff;
+}
+.place-label.is-selected small {
+  color: #cffafe;
+}
+/* On phones the whole of Italy is small: region labels shrink to the name. */
+@media (max-width: 1023px) {
+  .place-label.is-region {
+    padding: 1px 6px;
+    font-size: 11px;
+  }
+  .place-label.is-region small {
+    display: none;
+  }
+}

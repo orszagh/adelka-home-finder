@@ -15,7 +15,7 @@ Last activity: 2026-09-24 — Apify provider (Idealista + Immobiliare), overovan
 
 Progress:
 - v0.1: [██████████] 100%
-- v0.2: [████████░░] 80% (chýba zapnutie v produkcii a nápad s regiónmi)
+- v0.2: [█████████░] 90% (chýba zapnutie v produkcii)
 
 ## Loop Position
 
@@ -40,12 +40,13 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Ponuky sa sťahujú pre Adelkine oblasti; nová oblasť hneď, inak denný cron | v0.2 | Náklady rastú s počtom oblastí |
 | Overovanie aktuálnosti podľa ID (36 h), skrytie po 4 dňoch | v0.2 | Denne max APIFY_RECHECK_MAX ponúk |
 | app_state + previous_price cez migráciu, kód funguje aj bez nej | v0.2 | Poradie nasadenia nerozbije produkciu |
+| Výber oblastí cez klikateľné regióny → provincie (ISTAT 2026, openpolis CC BY) | v0.2 | Nahrádza obdĺžnikové predvoľby; oblasť sa páruje s miestom podľa názvu |
 
 ### Deferred Issues
 
 | Issue | Origin | Effort | Revisit |
 |-------|--------|--------|---------|
-| Klikateľné talianske regióny/provincie namiesto obdĺžnikových predvolieb | v0.2 | M | Po rozhodnutí používateľa |
+| Filter „vzdialenosť od mora“ (provincie obsahujú aj vnútrozemské obce) | v0.2 | M | Po prvých reálnych dátach |
 | Rovnaký dom na oboch portáloch sa zobrazí dvakrát | v0.2 | M | Po prvých dňoch reálnych dát |
 | Prenájom vs. len kúpa (PRD §7) | Init | S | Ďalší milestone |
 | Mesačný rozpočet na API (PRD §7) | Init | S | Po týždni reálneho behu |
@@ -64,7 +65,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 Last session: 2026-09-24
 Stopped at: v0.2 implementované a pushnuté
-Next action: Zapnúť Apify vo Verceli, spustiť migráciu, rozhodnúť o regiónoch
+Next action: Zapnúť Apify vo Verceli, spustiť migráciu
 Resume context: README.md, supabase/migrations/20260924_privitanie.sql
 
 ---

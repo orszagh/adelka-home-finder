@@ -5,7 +5,7 @@ import { getRepo } from "@/lib/db/repo";
 import { normalizeGeometry } from "@/lib/geo";
 import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/greeting";
 import { getProvider } from "@/lib/providers";
-import { REGION_PRESETS } from "@/lib/regions";
+import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import type { SearchArea } from "@/lib/types";
@@ -101,11 +101,16 @@ export async function createArea(name: string, geometry: unknown): Promise<AreaR
   return result;
 }
 
-export async function createPresetArea(presetId: string): Promise<AreaResult> {
+/** Follows a whole region or a province picked on the map. */
+export async function addPlaceArea(kind: PlaceKind, code: string): Promise<AreaResult> {
   await assertSession();
-  const preset = REGION_PRESETS.find((p) => p.id === presetId);
-  if (!preset) throw new Error("Neznámy región");
-  const area = await getRepo().createSearchArea(preset.name, preset.polygon);
+  const place = kind === "region" || kind === "province" ? findPlace(kind, String(code)) : undefined;
+  if (!place) throw new Error("Neznámy región alebo provincia");
+  const repo = getRepo();
+  const name = areaNameFor(place);
+  const existing = (await repo.listSearchAreas()).find((a) => a.name === name);
+  if (existing) return { areaId: existing.id, fetched: null, error: null };
+  const area = await repo.createSearchArea(name, place.geometry);
   const result = await withListings(area);
   refreshAll();
   return result;

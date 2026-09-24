@@ -1,4 +1,4 @@
-import { outerRings } from "../../geo";
+import { outerRings, ringArea } from "../../geo";
 import type { Property, ProviderListing, SearchArea } from "../../types";
 import type { FetchResult, PropertyProvider } from "../index";
 import { ApifyError, runActor } from "./client";
@@ -21,10 +21,16 @@ function config() {
 
 type Job = { label: string; run: () => Promise<ProviderListing[]> };
 
+/** A region like Sicily has many islands; searching each would multiply the runs. */
+const MAX_RINGS_PER_AREA = 3;
+
 function jobsFor(area: SearchArea): Job[] {
   const { maxItems, maxChargeUsd } = config();
-  return outerRings(area.polygon).flatMap((ring, i) => {
-    const suffix = outerRings(area.polygon).length > 1 ? ` #${i + 1}` : "";
+  const rings = outerRings(area.polygon)
+    .sort((a, b) => ringArea(b) - ringArea(a))
+    .slice(0, MAX_RINGS_PER_AREA);
+  return rings.flatMap((ring, i) => {
+    const suffix = rings.length > 1 ? ` #${i + 1}` : "";
     return [
       {
         label: `Idealista – ${area.name}${suffix}`,

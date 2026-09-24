@@ -106,6 +106,15 @@ export function outerRings(geometry: AreaGeometry): Position[][] {
     : geometry.coordinates.map((poly) => poly[0]);
 }
 
+/** Planar area in square degrees; only for comparing ring sizes. */
+export function ringArea(ring: Position[]): number {
+  let sum = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    sum += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+  }
+  return Math.abs(sum / 2);
+}
+
 const EARTH_RADIUS_KM = 6371;
 
 export function distanceKm([lng1, lat1]: Position, [lng2, lat2]: Position): number {

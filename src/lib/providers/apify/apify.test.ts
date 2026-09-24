@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { pointInArea, polygonFromLatLngs } from "../../geo";
+import { findPlace } from "../../italy";
 import type { Position, SearchArea } from "../../types";
 import idealistaFixture from "./fixtures/idealista-sanremo.json";
 import immobiliareFixture from "./fixtures/immobiliare-sanremo.json";
@@ -182,6 +183,18 @@ describe("apifyProvider", () => {
       ["idealista-36915294", "immobiliare-128080462", "immobiliare-131246982"].sort(),
     );
     expect(listings.find((l) => l.external_id === "idealista-36915294")!.price).toBe(310000);
+  });
+
+  it("searches at most the three largest parts of an area with islands", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    const fetchMock = vi.fn(async () => Response.json([]));
+    vi.stubGlobal("fetch", fetchMock);
+    const toscana = findPlace("region", "09")!;
+    expect(toscana.geometry.type).toBe("MultiPolygon");
+    expect((toscana.geometry.coordinates as unknown[]).length).toBeGreaterThan(3);
+
+    await apifyProvider.fetchListings([{ id: "t", name: "Toskánsko", created_at: "", polygon: toscana.geometry }]);
+    expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
   it("does nothing without areas and owns only portal ids", async () => {

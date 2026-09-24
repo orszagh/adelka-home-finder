@@ -15,7 +15,9 @@ import {
 } from "react-leaflet";
 import { formatPriceShort } from "@/lib/format";
 import { toLatLngRings } from "@/lib/geo";
+import { ITALY_ATTRIBUTION } from "@/lib/italy";
 import type { Property, SearchArea } from "@/lib/types";
+import { type PlaceChooser, PlaceLayer } from "./PlaceLayer";
 
 export type LatLng = [number, number];
 
@@ -29,6 +31,8 @@ type Props = {
   drawing: boolean;
   draftPoints: LatLng[];
   onAddPoint: (point: LatLng) => void;
+  /** When set, the map shows clickable regions/provinces instead of listings. */
+  chooser: PlaceChooser | null;
 };
 
 const ITALY_CENTER: LatLng = [42.5, 12.5];
@@ -37,7 +41,7 @@ const ITALY_CENTER: LatLng = [42.5, 12.5];
 const LABEL_MIN_ZOOM = 9;
 
 export default function MapView(props: Props) {
-  const { properties, areas, activeAreaIds, savedIds, selectedId, drawing, draftPoints } = props;
+  const { properties, areas, activeAreaIds, savedIds, selectedId, drawing, draftPoints, chooser } = props;
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const [zoom, setZoom] = useState(6);
 
@@ -45,15 +49,19 @@ export default function MapView(props: Props) {
     <MapContainer
       center={ITALY_CENTER}
       zoom={6}
+      // Quarter steps let Italy (and each region) fill the map instead of snapping a level too far out.
+      zoomSnap={0.25}
       className="h-full w-full"
       style={{ cursor: drawing ? "crosshair" : undefined }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution={`&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | ${ITALY_ATTRIBUTION}`}
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {areas.map((area) => {
+      {chooser && <PlaceLayer {...chooser} />}
+
+      {!chooser && areas.map((area) => {
         const active = activeAreaIds.includes(area.id);
         return (
           <Polygon
@@ -70,7 +78,7 @@ export default function MapView(props: Props) {
         );
       })}
 
-      {properties.map((p) => (
+      {!chooser && properties.map((p) => (
         <PriceMarker
           key={p.id}
           property={p}
@@ -159,15 +167,17 @@ function DrawHandler({
 }
 
 /** Keeps the viewport on what matters: active areas, visible listings, the selection. */
-function ViewController({ properties, areas, activeAreaIds, selectedId }: Props) {
+function ViewController({ properties, areas, activeAreaIds, selectedId, chooser }: Props) {
   const map = useMap();
   const areaKey = activeAreaIds.join(",");
   const lastFitKey = useRef<string | null>(null);
-  const fitKey = `${areaKey}|${properties.length}`;
+  // Closing the place chooser changes the key, so the view returns to the areas.
+  const fitKey = `${areaKey}|${properties.length}|${chooser ? "chooser" : ""}`;
 
   /** Fits the view once per area/filter change, and only once the map has a size. */
   const fitIfNeeded = useEffectEvent(() => {
-    if (lastFitKey.current === fitKey) return;
+    // The chooser positions the map itself.
+    if (chooser || lastFitKey.current === fitKey) return;
     const { x, y } = map.getSize();
     // fitBounds on a container that has not been laid out yet yields a bogus view.
     if (x === 0 || y === 0) return;

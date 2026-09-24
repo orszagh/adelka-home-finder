@@ -1,49 +1,57 @@
 "use client";
 
 import { useTransition } from "react";
-import { createPresetArea, deleteArea, type AreaResult } from "@/app/actions";
-import { REGION_PRESETS } from "@/lib/regions";
+import { deleteArea } from "@/app/actions";
 import type { SearchArea } from "@/lib/types";
 
 export function AreaBar({
   areas,
   activeAreaIds,
   onToggle,
+  onOpenChooser,
   onStartDrawing,
-  onAreaCreating,
-  onAreaCreated,
-  drawing,
+  busy,
 }: {
   areas: SearchArea[];
   activeAreaIds: string[];
   onToggle: (id: string) => void;
+  onOpenChooser: () => void;
   onStartDrawing: () => void;
-  onAreaCreating: () => void;
-  onAreaCreated: (result: AreaResult) => void;
-  drawing: boolean;
+  /** Drawing or choosing is in progress. */
+  busy: boolean;
 }) {
   const [pending, startTransition] = useTransition();
-  const missingPresets = REGION_PRESETS.filter((p) => !areas.some((a) => a.name === p.name));
 
   return (
     <section aria-labelledby="areas-heading" className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="areas-heading" className="text-sm font-semibold uppercase tracking-wide text-slate-500">
           Moje oblasti
         </h2>
-        <button
-          type="button"
-          onClick={onStartDrawing}
-          disabled={drawing}
-          className="rounded-full bg-sea-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-sea-800 disabled:opacity-50"
-        >
-          ✏️ Nakresliť oblasť
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onOpenChooser}
+            disabled={busy}
+            className="rounded-full bg-sea-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-sea-800 disabled:opacity-50"
+          >
+            🗺️ Vybrať na mape
+          </button>
+          <button
+            type="button"
+            onClick={onStartDrawing}
+            disabled={busy}
+            title="Nakresli si vlastnú oblasť ťukaním na mapu"
+            className="rounded-full px-3 py-1.5 text-sm font-medium text-sea-800 ring-1 ring-sea-600 hover:bg-sea-50 disabled:opacity-50"
+          >
+            ✏️ Nakresliť
+          </button>
+        </div>
       </div>
 
       {areas.length === 0 && (
         <p className="text-sm text-slate-600">
-          Zatiaľ nemáš žiadnu oblasť, preto vidíš všetky ponuky. Nakresli si oblasť na mape alebo pridaj celý región:
+          Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori, prípadne si oblasť nakresli.
         </p>
       )}
 
@@ -83,21 +91,6 @@ export function AreaBar({
             </span>
           );
         })}
-        {missingPresets.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              // Outside the transition, so the "downloading" message shows immediately.
-              onAreaCreating();
-              startTransition(async () => onAreaCreated(await createPresetArea(preset.id)));
-            }}
-            className="rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:border-sea-600 hover:text-sea-800 disabled:opacity-50"
-          >
-            + {preset.name}
-          </button>
-        ))}
       </div>
     </section>
   );

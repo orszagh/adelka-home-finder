@@ -17,7 +17,7 @@ const provider: PropertyProvider = {
 };
 vi.mock("@/lib/providers", () => ({ getProvider: () => provider }));
 
-const { checkNow, createArea, markNewsSeen } = await import("./actions");
+const { addPlaceArea, checkNow, createArea, markNewsSeen } = await import("./actions");
 const repo = MemoryRepository.shared();
 
 beforeEach(() => {
@@ -53,6 +53,23 @@ describe("server actions", () => {
 
     await repo.setState(MANUAL_SYNC_KEY, new Date(Date.now() - 61 * 60 * 1000).toISOString());
     expect(await checkNow()).toEqual({ ok: true });
+  });
+
+  it("follows a province picked on the map, once", async () => {
+    const result = await addPlaceArea("province", "IM");
+    expect(result).toMatchObject({ fetched: 2, error: null });
+    const area = (await repo.listSearchAreas()).find((a) => a.name === "Imperia")!;
+    expect(area.polygon.type).toMatch(/Polygon/);
+    expect(fetchListings.mock.calls.at(-1)![0]).toEqual([area]);
+
+    const again = await addPlaceArea("province", "IM");
+    expect(again).toEqual({ areaId: area.id, fetched: null, error: null });
+    expect((await repo.listSearchAreas()).filter((a) => a.name === "Imperia")).toHaveLength(1);
+  });
+
+  it("rejects unknown places", async () => {
+    await expect(addPlaceArea("province", "XX")).rejects.toThrow("Neznámy región alebo provincia");
+    await expect(addPlaceArea("country" as never, "IT")).rejects.toThrow();
   });
 
   it("remembers when Adelka saw the news", async () => {
