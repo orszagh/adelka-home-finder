@@ -3,16 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
-import {
-  CircleMarker,
-  MapContainer,
-  Marker,
-  Polygon,
-  Polyline,
-  TileLayer,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
+import { MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { formatPriceShort } from "@/lib/format";
 import { toLatLngRings } from "@/lib/geo";
 import { ITALY_ATTRIBUTION } from "@/lib/italy";
@@ -28,9 +19,6 @@ type Props = {
   savedIds: string[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  drawing: boolean;
-  draftPoints: LatLng[];
-  onAddPoint: (point: LatLng) => void;
   /** When set, the map shows clickable regions/provinces instead of listings. */
   chooser: PlaceChooser | null;
 };
@@ -41,7 +29,7 @@ const ITALY_CENTER: LatLng = [42.5, 12.5];
 const LABEL_MIN_ZOOM = 9;
 
 export default function MapView(props: Props) {
-  const { properties, areas, activeAreaIds, savedIds, selectedId, drawing, draftPoints, chooser } = props;
+  const { properties, areas, activeAreaIds, savedIds, selectedId, chooser } = props;
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const [zoom, setZoom] = useState(6);
 
@@ -52,7 +40,6 @@ export default function MapView(props: Props) {
       // Quarter steps let Italy (and each region) fill the map instead of snapping a level too far out.
       zoomSnap={0.25}
       className="h-full w-full"
-      style={{ cursor: drawing ? "crosshair" : undefined }}
     >
       <TileLayer
         attribution={`&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | ${ITALY_ATTRIBUTION}`}
@@ -85,25 +72,11 @@ export default function MapView(props: Props) {
           selected={p.id === selectedId}
           saved={saved.has(p.id)}
           compact={zoom < LABEL_MIN_ZOOM}
-          interactive={!drawing}
           onSelect={props.onSelect}
         />
       ))}
 
-      {drawing && draftPoints.length > 0 && (
-        <>
-          {draftPoints.length >= 3 ? (
-            <Polygon positions={draftPoints} pathOptions={{ color: "#e11d48", dashArray: "6 4", fillOpacity: 0.1 }} />
-          ) : (
-            <Polyline positions={draftPoints} pathOptions={{ color: "#e11d48", dashArray: "6 4" }} />
-          )}
-          {draftPoints.map((pt, i) => (
-            <CircleMarker key={i} center={pt} radius={5} pathOptions={{ color: "#e11d48", fillOpacity: 1 }} />
-          ))}
-        </>
-      )}
-
-      <DrawHandler drawing={drawing} onAddPoint={props.onAddPoint} onZoom={setZoom} />
+      <ZoomWatcher onZoom={setZoom} />
       <ViewController {...props} />
     </MapContainer>
   );
@@ -114,14 +87,12 @@ function PriceMarker({
   selected,
   saved,
   compact,
-  interactive,
   onSelect,
 }: {
   property: Property;
   selected: boolean;
   saved: boolean;
   compact: boolean;
-  interactive: boolean;
   onSelect: (id: string) => void;
 }) {
   const dot = compact && !selected;
@@ -138,7 +109,6 @@ function PriceMarker({
     <Marker
       position={[property.latitude, property.longitude]}
       icon={icon}
-      interactive={interactive}
       zIndexOffset={selected ? 1000 : 0}
       title={property.title}
       eventHandlers={{ click: () => onSelect(property.id) }}
@@ -146,19 +116,8 @@ function PriceMarker({
   );
 }
 
-function DrawHandler({
-  drawing,
-  onAddPoint,
-  onZoom,
-}: {
-  drawing: boolean;
-  onAddPoint: (p: LatLng) => void;
-  onZoom: (zoom: number) => void;
-}) {
+function ZoomWatcher({ onZoom }: { onZoom: (zoom: number) => void }) {
   const map = useMapEvents({
-    click(e) {
-      if (drawing) onAddPoint([e.latlng.lat, e.latlng.lng]);
-    },
     zoomend() {
       onZoom(map.getZoom());
     },

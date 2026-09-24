@@ -8,6 +8,10 @@ export const IDEALISTA_ACTOR = "igolaizola~idealista-scraper";
 /** The scraper only takes a circle, so the polygon is covered by its enclosing circle. */
 export function idealistaInput(ring: Position[], maxItems: number) {
   const { center, radiusKm } = enclosingCircle(ring);
+  return idealistaCircleInput(center, radiusKm, maxItems);
+}
+
+export function idealistaCircleInput(center: Position, radiusKm: number, maxItems: number) {
   return {
     country: "it",
     operation: "sale",

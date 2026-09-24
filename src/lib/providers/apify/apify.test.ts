@@ -197,6 +197,64 @@ describe("apifyProvider", () => {
     expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
+  it("searches only along the coast of a province, with the same number of listings", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    const inputs: { actor: string; maxItems: number; body: Record<string, unknown> }[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const u = new URL(url);
+        inputs.push({
+          actor: u.pathname.includes(IDEALISTA_ACTOR) ? "idealista" : "immobiliare",
+          maxItems: Number(u.searchParams.get("maxItems")),
+          body: JSON.parse(String(init?.body)),
+        });
+        return Response.json([]);
+      }),
+    );
+    const catania = findPlace("province", "CT")!;
+    const area: SearchArea = { id: "c", name: "Catania", created_at: "", polygon: catania.geometry };
+
+    const { errors } = await apifyProvider.fetchListings([area], { bandKm: 3 });
+    expect(errors).toEqual([]);
+    const idealista = inputs.filter((i) => i.actor === "idealista");
+    const immobiliare = inputs.filter((i) => i.actor === "immobiliare");
+    expect(idealista.length).toBe(immobiliare.length);
+    expect(idealista.length).toBeGreaterThanOrEqual(1);
+    expect(idealista.length).toBeLessThanOrEqual(4);
+    const perPortal = idealista.reduce((s, i) => s + i.maxItems, 0);
+    expect(perPortal).toBeLessThanOrEqual(Math.max(50 + idealista.length, 15 * idealista.length));
+
+    // The Idealista circles stay near the coast: much smaller than the whole province.
+    const whole = idealistaInput(catania.geometry.coordinates[0] as Position[], 50).distanceKm;
+    for (const i of idealista) expect(i.body.distanceKm as number).toBeLessThan(whole);
+    // Immobiliare gets a band polygon; the coast town of Aci Castello lies inside one of them.
+    const bands = immobiliare.map((i) =>
+      new URL((i.body.startUrls as string[])[0]).searchParams
+        .get("vrt")!
+        .split(";")
+        .map((p) => p.split(",").map(Number).reverse() as Position),
+    );
+    expect(bands.some((b) => pointInArea(15.146, 37.556, { type: "Polygon", coordinates: [[...b, b[0]]] }))).toBe(true);
+    // Caltagirone, inland, is in none of them.
+    expect(bands.some((b) => pointInArea(14.512, 37.237, { type: "Polygon", coordinates: [[...b, b[0]]] }))).toBe(false);
+  });
+
+  it("searches the whole area when asked to, or when the area has no coast", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    const fetchMock = vi.fn(async () => Response.json([]));
+    vi.stubGlobal("fetch", fetchMock);
+    const catania = findPlace("province", "CT")!;
+    await apifyProvider.fetchListings([{ id: "c", name: "Catania", created_at: "", polygon: catania.geometry }], {
+      bandKm: null,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    fetchMock.mockClear();
+    await apifyProvider.fetchListings([sanremo], { bandKm: 3 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("does nothing without areas and owns only portal ids", async () => {
     expect(await apifyProvider.fetchListings([])).toEqual({ listings: [], errors: [] });
     expect(apifyProvider.ownsExternalId("idealista-1")).toBe(true);

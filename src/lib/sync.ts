@@ -1,6 +1,8 @@
+import { distanceToSeaKm } from "./coast";
 import type { Repository } from "./db/repo";
 import { recheckCandidates } from "./freshness";
 import type { PropertyProvider } from "./providers";
+import { withinBand } from "./search-settings";
 import type { PriceChange, Property, ProviderListing, SearchArea, SyncResult } from "./types";
 
 export type ListingDiff = {
@@ -27,18 +29,27 @@ export function diffListings(
   return { newIds, previousPrices };
 }
 
+const nearSea = (bandKm: number | null) => (l: Pick<ProviderListing, "longitude" | "latitude">) =>
+  withinBand(bandKm === null ? null : distanceToSeaKm(l.longitude, l.latitude), bandKm);
+
 /**
  * Pulls listings for the given areas and stores them. Listings left over
  * from a different provider (e.g. the demo data) are removed, and the first
  * import from a provider is flagged so it is not reported as news.
+ * With `bandKm`, only listings that close to the sea are kept; older ones
+ * further away are not re-checked either (they are hidden, not deleted).
  */
 export async function syncFromProvider(
   repo: Repository,
   provider: PropertyProvider,
   areas: SearchArea[],
-  options: { recheck?: boolean } = {},
+  options: { recheck?: boolean; bandKm?: number | null } = {},
 ): Promise<SyncResult> {
-  const { listings, errors } = await provider.fetchListings(areas);
+  const bandKm = options.bandKm ?? null;
+  const inBand = nearSea(bandKm);
+  const fetched = await provider.fetchListings(areas, { bandKm });
+  const listings = fetched.listings.filter(inBand);
+  const errors = [...fetched.errors];
 
   const stored = await repo.listProperties();
   const foreign = stored.filter((p) => !provider.ownsExternalId(p.external_id));
@@ -48,7 +59,7 @@ export async function syncFromProvider(
   const rechecked: ProviderListing[] = [];
   let checked = 0;
   if (options.recheck && provider.recheck) {
-    const candidates = recheckCandidates(existing, new Set(listings.map((l) => l.external_id)));
+    const candidates = recheckCandidates(existing.filter(inBand), new Set(listings.map((l) => l.external_id)));
     if (candidates.length > 0) {
       checked = candidates.length;
       try {

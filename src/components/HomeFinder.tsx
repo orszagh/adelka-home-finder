@@ -3,9 +3,9 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { addPlaceArea, createArea, deleteArea, type AreaResult } from "@/app/actions";
+import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice } from "@/lib/format";
-import { pointInArea, polygonFromLatLngs } from "@/lib/geo";
+import { pointInArea } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
 import type { Greeting } from "@/lib/greeting";
 import { type Place, REGIONS, areaNameFor } from "@/lib/italy";
@@ -13,7 +13,6 @@ import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
-import type { LatLng } from "./MapView";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -33,6 +32,7 @@ export function HomeFinder({
   greeting,
   manualSync,
   notices,
+  settingsLabel,
 }: {
   properties: Property[];
   areas: SearchArea[];
@@ -42,6 +42,8 @@ export function HomeFinder({
   greeting: Greeting | null;
   manualSync: { waitMinutes: number } | null;
   notices: string[];
+  /** Current search setting, e.g. "Len pri mori · 3 km". */
+  settingsLabel: string;
 }) {
   const [inactiveAreaIds, setInactiveAreaIds] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
@@ -49,10 +51,6 @@ export function HomeFinder({
   const [sort, setSort] = useState<Sort>("newest");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [drawing, setDrawing] = useState(false);
-  const [draftPoints, setDraftPoints] = useState<LatLng[]>([]);
-  const [draftName, setDraftName] = useState("");
-  const [saving, startSaving] = useTransition();
   const [showGreeting, setShowGreeting] = useState(greeting !== null);
   /** "Ukázať mi ich": only the listings from the greeting, regardless of areas and filters. */
   const [highlightIds, setHighlightIds] = useState<string[] | null>(null);
@@ -101,13 +99,7 @@ export function HomeFinder({
   const toggleArea = (id: string) =>
     setInactiveAreaIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
-  const stopDrawing = () => {
-    setDrawing(false);
-    setDraftPoints([]);
-    setDraftName("");
-  };
-
-  const onAreaCreating = (name = "novú oblasť") =>
+  const onAreaCreating = (name: string) =>
     setAreaStatus({ tone: "info", text: `Sťahujem ponuky pre ${name}… môže to trvať do minúty.` });
 
   const onAreaCreated = (result: AreaResult) => {
@@ -136,14 +128,6 @@ export function HomeFinder({
   };
 
   const chooserRegionPlace = REGIONS.find((r) => r.code === chooserRegion) ?? null;
-
-  const saveDraft = () => {
-    onAreaCreating();
-    startSaving(async () => {
-      onAreaCreated(await createArea(draftName, polygonFromLatLngs(draftPoints)));
-      stopDrawing();
-    });
-  };
 
   // Rendered twice: above the map on phones (so it is seen first), atop the list on desktop.
   const greetingCard = (className: string) =>
@@ -174,9 +158,6 @@ export function HomeFinder({
           savedIds={savedIds}
           selectedId={selectedId}
           onSelect={selectFromMap}
-          drawing={drawing}
-          draftPoints={draftPoints}
-          onAddPoint={(pt) => setDraftPoints((pts) => [...pts, pt])}
           chooser={
             chooserOpen
               ? {
@@ -238,53 +219,18 @@ export function HomeFinder({
           </div>
         )}
 
-        {drawing && !chooserOpen && (
-          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-white/95 p-3 shadow-lg ring-1 ring-slate-200">
-            <p className="text-sm text-slate-700">
-              {draftPoints.length < 3
-                ? `Ťukaj na mapu a pridávaj body okraja oblasti (${draftPoints.length}/3).`
-                : "Oblasť je pripravená. Pomenuj ju a ulož, alebo pridaj ďalšie body."}
-            </p>
-            {draftPoints.length >= 3 && (
-              <input
-                value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
-                placeholder="Názov, napr. Pobrežie pri Alassiu"
-                maxLength={80}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base"
-                autoFocus
-              />
-            )}
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={saveDraft}
-                disabled={draftPoints.length < 3 || saving}
-                className="rounded-full bg-sea-700 px-4 py-1.5 text-sm font-medium text-white disabled:opacity-40"
-              >
-                {saving ? "Ukladám…" : "Uložiť oblasť"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDraftPoints((pts) => pts.slice(0, -1))}
-                disabled={draftPoints.length === 0 || saving}
-                className="rounded-full px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300 disabled:opacity-40"
-              >
-                Späť
-              </button>
-              <button
-                type="button"
-                onClick={stopDrawing}
-                disabled={saving}
-                className="rounded-full px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300"
-              >
-                Zrušiť
-              </button>
-            </div>
-          </div>
+        {!chooserOpen && (
+          <Link
+            href="/nastavenia"
+            className="absolute right-2 top-2 z-[1000] inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/95 px-3 text-sm font-semibold text-slate-900 shadow-md ring-1 ring-slate-200 hover:bg-white"
+          >
+            <span aria-hidden>🌊</span>
+            {settingsLabel}
+            <span className="sr-only"> – zmeniť, kde hľadať</span>
+          </Link>
         )}
 
-        {selected && !drawing && (
+        {selected && (
           <Link
             href={`/inzerat/${selected.id}`}
             className="absolute inset-x-2 bottom-2 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-slate-200 lg:hidden"
@@ -323,15 +269,8 @@ export function HomeFinder({
           areas={areas}
           activeAreaIds={activeAreaIds}
           onToggle={toggleArea}
-          onOpenChooser={() => {
-            setDrawing(false);
-            setChooserOpen(true);
-          }}
-          onStartDrawing={() => {
-            setChooserOpen(false);
-            setDrawing(true);
-          }}
-          busy={drawing || chooserOpen || placeBusy}
+          onOpenChooser={() => setChooserOpen(true)}
+          busy={chooserOpen || placeBusy}
         />
 
         {areaStatus && (

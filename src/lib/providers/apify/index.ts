@@ -1,9 +1,11 @@
-import { outerRings, ringArea } from "../../geo";
-import type { Property, ProviderListing, SearchArea } from "../../types";
-import type { FetchResult, PropertyProvider } from "../index";
+import { bandPolygon, coastChunks, coastLinesForArea } from "../../coast";
+import { enclosingCircle, outerRings, ringArea } from "../../geo";
+import type { Position, Property, ProviderListing, SearchArea } from "../../types";
+import type { FetchOptions, FetchResult, PropertyProvider } from "../index";
 import { ApifyError, runActor } from "./client";
 import {
   IDEALISTA_ACTOR,
+  idealistaCircleInput,
   idealistaInput,
   idealistaRecheckInput,
   mapIdealistaItem,
@@ -24,7 +26,54 @@ type Job = { label: string; run: () => Promise<ProviderListing[]> };
 /** A region like Sicily has many islands; searching each would multiply the runs. */
 const MAX_RINGS_PER_AREA = 3;
 
-function jobsFor(area: SearchArea): Job[] {
+/** Coast pieces searched separately; the listings per portal are split among them, so costs stay the same. */
+const MAX_COAST_CHUNKS = 4;
+const MIN_ITEMS_PER_CHUNK = 15;
+
+function jobsFor(area: SearchArea, bandKm: number | null): Job[] {
+  const coast = bandKm === null ? null : coastLinesForArea(area);
+  return coast && bandKm !== null ? coastJobs(area, coast, bandKm) : areaJobs(area);
+}
+
+/** Only the strip along the coast: Idealista in a circle around each piece, Immobiliare in a band around it. */
+function coastJobs(area: SearchArea, coast: Position[][], bandKm: number): Job[] {
+  const { maxItems, maxChargeUsd } = config();
+  const chunks = coastChunks(coast, MAX_COAST_CHUNKS);
+  const perChunk = Math.max(MIN_ITEMS_PER_CHUNK, Math.ceil(maxItems / chunks.length));
+  return chunks.flatMap((chunk, i) => {
+    const suffix = chunks.length > 1 ? ` · pobrežie ${i + 1}` : " · pobrežie";
+    const { center, radiusKm } = enclosingCircle(chunk);
+    return [
+      {
+        label: `Idealista – ${area.name}${suffix}`,
+        run: async () =>
+          (
+            await runActor(IDEALISTA_ACTOR, idealistaCircleInput(center, radiusKm + bandKm, perChunk), {
+              maxItems: perChunk,
+              maxChargeUsd,
+            })
+          )
+            .map(mapIdealistaItem)
+            .filter((l) => l !== null),
+      },
+      {
+        label: `Immobiliare – ${area.name}${suffix}`,
+        run: async () =>
+          (
+            await runActor(IMMOBILIARE_ACTOR, immobiliareInput(bandPolygon(chunk, bandKm), perChunk), {
+              maxItems: perChunk,
+              maxChargeUsd,
+            })
+          )
+            .map(mapImmobiliareItem)
+            .filter((l) => l !== null),
+      },
+    ];
+  });
+}
+
+/** The whole area (inland included, or an area that matches no coastal place). */
+function areaJobs(area: SearchArea): Job[] {
   const { maxItems, maxChargeUsd } = config();
   const rings = outerRings(area.polygon)
     .sort((a, b) => ringArea(b) - ringArea(a))
@@ -123,6 +172,7 @@ export const apifyProvider: PropertyProvider = {
   label: "Idealista.it + Immobiliare.it (Apify)",
   isMock: false,
   ownsExternalId: (id) => id.startsWith("idealista-") || id.startsWith("immobiliare-"),
-  fetchListings: (areas) => runJobs(areas.flatMap(jobsFor)),
+  fetchListings: (areas, options?: FetchOptions) =>
+    runJobs(areas.flatMap((area) => jobsFor(area, options?.bandKm ?? null))),
   recheck: (listings) => runJobs(recheckJobs(listings)),
 };

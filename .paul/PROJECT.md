@@ -14,8 +14,8 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 |-----------|-------|
 | Type | Application |
 | Version | 0.2.0 |
-| Status | Live so skutočnými inzerátmi (v0.2), v0.3 naplánovaná |
-| Last Updated | 2026-09-24 |
+| Status | Live so skutočnými inzerátmi (v0.2), v0.3 rozpracovaná (fáza 5 hotová) |
+| Last Updated | 2026-09-25 |
 
 **Production URLs:**
 - https://adelka-home-finder.vercel.app: produkcia (live od 2026-09-24)
@@ -25,7 +25,7 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 
 ### Core Features
 
-- Interaktívna mapa s nakreslením/výberom oblasti pozdĺž talianskeho pobrežia
+- Interaktívna mapa s výberom regiónov a provincií pozdĺž talianskeho pobrežia
 - Zobrazenie ponúk v oblasti (fotky, cena, plocha, počet izieb) bez preklikávania na portál
 - Uloženie obľúbených/sledovaných inzerátov
 - Emailová notifikácia pri novom inzeráte alebo zmene ceny v sledovanej oblasti (do 24h)
@@ -41,14 +41,13 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 - [x] Reálne inzeráty z Idealista.it a Immobiliare.it cez Apify — v0.2
 - [x] Ranné privítanie, overovanie aktuálnosti, zlacnenia, „Pozrieť teraz“ — v0.2
 - [x] Výber oblastí cez klikateľné regióny a provincie — v0.2
+- [x] Predvolene len domčeky pri mori (pás 3 km), vnútrozemie 10/20/40 km alebo celá oblasť v nastaveniach, km od mora na kartách — Phase 5
+- [x] Kreslenie oblasti odstránené — Phase 5
 
 ### Active (In Progress)
-None yet.
+- [ ] Hamburger menu s nastaveniami, tmavým režimom a odhlásením (fáza 6)
 
 ### Planned (Next) – v0.3, zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md
-- Predvolene len domčeky pri mori (pobrežný pás), vnútrozemie ako nastavenie
-- Hamburger menu s nastaveniami, tmavým režimom a odhlásením
-- Odstránenie kreslenia oblasti
 - Dizajnový systém, animácie, výrazné stavové hlášky, tmavá téma
 - Logo „La casetta di Adelka“ (Higgsfield) a vtipné „reklamy“ od Lubka
 
@@ -110,6 +109,9 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Vercel Cron + Resend namiesto n8n | Menej infraštruktúry | 2026-09-23 | Active |
 | claude-opus-5 so structured outputs | Spoľahlivý JSON, server-side fallback | 2026-09-23 | Active |
 | Heslo + HMAC cookie | Chráni zápisy a AI kredit | 2026-09-23 | Active |
+| Pobrežie z nezdieľaných hrán provincií mínus hranice Natural Earth | Bez novej závislosti, presnosť ~250 m | 2026-09-24 | Active |
+| Pás 3 km predvolene, nastavenie v app_state | Adelka hľadá domček pri mori; platí aj pre cron | 2026-09-24 | Active |
+| Apify pozdĺž pobrežia: max 4 úseky, maxItems rozdelené | Rovnaké náklady ako pri celej provincii | 2026-09-24 | Active |
 
 ## Success Metrics
 
@@ -144,4 +146,4 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 
 ---
 *Created: 2026-09-23*
-*Last updated: 2026-09-24 (v0.3 zadanie)*
+*Last updated: 2026-09-25 after Phase 5*

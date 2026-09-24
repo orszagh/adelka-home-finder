@@ -2,15 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { getRepo } from "@/lib/db/repo";
-import { normalizeGeometry } from "@/lib/geo";
 import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/greeting";
 import { getProvider } from "@/lib/providers";
 import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
+import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings } from "@/lib/search-settings";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import type { SearchArea } from "@/lib/types";
 
-const MAX_NAME = 80;
 const MAX_NOTE = 2000;
 
 function cleanText(value: unknown, max: number): string | null {
@@ -36,7 +35,8 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
   if (provider.isMock) return { areaId: area.id, fetched: null, error: null };
   try {
     const repo = getRepo();
-    const result = await syncFromProvider(repo, provider, [area]);
+    const settings = await getSearchSettings(repo);
+    const result = await syncFromProvider(repo, provider, [area], { bandKm: bandKm(settings) });
     // Adelka is looking at these right now; they are not news for tomorrow's greeting.
     await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
     return {
@@ -52,6 +52,49 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
       error: "Ponuky sa teraz nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole.",
     };
   }
+}
+
+export type SaveSettingsResult =
+  | { ok: true; /** Listings fetched with the new setting, or null when nothing was fetched. */ fetched: number | null; error: string | null }
+  | { ok: false; error: string };
+
+/**
+ * "Kde hľadať domček": stores the search setting (also used by the morning
+ * cron) and, when the distance from the sea changed, fetches listings for it
+ * right away.
+ */
+export async function saveSearchSettings(input: unknown): Promise<SaveSettingsResult> {
+  await assertSession();
+  const repo = getRepo();
+  const settings = parseSearchSettings(input);
+  const before = await getSearchSettings(repo);
+  if (before.inland === settings.inland && before.inlandKm === settings.inlandKm) {
+    return { ok: true, fetched: null, error: null };
+  }
+  if (!(await repo.setState(SEARCH_SETTINGS_KEY, settings))) {
+    return { ok: false, error: "Nastavenie potrebuje databázovú migráciu (pozri README)." };
+  }
+
+  const provider = getProvider();
+  const areas = await repo.listSearchAreas();
+  let result: SaveSettingsResult = { ok: true, fetched: null, error: null };
+  if (bandKm(before) !== bandKm(settings) && !provider.isMock && areas.length > 0) {
+    try {
+      const sync = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings) });
+      // Adelka is looking at these right now; they are not news for tomorrow's greeting.
+      await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
+      result = {
+        ok: true,
+        fetched: sync.total,
+        error: sync.errors.length > 0 ? "Časť ponúk sa nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole." : null,
+      };
+    } catch (error) {
+      console.error("Fetching listings for new search settings failed", error);
+      result = { ok: true, fetched: 0, error: "Nastavenie je uložené, ale ponuky sa teraz nepodarilo stiahnuť. Doplnia sa ráno." };
+    }
+  }
+  refreshAll();
+  return result;
 }
 
 /** Adelka has seen the news from the greeting (or dismissed it). */
@@ -80,7 +123,8 @@ export async function checkNow(): Promise<CheckNowResult> {
   }
 
   try {
-    const result = await syncFromProvider(repo, provider, areas);
+    const settings = await getSearchSettings(repo);
+    const result = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings) });
     refreshAll();
     return result.errors.length > 0 && result.total === 0
       ? { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." }
@@ -89,16 +133,6 @@ export async function checkNow(): Promise<CheckNowResult> {
     console.error("Manual sync failed", error);
     return { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." };
   }
-}
-
-export async function createArea(name: string, geometry: unknown): Promise<AreaResult> {
-  await assertSession();
-  const polygon = normalizeGeometry(geometry);
-  if (!polygon) throw new Error("Neplatný tvar oblasti");
-  const area = await getRepo().createSearchArea(cleanText(name, MAX_NAME) ?? "Moja oblasť", polygon);
-  const result = await withListings(area);
-  refreshAll();
-  return result;
 }
 
 /** Follows a whole region or a province picked on the map. */

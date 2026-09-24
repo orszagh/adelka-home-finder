@@ -2,29 +2,30 @@
 
 ## Project Reference
 
-See: .paul/PROJECT.md (updated 2026-09-23)
+See: .paul/PROJECT.md (updated 2026-09-25)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.3 Dizajn, UX a domčeky pri mori – nová session (zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md)
+**Current focus:** v0.3 – fáza 6: hamburger menu, odhlásenie, tmavý režim
 
 ## Current Position
 
-Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – Planned
-Phase: 5 of 8 (Pobrežný pás a nastavenia vyhľadávania) – not started
-Status: Paused – ďalšia session je venovaná dizajnu a UX/UI
-Last activity: 2026-09-24 — Produkcia prepnutá na Apify (overené 12 behov), zapísané zadanie v0.3
+Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – In progress
+Phase: 6 of 8 (Hamburger menu, odhlásenie, tmavý režim)
+Plan: Not started
+Status: Ready to plan (fáza 5 commitnutá, nenasadená)
+Last activity: 2026-09-25 — Phase 5 complete (05-01, 05-02), transitioned to Phase 6
 
 Progress:
 - v0.1: [██████████] 100% (live)
 - v0.2: [██████████] 100% (live od 2026-09-24)
-- v0.3: [░░░░░░░░░░] 0%
+- v0.3: [██▌░░░░░░░] 25% (fáza 5 z 5–8 hotová)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ○        ○        ○     [v0.3 – ready for /paul:plan]
+  ○        ○        ○     [Ready to plan Phase 6]
 ```
 
 ## Accumulated Context
@@ -45,12 +46,14 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Výber oblastí cez klikateľné regióny → provincie (ISTAT 2026, openpolis CC BY) | v0.2 | Nahrádza obdĺžnikové predvoľby; oblasť sa páruje s miestom podľa názvu |
 | Predvolene len pobrežný pás, vnútrozemie ako nastavenie | v0.3 | Rieši vnútrozemské výsledky (Catania, Caltanissetta, Bari) |
 | Kreslenie oblasti sa ruší, ostávajú regióny/provincie | v0.3 | Jednoduchšie UX |
+| Vizuálny smer „Riviéra ráno“ (Fraunces + DM Sans, piesok/more/terakota), návrh na Design plátne | v0.3 | Schválené Ľubom 2026-09-24 |
+| Pobrežný pás 3 km predvolene; vnútrozemie 10/20/40 km alebo celá oblasť | 5 | Apify behy pozdĺž pobrežia, rovnaké náklady |
+| Pobrežie z nezdieľaných hrán provincií mínus hranice Natural Earth; filter podľa pásu na serveri | 5 | sea_km sa počíta pri renderi, neukladá sa |
 
 ### Deferred Issues
 
 | Issue | Origin | Effort | Revisit |
 |-------|--------|--------|---------|
-| Filter „vzdialenosť od mora“ (provincie obsahujú aj vnútrozemské obce) | v0.2 | M | Po prvých reálnych dátach |
 | Rovnaký dom na oboch portáloch sa zobrazí dvakrát | v0.2 | M | Po prvých dňoch reálnych dát |
 | Prenájom vs. len kúpa (PRD §7) | Init | S | Ďalší milestone |
 | Mesačný rozpočet na API (PRD §7) | Init | S | Po týždni reálneho behu |
@@ -67,14 +70,16 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 ## Session Continuity
 
-Last session: 2026-09-24
-Stopped at: Zadanie v0.3 zapísané, session uzavretá na žiadosť Ľuba
-Next action: Nová session – načítať dizajnový skill a navrhnúť Ľubovi dizajn/UX (hamburger menu, nastavenia pobrežia, animácie, tmavý režim, logo, zábava); potom /paul:plan
-Resume file: .paul/HANDOFF-2026-09-24.md
+Last session: 2026-09-25
+Stopped at: Phase 5 complete, ready to plan Phase 6
+Next action: Rozhodnúť o nasadení fázy 5 (push na main → Vercel), potom /paul:plan pre fázu 6
+Resume file: .paul/ROADMAP.md
 Resume context:
-- Produkcia live s Apify (Bari, Crotone, Caltanissetta, Catania); výsledky príliš z vnútrozemia
-- Zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md (Ľubo očakáva vlastný návrh)
-- Skontrolovať prvý ranný cron 25. 9. v Apify (APIFY_TOKEN v .env.local)
+- Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
+- Po nasadení sa vnútrozemské ponuky skryjú; zmena pásu na /nastavenia hneď spustí Apify sťahovanie
+- Lokálne overovanie: preview "dev-mock" (port 3100, ukážkové dáta, bez hesla, bez produkčnej DB)
+- Návrh dizajnu: https://claude.ai/artifact/ECjAcFZZTRyaQVVH7ABJs6 (fázy 6–8)
+- Skontrolovať ranný cron 25. 9. v Apify (APIFY_TOKEN v .env.local)
 
 ---
 *STATE.md — Updated after every significant action*

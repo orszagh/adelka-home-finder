@@ -10,13 +10,13 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 |---------|------|--------|--------|-----------|
 | v0.1 | Initial Release (mapa, notifikácie, AI, nasadenie) | 1-4 | ✅ Live | 2026-09-23 |
 | v0.2 | Reálne dáta (Apify), ranné privítanie, regióny/provincie | – (na požiadanie, bez fáz) | ✅ Live | 2026-09-24 |
-| v0.3 | Dizajn, UX a domčeky pri mori | 5-8 | 📋 Planned | - |
+| v0.3 | Dizajn, UX a domčeky pri mori | 5-8 | 🚧 In progress | - |
 
 ## Current Milestone
 
 **v0.3 Dizajn, UX a domčeky pri mori** (v0.3.0)
-Status: Planned – začína v novej session
-Phases: 0 of 4 complete
+Status: In progress
+Phases: 1 of 4 complete (25 %)
 Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Phases
@@ -27,7 +27,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 2 | Automatizácia a AI prehľad lokality | 2 | Complete | 2026-09-23 |
 | 3 | Komunikačný modul | 1 | Complete | 2026-09-23 |
 | 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
-| 5 | Pobrežný pás a nastavenia vyhľadávania | TBD | Not started | - |
+| 5 | Pobrežný pás a nastavenia vyhľadávania | 2/2 | ✅ Complete | 2026-09-25 |
 | 6 | Hamburger menu, odhlásenie, tmavý režim | TBD | Not started | - |
 | 7 | Dizajnový systém, animácie, výrazné stavy | TBD | Not started | - |
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
@@ -103,10 +103,14 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 **Research:** Likely (odvodenie pobrežnej čiary a pásov v geo:build)
 
 **Scope:**
-- Pobrežná čiara z hraníc provincií (bez štátnych hraníc), predpočítané pásy 2/5/10/20 km
+- Pobrežná čiara z hraníc provincií (bez štátnych hraníc); pásy 3 / 10 / 20 / 40 km počítané za behu
 - Apify: Immobiliare hľadá v prieniku provincie a pásu; filter v appke rovnako
 - Nastavenie v `app_state` (platí aj pre ranný cron)
 - Odstrániť kreslenie oblasti ťukaním
+
+**Plans:**
+- [x] 05-01: Pobrežná čiara, nastavenie hľadania, Apify pozdĺž pobrežia, filter a km od mora
+- [x] 05-02: Obrazovka „Kde hľadať“, uloženie nastavenia, štítok na mape, odstránenie kreslenia
 
 ### Phase 6: Hamburger menu, odhlásenie, tmavý režim
 
@@ -127,4 +131,4 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 
 ---
 *Roadmap created: 2026-09-23*
-*Last updated: 2026-09-24*
+*Last updated: 2026-09-25*

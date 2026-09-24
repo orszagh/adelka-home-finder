@@ -20,13 +20,18 @@ export interface PropertyProvider {
   /** Whether a stored listing came from this provider (by its external_id). */
   ownsExternalId(externalId: string): boolean;
   /** Listings within (or around) Adelka's search areas. */
-  fetchListings(areas: SearchArea[]): Promise<FetchResult>;
+  fetchListings(areas: SearchArea[], options?: FetchOptions): Promise<FetchResult>;
   /**
    * Asks the source directly about listings the regular search no longer
    * returned. Returns current data for those still on offer; missing ones are gone.
    */
   recheck?(listings: Property[]): Promise<FetchResult>;
 }
+
+export type FetchOptions = {
+  /** Search only this far from the coast (km); null or missing means the whole area. */
+  bandKm?: number | null;
+};
 
 const PROVIDERS: Record<string, PropertyProvider> = {
   [mockProvider.id]: mockProvider,

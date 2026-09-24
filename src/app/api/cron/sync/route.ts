@@ -3,6 +3,7 @@ import { isEmailConfigured, notifyRecipients, sendEmail } from "@/lib/email";
 import { LAST_SEEN_KEY } from "@/lib/greeting";
 import { buildDigest, getAppUrl } from "@/lib/notify";
 import { getProvider } from "@/lib/providers";
+import { bandKm, getSearchSettings } from "@/lib/search-settings";
 import { rejectUnlessCronSecret } from "@/lib/secrets";
 import { syncFromProvider } from "@/lib/sync";
 
@@ -20,8 +21,8 @@ export async function GET(request: Request) {
 
   const repo = getRepo();
   const provider = getProvider();
-  const areas = await repo.listSearchAreas();
-  const result = await syncFromProvider(repo, provider, areas, { recheck: true });
+  const [areas, settings] = await Promise.all([repo.listSearchAreas(), getSearchSettings(repo)]);
+  const result = await syncFromProvider(repo, provider, areas, { recheck: true, bandKm: bandKm(settings) });
   const digest = buildDigest(result, areas, getAppUrl());
   // A first import (e.g. switching away from demo data) must not greet Adelka with hundreds of "new" listings.
   if (result.initialImport) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
@@ -39,6 +40,7 @@ export async function GET(request: Request) {
   return Response.json({
     provider: provider.id,
     areas: areas.length,
+    bandKm: bandKm(settings),
     total: result.total,
     inserted: result.inserted.length,
     priceChanged: result.priceChanged.length,

@@ -30,3 +30,8 @@ export function roomsLabel(rooms: number): string {
   if (rooms >= 2 && rooms <= 4) return `${rooms} izby`;
   return `${rooms} izieb`;
 }
+
+/** Distance to the sea for a listing card; the coastline is accurate to a few hundred metres. */
+export function seaLabel(km: number): string {
+  return km < 1 ? "do 1 km od mora" : `${Math.round(km)} km od mora`;
+}

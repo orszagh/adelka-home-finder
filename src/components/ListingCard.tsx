@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { formatPrice, roomsLabel } from "@/lib/format";
+import { formatPrice, roomsLabel, seaLabel } from "@/lib/format";
 import type { Property } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
 
@@ -63,6 +63,7 @@ export function ListingCard({
             {[
               property.area_sqm ? `${property.area_sqm} m²` : null,
               property.rooms ? roomsLabel(property.rooms) : null,
+              property.sea_km != null ? seaLabel(property.sea_km) : null,
             ]
               .filter(Boolean)
               .join(" · ")}

@@ -12,7 +12,7 @@ export function getDataNotices({ areaCount }: { areaCount: number }): string[] {
   } else if (provider.id === "apify" && !isApifyConfigured()) {
     notices.push("Chýba APIFY_TOKEN, nové ponuky sa nesťahujú.");
   } else if (areaCount === 0) {
-    notices.push("Ponuky sa sťahujú pre tvoje oblasti. Nakresli si oblasť alebo pridaj región a ponuky sa hneď načítajú.");
+    notices.push("Ponuky sa sťahujú pre tvoje oblasti. Vyber si na mape región alebo provinciu a ponuky sa hneď načítajú.");
   }
   if (getRepo().kind === "memory") {
     notices.push("Databáza nie je pripojená, uložené oblasti a inzeráty sa po reštarte stratia.");

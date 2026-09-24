@@ -9,15 +9,13 @@ export function AreaBar({
   activeAreaIds,
   onToggle,
   onOpenChooser,
-  onStartDrawing,
   busy,
 }: {
   areas: SearchArea[];
   activeAreaIds: string[];
   onToggle: (id: string) => void;
   onOpenChooser: () => void;
-  onStartDrawing: () => void;
-  /** Drawing or choosing is in progress. */
+  /** Choosing places on the map is in progress. */
   busy: boolean;
 }) {
   const [pending, startTransition] = useTransition();
@@ -37,21 +35,12 @@ export function AreaBar({
           >
             🗺️ Vybrať na mape
           </button>
-          <button
-            type="button"
-            onClick={onStartDrawing}
-            disabled={busy}
-            title="Nakresli si vlastnú oblasť ťukaním na mapu"
-            className="rounded-full px-3 py-1.5 text-sm font-medium text-sea-800 ring-1 ring-sea-600 hover:bg-sea-50 disabled:opacity-50"
-          >
-            ✏️ Nakresliť
-          </button>
         </div>
       </div>
 
       {areas.length === 0 && (
         <p className="text-sm text-slate-600">
-          Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori, prípadne si oblasť nakresli.
+          Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori.
         </p>
       )}
 

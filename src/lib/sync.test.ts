@@ -116,6 +116,29 @@ describe("syncFromProvider", () => {
     expect((await syncFromProvider(repo, provider, [], { recheck: true })).errors).toEqual(["Apify down"]);
   });
 
+  it("keeps only listings near the sea and does not re-check older ones inland", async () => {
+    const repo = new MemoryRepository();
+    const [coast] = buildMockListings(); // Sanremo
+    const inland: ProviderListing = { ...coast, external_id: "mock-inland", city: "Caltanissetta", latitude: 37.49, longitude: 14.062 };
+
+    // Stored earlier with the whole area, then not seen for three days.
+    await syncFromProvider(repo, providerOf([coast, inland]), []);
+    expect(await repo.listProperties()).toHaveLength(2);
+    for (const p of await repo.listProperties()) p.last_seen_at = new Date(Date.now() - 3 * 86_400_000).toISOString();
+
+    const fetchListings = vi.fn(async () => ({ listings: [coast, { ...inland, external_id: "mock-inland-2" }], errors: [] }));
+    const recheck = vi.fn(async () => ({ listings: [], errors: [] }));
+    const provider: PropertyProvider = { ...providerOf([]), fetchListings, recheck };
+    const result = await syncFromProvider(repo, provider, [], { recheck: true, bandKm: 3 });
+
+    expect(fetchListings).toHaveBeenCalledWith([], { bandKm: 3 });
+    expect(result.inserted).toHaveLength(0);
+    expect((await repo.listProperties()).map((p) => p.external_id)).not.toContain("mock-inland-2");
+    // The old inland listing is neither re-checked nor deleted.
+    expect(recheck).not.toHaveBeenCalled();
+    expect((await repo.listProperties()).map((p) => p.external_id)).toContain("mock-inland");
+  });
+
   it("passes provider errors through", async () => {
     const provider: PropertyProvider = {
       ...providerOf([]),

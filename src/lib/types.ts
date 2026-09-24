@@ -31,6 +31,8 @@ export type Property = ProviderListing & {
   /** Price before the last change; null until a change was seen (or before the migration). */
   previous_price?: number | null;
   price_changed_at?: string | null;
+  /** Distance to the sea in km, computed on the server when rendering (not stored). */
+  sea_km?: number | null;
 };
 
 export type SearchArea = {
