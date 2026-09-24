@@ -12,7 +12,7 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – In progress
 Phase: 6 of 8 (Hamburger menu, odhlásenie, tmavý režim)
 Plan: Not started
-Status: Ready to plan (fáza 5 commitnutá, nenasadená)
+Status: Ready to plan (fáza 5 live na produkcii)
 Last activity: 2026-09-25 — Phase 5 complete (05-01, 05-02), transitioned to Phase 6
 
 Progress:
@@ -61,7 +61,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Git State
-Last commit: b8f72c8 (fáza 5), branch main, nepushnuté
+Last commit: 7fd21f0 (fáza 5), branch main, pushnuté a nasadené na Vercel 2026-09-25
 Feature branches merged: none
 
 ### Blockers/Concerns
@@ -76,11 +76,11 @@ Feature branches merged: none
 
 Last session: 2026-09-25
 Stopped at: Phase 5 complete, ready to plan Phase 6
-Next action: Rozhodnúť o nasadení fázy 5 (push na main → Vercel), potom /paul:plan pre fázu 6
+Next action: /paul:plan pre fázu 6 (hamburger menu, odhlásenie, tmavý režim)
 Resume file: .paul/ROADMAP.md
 Resume context:
 - Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
-- Po nasadení sa vnútrozemské ponuky skryjú; zmena pásu na /nastavenia hneď spustí Apify sťahovanie
+- Fáza 5 live od 2026-09-25: vnútrozemské ponuky skryté; zmena pásu na /nastavenia hneď spustí Apify sťahovanie. Prvý ranný cron s pásom 3 km: 26. 9.
 - Lokálne overovanie: preview "dev-mock" (port 3100, ukážkové dáta, bez hesla, bez produkčnej DB)
 - Návrh dizajnu: https://claude.ai/artifact/ECjAcFZZTRyaQVVH7ABJs6 (fázy 6–8)
 - Skontrolovať ranný cron 25. 9. v Apify (APIFY_TOKEN v .env.local)
