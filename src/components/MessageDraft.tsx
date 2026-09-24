@@ -65,15 +65,15 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
     }
   };
 
-  const inputClass = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-base font-normal";
+  const inputClass = "mt-1 w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-base font-normal";
 
   return (
-    <section aria-labelledby="draft-heading" className="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+    <section aria-labelledby="draft-heading" className="space-y-4 rounded-2xl bg-surface p-4 ring-1 ring-line">
       <div>
         <h2 id="draft-heading" className="text-lg font-semibold">
           Napísať realitke
         </h2>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted">
           Napíš po slovensky, čo chceš povedať. AI pripraví taliansky email, ty ho skontroluješ a <strong>odošleš sama</strong>{" "}
           zo svojho emailu. Appka nič neodošle.
         </p>
@@ -85,14 +85,14 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
             key={s}
             type="button"
             onClick={() => setIntent((v) => (v ? `${v} ${s}` : s))}
-            className="rounded-full bg-slate-100 px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-200"
+            className="rounded-full bg-surface-2 px-3 py-1.5 text-left text-sm text-ink-2 hover:bg-line"
           >
             {s}
           </button>
         ))}
       </div>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-ink-2">
         Čo chceš realitke povedať
         <textarea
           value={intent}
@@ -104,7 +104,7 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-ink-2">
         Podpis
         <input value={signature} onChange={(e) => setSignature(e.target.value)} maxLength={80} className={inputClass} />
       </label>
@@ -113,37 +113,37 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
         type="button"
         onClick={generate}
         disabled={!aiEnabled || loading || intent.trim().length === 0}
-        className="rounded-full bg-sea-700 px-4 py-2 text-sm font-medium text-white hover:bg-sea-800 disabled:opacity-40"
+        className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-40"
       >
         {loading ? "Pripravujem…" : draft ? "✨ Pripraviť znova" : "✨ Pripraviť správu"}
       </button>
-      {!aiEnabled && <p className="text-sm text-slate-500">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
+      {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
 
       {error && (
-        <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-800 ring-1 ring-rose-200" role="alert">
+        <p className="rounded-xl bg-love-soft px-3 py-2 text-sm text-love-ink ring-1 ring-love/30" role="alert">
           {error}
         </p>
       )}
 
       {draft && (
-        <div className="space-y-3 border-t border-slate-200 pt-4">
-          <p className="text-sm text-slate-600">Návrh môžeš ľubovoľne upraviť:</p>
-          <label className="block text-sm font-medium text-slate-700">
+        <div className="space-y-3 border-t border-line pt-4">
+          <p className="text-sm text-muted">Návrh môžeš ľubovoľne upraviť:</p>
+          <label className="block text-sm font-medium text-ink-2">
             Predmet (taliansky)
             <input value={subject} onChange={(e) => setSubject(e.target.value)} className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-ink-2">
             Text emailu (taliansky)
             <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10} className={inputClass} />
           </label>
-          <details className="rounded-xl bg-slate-50 p-3 text-sm">
-            <summary className="cursor-pointer font-medium text-slate-700">Čo v tom je po slovensky</summary>
-            <p className="mt-2 whitespace-pre-line text-slate-700">{draft.translation_sk}</p>
+          <details className="rounded-xl bg-surface-2 p-3 text-sm">
+            <summary className="cursor-pointer font-medium text-ink-2">Čo v tom je po slovensky</summary>
+            <p className="mt-2 whitespace-pre-line text-ink-2">{draft.translation_sk}</p>
             {body !== draft.body_it && (
-              <p className="mt-2 text-xs text-amber-800">Preklad zodpovedá pôvodnému návrhu, nie tvojim úpravám.</p>
+              <p className="mt-2 text-xs text-warn-ink">Preklad zodpovedá pôvodnému návrhu, nie tvojim úpravám.</p>
             )}
           </details>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-ink-2">
             Email realitky (nájdeš ho v inzeráte)
             <input
               type="email"
@@ -156,19 +156,19 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
           <div className="flex flex-wrap gap-2">
             <a
               href={mailtoHref(to, subject, body)}
-              className="rounded-full bg-sea-700 px-4 py-2 text-sm font-medium text-white hover:bg-sea-800"
+              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong"
             >
               ✉️ Otvoriť v mojom e-maile
             </a>
             <button
               type="button"
               onClick={copy}
-              className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+              className="rounded-full px-4 py-2 text-sm font-medium text-ink-2 ring-1 ring-line-strong hover:bg-surface-2"
             >
               {copied ? "Skopírované ✓" : "Kopírovať text"}
             </button>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted">
             „Otvoriť v mojom e-maile“ len pripraví správu v tvojej emailovej aplikácii. Odošle sa, až keď v nej ťukneš na
             Odoslať.
           </p>

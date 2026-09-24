@@ -16,7 +16,7 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 
 **v0.3 Dizajn, UX a domčeky pri mori** (v0.3.0)
 Status: In progress
-Phases: 1 of 4 complete (25 %)
+Phases: 2 of 4 complete (50 %)
 Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Phases
@@ -28,7 +28,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 3 | Komunikačný modul | 1 | Complete | 2026-09-23 |
 | 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
 | 5 | Pobrežný pás a nastavenia vyhľadávania | 2/2 | ✅ Complete | 2026-09-25 |
-| 6 | Hamburger menu, odhlásenie, tmavý režim | TBD | Not started | - |
+| 6 | Hamburger menu, odhlásenie, tmavý režim | 2/2 | ✅ Complete | 2026-09-25 |
 | 7 | Dizajnový systém, animácie, výrazné stavy | TBD | Not started | - |
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
 
@@ -116,6 +116,10 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 
 **Goal:** Navigácia v hamburger menu s nastaveniami vyhľadávania, prepínačom tmavého režimu a odhlásením.
 **Depends on:** Phase 5 (nastavenia vyhľadávania)
+
+**Plans:**
+- [x] 06-01: Farebné tokeny (Riviéra ráno / noc na pláži), tmavý režim cez cookie, prevod všetkých obrazoviek a mapy
+- [x] 06-02: Hamburger menu (Domčeky, Uložené, Nastavenia, Vzhľad), odhlásenie
 
 ### Phase 7: Dizajnový systém, animácie, výrazné stavy
 

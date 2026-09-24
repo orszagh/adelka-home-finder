@@ -37,7 +37,6 @@ const REGION_COLORS: Record<string, string> = {
   "20": "#8ce99a",
 };
 const INLAND = "#dee2e6";
-const SELECTED = "#0e7490";
 
 type Stats = { count: number; minPrice: number | null };
 
@@ -122,18 +121,19 @@ export function PlaceLayer({ regionCode, areaNames, properties, busy, onPick }: 
             key={`ctx-${r.code}`}
             positions={latLngs(r.geometry)}
             interactive={false}
-            pathOptions={{ color: "#adb5bd", weight: 1, fillColor: INLAND, fillOpacity: 0.25 }}
+            pathOptions={{ className: "place-context", weight: 1, fillOpacity: 0.25 }}
           />
         ))}
       {places.map((place) => {
         const selected = isSelected(place) || (place.kind === "region" && selectedProvinces(place) > 0);
-        const fill = selected ? SELECTED : place.coastal ? (REGION_COLORS[place.regionCode] ?? INLAND) : INLAND;
+        const fill = place.coastal ? (REGION_COLORS[place.regionCode] ?? INLAND) : INLAND;
         return (
           <Polygon
             key={`${place.kind}-${place.code}-${selected}`}
             positions={latLngs(place.geometry)}
             pathOptions={{
-              color: selected ? SELECTED : "#ffffff",
+              // Outline (and the selected fill) come from CSS (.place-shape) so they follow the theme.
+              className: selected ? "place-shape is-selected" : "place-shape",
               weight: selected ? 2.5 : 1.5,
               fillColor: fill,
               fillOpacity: selected ? 0.45 : place.coastal ? 0.75 : 0.5,

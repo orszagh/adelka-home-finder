@@ -46,13 +46,13 @@ export function LocationSummary({
   };
 
   return (
-    <section aria-labelledby="location-heading" className="space-y-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+    <section aria-labelledby="location-heading" className="space-y-3 rounded-2xl bg-surface p-4 ring-1 ring-line">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="location-heading" className="text-lg font-semibold">
           O lokalite {city}
         </h2>
         {note && !loading && aiEnabled && (
-          <button type="button" onClick={() => load(true)} className="text-sm font-medium text-sea-700 hover:underline">
+          <button type="button" onClick={() => load(true)} className="text-sm font-medium text-accent-ink hover:underline">
             ↻ Obnoviť
           </button>
         )}
@@ -60,7 +60,7 @@ export function LocationSummary({
 
       {!note && !loading && (
         <div className="space-y-2">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             AI ti pripraví krátky prehľad: čo je v okolí, ako sa tam dostať, aké je počasie a či tam hrozia záplavy alebo iné
             riziká.
           </p>
@@ -68,22 +68,22 @@ export function LocationSummary({
             type="button"
             onClick={() => load(false)}
             disabled={!aiEnabled}
-            className="rounded-full bg-sea-700 px-4 py-2 text-sm font-medium text-white hover:bg-sea-800 disabled:opacity-40"
+            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-40"
           >
             ✨ Zobraziť prehľad lokality
           </button>
-          {!aiEnabled && <p className="text-sm text-slate-500">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
+          {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
         </div>
       )}
 
       {loading && (
-        <p className="animate-pulse text-sm text-slate-600" role="status">
+        <p className="animate-pulse text-sm text-muted" role="status">
           Pripravujem prehľad… môže to trvať do minúty.
         </p>
       )}
 
       {error && (
-        <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-800 ring-1 ring-rose-200" role="alert">
+        <p className="rounded-xl bg-love-soft px-3 py-2 text-sm text-love-ink ring-1 ring-love/30" role="alert">
           {error}
         </p>
       )}
@@ -93,14 +93,14 @@ export function LocationSummary({
           {SECTIONS.map(({ key, title, icon }) =>
             note[key] ? (
               <div key={key}>
-                <h3 className="font-medium text-slate-900">
+                <h3 className="font-medium text-ink">
                   <span aria-hidden>{icon}</span> {title}
                 </h3>
-                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-700">{note[key]}</p>
+                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink-2">{note[key]}</p>
               </div>
             ) : null,
           )}
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted">
             Pripravila AI {formatDate(note.generated_at)} zo všeobecných znalostí. Ber to ako orientáciu – riziká si over na
             idrogeo.isprambiente.it alebo na obecnom úrade.
           </p>

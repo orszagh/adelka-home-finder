@@ -16,7 +16,7 @@ import { ListingCard } from "./ListingCard";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
-  loading: () => <div className="grid h-full place-items-center text-slate-500">Načítavam mapu…</div>,
+  loading: () => <div className="grid h-full place-items-center text-muted">Načítavam mapu…</div>,
 });
 
 type Sort = "newest" | "cheapest" | "priciest";
@@ -172,18 +172,18 @@ export function HomeFinder({
         />
 
         {chooserOpen && (
-          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-white/95 p-3 shadow-lg ring-1 ring-slate-200">
+          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-surface/95 p-3 shadow-lg ring-1 ring-line">
             <div className="flex items-center justify-between gap-2">
               {chooserRegionPlace ? (
                 <button
                   type="button"
                   onClick={() => setChooserRegion(null)}
-                  className="text-sm font-medium text-sea-700 hover:underline"
+                  className="text-sm font-medium text-accent-ink hover:underline"
                 >
                   ‹ Celé Taliansko
                 </button>
               ) : (
-                <p className="font-semibold text-slate-900">Kde hľadáš domček?</p>
+                <p className="font-semibold text-ink">Kde hľadáš domček?</p>
               )}
               <button
                 type="button"
@@ -191,14 +191,14 @@ export function HomeFinder({
                   setChooserOpen(false);
                   setChooserRegion(null);
                 }}
-                className="rounded-full bg-sea-700 px-3 py-1 text-sm font-medium text-white hover:bg-sea-800"
+                className="rounded-full bg-accent px-3 py-1 text-sm font-medium text-on-accent hover:bg-accent-strong"
               >
                 Hotovo
               </button>
             </div>
             {chooserRegionPlace ? (
               <>
-                <p className="text-sm text-slate-700">
+                <p className="text-sm text-ink-2">
                   <strong>{chooserRegionPlace.name}:</strong> ťukni na provinciu pri mori, ktorú chceš sledovať. Ďalším
                   ťuknutím ju zrušíš.
                 </p>
@@ -206,13 +206,13 @@ export function HomeFinder({
                   type="button"
                   disabled={placeBusy}
                   onClick={() => togglePlace(chooserRegionPlace)}
-                  className="text-sm font-medium text-sea-800 underline disabled:opacity-50"
+                  className="text-sm font-medium text-accent-ink underline disabled:opacity-50"
                 >
                   {areaByName(chooserRegionPlace) ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
                 </button>
               </>
             ) : (
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-ink-2">
                 Ťukni na región, ukážem ti jeho provincie. Farebné sú regióny pri mori.
               </p>
             )}
@@ -222,7 +222,7 @@ export function HomeFinder({
         {!chooserOpen && (
           <Link
             href="/nastavenia"
-            className="absolute right-2 top-2 z-[1000] inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/95 px-3 text-sm font-semibold text-slate-900 shadow-md ring-1 ring-slate-200 hover:bg-white"
+            className="absolute right-2 top-2 z-[1000] inline-flex min-h-10 items-center gap-1.5 rounded-full bg-surface/95 px-3 text-sm font-semibold text-ink shadow-md ring-1 ring-line hover:bg-surface"
           >
             <span aria-hidden>🌊</span>
             {settingsLabel}
@@ -233,25 +233,25 @@ export function HomeFinder({
         {selected && (
           <Link
             href={`/inzerat/${selected.id}`}
-            className="absolute inset-x-2 bottom-2 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-slate-200 lg:hidden"
+            className="absolute inset-x-2 bottom-2 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-surface p-2 shadow-lg ring-1 ring-line lg:hidden"
           >
             {selected.photos[0] && (
               <img src={selected.photos[0]} alt="" className="h-14 w-20 shrink-0 rounded-lg object-cover" />
             )}
             <span className="min-w-0 flex-1">
               <span className="block font-semibold">{formatPrice(selected.price)}</span>
-              <span className="block truncate text-sm text-slate-600">{selected.title}</span>
+              <span className="block truncate text-sm text-muted">{selected.title}</span>
             </span>
-            <span className="pr-2 text-sm font-medium text-sea-700">Detail ›</span>
+            <span className="pr-2 text-sm font-medium text-accent-ink">Detail ›</span>
           </Link>
         )}
       </section>
 
-      <section className="space-y-4 p-4 lg:order-1 lg:w-[440px] lg:overflow-y-auto lg:border-r lg:border-slate-200">
+      <section className="space-y-4 p-4 lg:order-1 lg:w-[440px] lg:overflow-y-auto lg:border-r lg:border-line">
         {greetingCard("hidden lg:block")}
 
         {highlightIds && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sea-50 px-3 py-2 text-sm text-sea-800 ring-1 ring-sea-600/30">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent-ink ring-1 ring-accent/30">
             <span>Zobrazujem novinky od Lubka ({visible.length})</span>
             <button type="button" onClick={() => setHighlightIds(null)} className="font-medium underline">
               Zobraziť všetky ponuky
@@ -260,7 +260,7 @@ export function HomeFinder({
         )}
 
         {notices.map((notice) => (
-          <p key={notice} className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
+          <p key={notice} className="rounded-xl bg-warn-soft px-3 py-2 text-sm text-warn-ink ring-1 ring-warn-ink/20">
             {notice}
           </p>
         ))}
@@ -278,8 +278,8 @@ export function HomeFinder({
             role="status"
             className={`rounded-xl px-3 py-2 text-sm ring-1 ${
               areaStatus.tone === "error"
-                ? "bg-rose-50 text-rose-800 ring-rose-200"
-                : "bg-sea-50 text-sea-800 ring-sea-600/30"
+                ? "bg-love-soft text-love-ink ring-love/30"
+                : "bg-accent-soft text-accent-ink ring-accent/30"
             }`}
           >
             {areaStatus.text}
@@ -287,12 +287,12 @@ export function HomeFinder({
         )}
 
         <div className="grid grid-cols-3 gap-2">
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-muted">
             Cena do
             <select
               value={maxPrice ?? ""}
               onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : null)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900"
+              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
             >
               <option value="">Bez limitu</option>
               {PRICE_OPTIONS.map((v) => (
@@ -302,12 +302,12 @@ export function HomeFinder({
               ))}
             </select>
           </label>
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-muted">
             Izby
             <select
               value={minRooms ?? ""}
               onChange={(e) => setMinRooms(e.target.value ? Number(e.target.value) : null)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900"
+              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
             >
               <option value="">Všetky</option>
               {[2, 3, 4].map((v) => (
@@ -317,12 +317,12 @@ export function HomeFinder({
               ))}
             </select>
           </label>
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-muted">
             Zoradiť
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as Sort)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900"
+              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
             >
               <option value="newest">Najnovšie</option>
               <option value="cheapest">Najlacnejšie</option>
@@ -332,7 +332,7 @@ export function HomeFinder({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-slate-600" aria-live="polite">
+          <p className="text-sm text-muted" aria-live="polite">
             {visible.length === 0
               ? "V zvolených oblastiach a filtroch nie sú žiadne ponuky."
               : `${visible.length} ${visible.length === 1 ? "ponuka" : visible.length < 5 ? "ponuky" : "ponúk"}`}

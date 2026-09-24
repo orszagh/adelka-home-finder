@@ -35,8 +35,8 @@ export function SaveButton({
         aria-pressed={optimisticSaved}
         className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
           optimisticSaved
-            ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100"
-            : "bg-sea-700 text-white hover:bg-sea-800"
+            ? "bg-love-soft text-love-ink ring-1 ring-love/30 hover:bg-love-soft"
+            : "bg-accent text-on-accent hover:bg-accent-strong"
         }`}
       >
         <span aria-hidden>{optimisticSaved ? "♥" : "♡"}</span>
@@ -53,9 +53,9 @@ export function SaveButton({
       aria-pressed={optimisticSaved}
       aria-label={label}
       title={label}
-      className="grid size-9 place-items-center rounded-full bg-white/90 text-lg shadow ring-1 ring-slate-200 transition hover:scale-105"
+      className="grid size-9 place-items-center rounded-full bg-surface/90 text-lg shadow ring-1 ring-line transition hover:scale-105"
     >
-      <span aria-hidden className={optimisticSaved ? "text-rose-600" : "text-slate-500"}>
+      <span aria-hidden className={optimisticSaved ? "text-love" : "text-muted"}>
         {optimisticSaved ? "♥" : "♡"}
       </span>
     </button>

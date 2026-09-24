@@ -14,7 +14,7 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 |-----------|-------|
 | Type | Application |
 | Version | 0.2.0 |
-| Status | Live so skutočnými inzerátmi (v0.2), v0.3 rozpracovaná (fáza 5 hotová) |
+| Status | Live so skutočnými inzerátmi (v0.2), v0.3 rozpracovaná (fázy 5–6 hotové) |
 | Last Updated | 2026-09-25 |
 
 **Production URLs:**
@@ -43,12 +43,12 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 - [x] Výber oblastí cez klikateľné regióny a provincie — v0.2
 - [x] Predvolene len domčeky pri mori (pás 3 km), vnútrozemie 10/20/40 km alebo celá oblasť v nastaveniach, km od mora na kartách — Phase 5
 - [x] Kreslenie oblasti odstránené — Phase 5
+- [x] Hamburger menu, odhlásenie, tmavý režim (Svetlý / Tmavý / Ako mobil), farby návrhu „Riviéra ráno“ — Phase 6
 
 ### Active (In Progress)
-- [ ] Hamburger menu s nastaveniami, tmavým režimom a odhlásením (fáza 6)
+- [ ] Dizajnový systém, písma, animácie, výrazné stavové hlášky (fáza 7)
 
 ### Planned (Next) – v0.3, zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md
-- Dizajnový systém, animácie, výrazné stavové hlášky, tmavá téma
 - Logo „La casetta di Adelka“ (Higgsfield) a vtipné „reklamy“ od Lubka
 
 ### Nice-to-Have (P1)
@@ -112,6 +112,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Pobrežie z nezdieľaných hrán provincií mínus hranice Natural Earth | Bez novej závislosti, presnosť ~250 m | 2026-09-24 | Active |
 | Pás 3 km predvolene, nastavenie v app_state | Adelka hľadá domček pri mori; platí aj pre cron | 2026-09-24 | Active |
 | Apify pozdĺž pobrežia: max 4 úseky, maxItems rozdelené | Rovnaké náklady ako pri celej provincii | 2026-09-24 | Active |
+| Sémantické farebné tokeny s light-dark(), téma v cookie | Tmavý režim bez bliknutia, základ dizajnového systému | 2026-09-25 | Active |
 
 ## Success Metrics
 
@@ -146,4 +147,4 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 
 ---
 *Created: 2026-09-23*
-*Last updated: 2026-09-25 after Phase 5*
+*Last updated: 2026-09-25 after Phase 6*

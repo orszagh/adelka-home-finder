@@ -23,7 +23,7 @@ export function AreaBar({
   return (
     <section aria-labelledby="areas-heading" className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="areas-heading" className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 id="areas-heading" className="text-sm font-semibold uppercase tracking-wide text-muted">
           Moje oblasti
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -31,7 +31,7 @@ export function AreaBar({
             type="button"
             onClick={onOpenChooser}
             disabled={busy}
-            className="rounded-full bg-sea-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-sea-800 disabled:opacity-50"
+            className="rounded-full bg-accent px-3 py-1.5 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-50"
           >
             🗺️ Vybrať na mape
           </button>
@@ -39,7 +39,7 @@ export function AreaBar({
       </div>
 
       {areas.length === 0 && (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted">
           Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori.
         </p>
       )}
@@ -51,7 +51,7 @@ export function AreaBar({
             <span
               key={area.id}
               className={`inline-flex items-center rounded-full text-sm ring-1 ${
-                active ? "bg-sea-50 text-sea-800 ring-sea-600" : "bg-white text-slate-500 ring-slate-300"
+                active ? "bg-accent-soft text-accent-ink ring-accent" : "bg-surface text-muted ring-line-strong"
               }`}
             >
               <button
@@ -73,7 +73,7 @@ export function AreaBar({
                   }
                 }}
                 aria-label={`Zmazať oblasť ${area.name}`}
-                className="py-1.5 pl-1 pr-3 text-slate-400 hover:text-rose-600"
+                className="py-1.5 pl-1 pr-3 text-faint hover:text-love"
               >
                 ×
               </button>

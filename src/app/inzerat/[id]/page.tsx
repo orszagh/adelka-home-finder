@@ -43,12 +43,12 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
-      <Link href="/" className="text-sm font-medium text-sea-700 hover:underline">
+      <Link href="/" className="text-sm font-medium text-accent-ink hover:underline">
         ‹ Späť na ponuky
       </Link>
 
       {!getProvider().isMock && isStale(property) && (
-        <p className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-700 ring-1 ring-slate-200">
+        <p className="rounded-xl bg-surface-2 px-3 py-2 text-sm text-ink-2 ring-1 ring-line">
           Tento inzerát už na portáli nie je (naposledy videný {formatDate(property.last_seen_at)}). Dom je
           pravdepodobne predaný alebo stiahnutý z ponuky.
         </p>
@@ -58,8 +58,8 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{property.title}</h1>
-          <p className="mt-1 text-slate-600">
+          <h1 className="text-2xl font-semibold text-ink">{property.title}</h1>
+          <p className="mt-1 text-muted">
             📍 {property.city}, {property.region}
           </p>
         </div>
@@ -68,9 +68,9 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {facts.map(([label, value]) => (
-          <div key={label} className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-            <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
-            <dd className="mt-0.5 font-medium text-slate-900">{value}</dd>
+          <div key={label} className="rounded-xl bg-surface p-3 ring-1 ring-line">
+            <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
+            <dd className="mt-0.5 font-medium text-ink">{value}</dd>
           </div>
         ))}
       </dl>
@@ -81,12 +81,12 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
             href={property.listing_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full px-4 py-2 text-sm font-medium text-sea-800 ring-1 ring-sea-600 hover:bg-sea-50"
+            className="rounded-full px-4 py-2 text-sm font-medium text-accent-ink ring-1 ring-accent hover:bg-accent-soft"
           >
             Pôvodný inzerát ↗
           </a>
         ) : (
-          <span className="rounded-full px-4 py-2 text-sm text-slate-500 ring-1 ring-slate-200">
+          <span className="rounded-full px-4 py-2 text-sm text-muted ring-1 ring-line">
             Ukážkový inzerát bez odkazu na portál
           </span>
         )}
@@ -94,14 +94,14 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
           href={`https://www.openstreetmap.org/?mlat=${property.latitude}&mlon=${property.longitude}#map=15/${property.latitude}/${property.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+          className="rounded-full px-4 py-2 text-sm font-medium text-ink-2 ring-1 ring-line-strong hover:bg-surface-2"
         >
           Na mape ↗
         </a>
       </div>
 
       {savedEntry && (
-        <section className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+        <section className="rounded-2xl bg-surface p-4 ring-1 ring-line">
           <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
         </section>
       )}

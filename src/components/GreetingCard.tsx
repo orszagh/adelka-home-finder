@@ -17,7 +17,7 @@ export function GreetingCard({
   return (
     <section
       aria-live="polite"
-      className={`relative rounded-2xl bg-gradient-to-br from-amber-50 to-sea-50 p-4 shadow-sm ring-1 ring-amber-200 ${className}`}
+      className={`relative rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-line ${className}`}
     >
       <button
         type="button"
@@ -26,19 +26,19 @@ export function GreetingCard({
           void markNewsSeen();
         }}
         aria-label="Zavrieť privítanie"
-        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full text-slate-500 hover:bg-white/70"
+        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full text-muted hover:bg-surface/70"
       >
         ×
       </button>
-      <h2 className="pr-8 text-lg font-semibold text-slate-900">{greeting.title}</h2>
-      <p className="mt-1 text-slate-700">{greeting.message}</p>
+      <h2 className="pr-8 text-lg font-semibold text-ink">{greeting.title}</h2>
+      <p className="mt-1 text-ink-2">{greeting.message}</p>
       <button
         type="button"
         onClick={() => {
           onShow();
           void markNewsSeen();
         }}
-        className="mt-3 rounded-full bg-sea-700 px-4 py-2 text-sm font-medium text-white hover:bg-sea-800"
+        className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong"
       >
         Ukázať mi ich
       </button>

@@ -1,18 +1,140 @@
 @import "tailwindcss";
 
+/*
+ * Colour tokens. Light: "Riviéra ráno" (sand, sea, terracotta, lemon);
+ * dark: "noc na pláži". Each token holds both values via light-dark(), and
+ * color-scheme picks one: the phone's setting by default, or the theme
+ * Adelka chose (data-theme on <html>, set on the server from a cookie).
+ */
+:root {
+  color-scheme: light dark;
+  --c-canvas: light-dark(#fbf6ee, #0e1a21);
+  --c-surface: light-dark(#ffffff, #16252e);
+  --c-surface-2: light-dark(#f3ece1, #1d2f39);
+  --c-ink: light-dark(#1d2a33, #f3ede3);
+  --c-ink-2: light-dark(#34434d, #dcd5ca);
+  --c-muted: light-dark(#5b6770, #a3b0b8);
+  --c-faint: light-dark(#7d878e, #7f8c94);
+  --c-line: light-dark(#e8dfd2, #26363f);
+  --c-line-strong: light-dark(#d3c7b5, #36505c);
+  --c-accent: light-dark(#0f5e78, #6cc3dd);
+  --c-accent-strong: light-dark(#0b4a5f, #8fd3e7);
+  --c-accent-soft: light-dark(#dceef2, #173a48);
+  --c-accent-ink: light-dark(#0b4a5f, #9ed8ea);
+  --c-on-accent: light-dark(#ffffff, #0e1a21);
+  --c-love: light-dark(#b8472f, #e8826a);
+  --c-love-soft: light-dark(#f6e1da, #3a2320);
+  --c-love-ink: light-dark(#8a3a26, #f2a48f);
+  --c-on-love: light-dark(#ffffff, #1a0f0c);
+  --c-success: light-dark(#2f7a4b, #6fcf97);
+  --c-warn-soft: light-dark(#fbf0d2, #3a3014);
+  --c-warn-ink: light-dark(#6b4e0a, #f2d27e);
+  --c-sun: #f2c14e;
+  --c-on-sun: #3a2a05;
+  --c-overlay: light-dark(rgb(14 26 33 / 0.55), rgb(0 0 0 / 0.6));
+  --c-shadow: light-dark(rgb(29 42 51 / 0.12), rgb(0 0 0 / 0.4));
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* dark: utilities follow the same rule as the tokens. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
-  --color-sea-50: #ecfeff;
-  --color-sea-100: #cffafe;
-  --color-sea-600: #0891b2;
-  --color-sea-700: #0e7490;
-  --color-sea-800: #155e75;
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-accent: var(--c-accent);
+  --color-accent-strong: var(--c-accent-strong);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-on-accent: var(--c-on-accent);
+  --color-love: var(--c-love);
+  --color-love-soft: var(--c-love-soft);
+  --color-love-ink: var(--c-love-ink);
+  --color-on-love: var(--c-on-love);
+  --color-success: var(--c-success);
+  --color-warn-soft: var(--c-warn-soft);
+  --color-warn-ink: var(--c-warn-ink);
+  --color-sun: var(--c-sun);
+  --color-on-sun: var(--c-on-sun);
+  --color-overlay: var(--c-overlay);
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--c-canvas);
+  color: var(--c-ink);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Leaflet chrome in the app's colours. */
+.leaflet-container {
+  background: var(--c-surface-2);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  border-bottom-color: var(--c-line);
+}
+.leaflet-control-attribution.leaflet-control {
+  background: color-mix(in srgb, var(--c-surface) 85%, transparent);
+  color: var(--c-muted);
+}
+.leaflet-control-attribution a {
+  color: var(--c-accent-ink);
+}
+
+/* OpenStreetMap has no dark tiles: invert them and turn the hue back, so the sea stays blue. */
+[data-theme="dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.7);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.7);
+  }
+}
+
+/* Area and place outlines on the map; CSS beats Leaflet's presentation attributes. */
+.area-shape {
+  stroke: var(--c-faint);
+  fill: var(--c-faint);
+}
+.area-shape.is-active {
+  stroke: var(--c-accent);
+  fill: var(--c-accent);
+}
+.place-shape {
+  stroke: var(--c-surface);
+}
+.place-shape.is-selected {
+  stroke: var(--c-accent);
+  fill: var(--c-accent);
+}
+.place-context {
+  stroke: var(--c-line-strong);
+  fill: var(--c-surface-2);
 }
 
 /* Price markers on the map (Leaflet divIcon). */
@@ -27,31 +149,31 @@ body {
   padding: 2px 8px;
   border-radius: 9999px;
   font: 600 12px/1.4 var(--font-geist-sans), system-ui, sans-serif;
-  background: #ffffff;
-  color: #155e75;
-  border: 1px solid #0e7490;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  background: var(--c-surface);
+  color: var(--c-accent-ink);
+  border: 1px solid var(--c-accent);
+  box-shadow: 0 1px 3px var(--c-shadow);
 }
 .price-marker.is-selected > span {
-  background: #0e7490;
-  color: #ffffff;
+  background: var(--c-accent);
+  color: var(--c-on-accent);
 }
 .price-marker.is-saved > span::before {
   content: "♥ ";
-  color: #e11d48;
+  color: var(--c-love);
 }
 .price-marker.is-selected.is-saved > span::before {
-  color: #ffe4e6;
+  color: var(--c-on-accent);
 }
 .price-marker.is-dot > span {
   width: 14px;
   height: 14px;
   padding: 0;
-  background: #0e7490;
-  border: 2px solid #ffffff;
+  background: var(--c-accent);
+  border: 2px solid var(--c-surface);
 }
 .price-marker.is-dot.is-saved > span {
-  background: #e11d48;
+  background: var(--c-love);
 }
 .price-marker.is-dot > span::before {
   content: none;
@@ -70,31 +192,31 @@ body {
   white-space: nowrap;
   padding: 2px 8px;
   border-radius: 10px;
-  background: rgb(255 255 255 / 0.9);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  background: color-mix(in srgb, var(--c-surface) 92%, transparent);
+  box-shadow: 0 1px 3px var(--c-shadow);
   font: 600 13px/1.25 var(--font-geist-sans), system-ui, sans-serif;
-  color: #0f172a;
+  color: var(--c-ink);
   cursor: pointer;
 }
 .place-label small {
   font-weight: 500;
   font-size: 11px;
-  color: #155e75;
+  color: var(--c-accent-ink);
 }
 .place-label.is-inland {
-  background: rgb(255 255 255 / 0.65);
-  color: #64748b;
+  background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+  color: var(--c-muted);
   font-weight: 500;
 }
 .place-label.is-inland small {
-  color: #94a3b8;
+  color: var(--c-faint);
 }
 .place-label.is-selected {
-  background: #0e7490;
-  color: #ffffff;
+  background: var(--c-accent);
+  color: var(--c-on-accent);
 }
 .place-label.is-selected small {
-  color: #cffafe;
+  color: var(--c-on-accent);
 }
 /* On phones the whole of Italy is small: region labels shrink to the name. */
 @media (max-width: 1023px) {

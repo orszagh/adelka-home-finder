@@ -15,10 +15,10 @@ export default async function SettingsPage() {
 
   return (
     <main className="mx-auto w-full max-w-md space-y-4 px-4 py-6">
-      <Link href="/" className="inline-flex min-h-11 items-center text-sm font-medium text-sea-700 hover:underline">
+      <Link href="/" className="inline-flex min-h-11 items-center text-sm font-medium text-accent-ink hover:underline">
         ‹ Späť na ponuky
       </Link>
-      <h1 className="text-2xl font-semibold text-slate-900">Kde hľadať domček</h1>
+      <h1 className="text-2xl font-semibold text-ink">Kde hľadať domček</h1>
       <SearchSettingsForm initial={settings} />
     </main>
   );

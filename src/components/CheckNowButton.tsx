@@ -21,11 +21,11 @@ export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
         onClick={run}
         disabled={pending || waitMinutes > 0}
         title="Stiahne čerstvé ponuky pre všetky tvoje oblasti (najviac raz za hodinu)"
-        className="rounded-full px-3 py-1.5 text-sm font-medium text-sea-800 ring-1 ring-sea-600 hover:bg-sea-50 disabled:opacity-50"
+        className="rounded-full px-3 py-1.5 text-sm font-medium text-accent-ink ring-1 ring-accent hover:bg-accent-soft disabled:opacity-50"
       >
         {pending ? "Pozerám na portáloch…" : "🔄 Pozrieť teraz"}
       </button>
-      <span className="text-xs text-slate-500" role="status">
+      <span className="text-xs text-muted" role="status">
         {pending
           ? "Môže to trvať do minúty."
           : (message ?? (waitMinutes > 0 ? `Znova to pôjde o ${waitMinutes} min.` : null))}

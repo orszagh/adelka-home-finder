@@ -52,11 +52,13 @@ export default function MapView(props: Props) {
         const active = activeAreaIds.includes(area.id);
         return (
           <Polygon
-            key={area.id}
+            // Leaflet sets className only once, so a change of state needs a new layer.
+            key={`${area.id}-${active}`}
             positions={toLatLngRings(area.polygon)}
             interactive={false}
             pathOptions={{
-              color: active ? "#0e7490" : "#94a3b8",
+              // Colours come from CSS (.area-shape) so they follow the theme.
+              className: active ? "area-shape is-active" : "area-shape",
               weight: active ? 2 : 1,
               fillOpacity: active ? 0.08 : 0.02,
               dashArray: active ? undefined : "4 4",

@@ -22,12 +22,12 @@ export default async function SavedPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-4 px-4 py-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Uložené inzeráty</h1>
+      <h1 className="text-2xl font-semibold text-ink">Uložené inzeráty</h1>
 
       {entries.length === 0 ? (
-        <p className="text-slate-600">
+        <p className="text-muted">
           Zatiaľ nemáš nič uložené. Na{" "}
-          <Link href="/" className="font-medium text-sea-700 underline">
+          <Link href="/" className="font-medium text-accent-ink underline">
             stránke s ponukami
           </Link>{" "}
           ťukni na ♡ pri inzeráte, ktorý sa ti páči.
@@ -35,7 +35,7 @@ export default async function SavedPage() {
       ) : (
         <ul className="space-y-4">
           {entries.map(({ saved: s, property }) => (
-            <li key={s.id} className="space-y-3 rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+            <li key={s.id} className="space-y-3 rounded-2xl bg-surface p-3 ring-1 ring-line">
               <ListingCard property={property!} saved gone={trackFreshness && isStale(property!)} />
               <NoteForm savedId={s.id} note={s.note} />
             </li>
