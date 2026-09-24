@@ -63,7 +63,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Git State
-Last commit: 7fd21f0 (fáza 5), branch main, pushnuté a nasadené na Vercel 2026-09-25
+Last commit: 238862f (fáza 6), branch main, pushnuté a nasadené na Vercel 2026-09-25
 Feature branches merged: none
 
 ### Blockers/Concerns
