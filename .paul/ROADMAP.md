@@ -4,11 +4,20 @@
 
 Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa s oblasťami a ponukami (mock dáta za vymeniteľným rozhraním), potom automatické upozornenia a AI prehľad lokality, potom AI drafty správ realitkám s manuálnym odoslaním, a nakoniec produkčné nasadenie s ochranou prístupu.
 
+## Milestones
+
+| Version | Name | Phases | Status | Completed |
+|---------|------|--------|--------|-----------|
+| v0.1 | Initial Release (mapa, notifikácie, AI, nasadenie) | 1-4 | ✅ Live | 2026-09-23 |
+| v0.2 | Reálne dáta (Apify), ranné privítanie, regióny/provincie | – (na požiadanie, bez fáz) | ✅ Live | 2026-09-24 |
+| v0.3 | Dizajn, UX a domčeky pri mori | 5-8 | 📋 Planned | - |
+
 ## Current Milestone
 
-**v0.1 Initial Release** (v0.1.0)
-Status: Complete (v kóde; čaká na Vercel env)
-Phases: 4 of 4 complete
+**v0.3 Dizajn, UX a domčeky pri mori** (v0.3.0)
+Status: Planned – začína v novej session
+Phases: 0 of 4 complete
+Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Phases
 
@@ -18,6 +27,10 @@ Phases: 4 of 4 complete
 | 2 | Automatizácia a AI prehľad lokality | 2 | Complete | 2026-09-23 |
 | 3 | Komunikačný modul | 1 | Complete | 2026-09-23 |
 | 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
+| 5 | Pobrežný pás a nastavenia vyhľadávania | TBD | Not started | - |
+| 6 | Hamburger menu, odhlásenie, tmavý režim | TBD | Not started | - |
+| 7 | Dizajnový systém, animácie, výrazné stavy | TBD | Not started | - |
+| 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
 
 ## Phase Details
 
@@ -79,6 +92,39 @@ Phases: 4 of 4 complete
 **Plans:**
 - [x] 04-01: Ochrana prístupu, dokumentácia, nasadenie
 
+## v0.3 Phase Details
+
+Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na začiatku dizajnovej session (/paul:plan).
+
+### Phase 5: Pobrežný pás a nastavenia vyhľadávania
+
+**Goal:** Predvolene sa hľadajú len domčeky pri mori; Adelka si v nastaveniach môže zapnúť „Hľadať aj vnútrozemie“ so vzdialenosťou od pobrežia alebo celou oblasťou.
+**Depends on:** v0.2 (regióny/provincie, Apify provider)
+**Research:** Likely (odvodenie pobrežnej čiary a pásov v geo:build)
+
+**Scope:**
+- Pobrežná čiara z hraníc provincií (bez štátnych hraníc), predpočítané pásy 2/5/10/20 km
+- Apify: Immobiliare hľadá v prieniku provincie a pásu; filter v appke rovnako
+- Nastavenie v `app_state` (platí aj pre ranný cron)
+- Odstrániť kreslenie oblasti ťukaním
+
+### Phase 6: Hamburger menu, odhlásenie, tmavý režim
+
+**Goal:** Navigácia v hamburger menu s nastaveniami vyhľadávania, prepínačom tmavého režimu a odhlásením.
+**Depends on:** Phase 5 (nastavenia vyhľadávania)
+
+### Phase 7: Dizajnový systém, animácie, výrazné stavy
+
+**Goal:** Appka je pekná, animovaná a interaktívna; stavy (sťahovanie ponúk, chyby, úspech) sú dobre viditeľné; funguje svetlá aj tmavá téma.
+**Depends on:** Phase 6
+**Research:** Likely (načítať dizajnový skill pred návrhom)
+
+### Phase 8: Značka a zábava
+
+**Goal:** Logo „La casetta di Adelka“ (Higgsfield, domček so srdiečkom), nový názov v UI, vtipné „platené reklamy“ s Lubkovou fotkou a hravé mikrotexty.
+**Depends on:** Phase 7 (vizuálny štýl)
+**Blocker:** Lubkova fotka pre „reklamy“
+
 ---
 *Roadmap created: 2026-09-23*
-*Last updated: 2026-09-23*
+*Last updated: 2026-09-24*

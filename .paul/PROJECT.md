@@ -13,9 +13,9 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.1.0 |
-| Status | MVP (v0.1 hotové v kóde) |
-| Last Updated | 2026-09-23 |
+| Version | 0.2.0 |
+| Status | Live so skutočnými inzerátmi (v0.2), v0.3 naplánovaná |
+| Last Updated | 2026-09-24 |
 
 **Production URLs:**
 - https://adelka-home-finder.vercel.app: produkcia (live od 2026-09-24)
@@ -38,12 +38,19 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 - [x] AI prehľad lokality s cache — v0.1
 - [x] AI draft správy realitke, odoslanie len Adelkou — v0.1
 - [x] Prístup chránený heslom — v0.1
+- [x] Reálne inzeráty z Idealista.it a Immobiliare.it cez Apify — v0.2
+- [x] Ranné privítanie, overovanie aktuálnosti, zlacnenia, „Pozrieť teraz“ — v0.2
+- [x] Výber oblastí cez klikateľné regióny a provincie — v0.2
 
 ### Active (In Progress)
 None yet.
 
-### Planned (Next)
-- Napojenie reálneho poskytovateľa realitných dát
+### Planned (Next) – v0.3, zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md
+- Predvolene len domčeky pri mori (pobrežný pás), vnútrozemie ako nastavenie
+- Hamburger menu s nastaveniami, tmavým režimom a odhlásením
+- Odstránenie kreslenia oblasti
+- Dizajnový systém, animácie, výrazné stavové hlášky, tmavá téma
+- Logo „La casetta di Adelka“ (Higgsfield) a vtipné „reklamy“ od Lubka
 
 ### Nice-to-Have (P1)
 - Porovnanie viacerých inzerátov vedľa seba
@@ -79,7 +86,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 - Všetky DB operácie iba cez serverové API routes / server actions so `service_role` kľúčom, nikdy z klienta
 - DB schéma je už spustená v Supabase; zmeny schémy vyžadujú ručné spustenie SQL
 - Webglobe hosting nepodporuje Node.js, appka beží na Verceli (Webglobe = len DNS)
-- Poskytovateľ reálnych dát nie je vybraný, takže v1 beží na mock dátach za vymeniteľným rozhraním
+- Dáta cez Apify actory (igolaizola/idealista-scraper, memo23/immobiliare-scraper), strop 50 ponúk na portál a oblasť
 - Vercel Hobby cron: max 1× denne
 
 ### Business Constraints
@@ -124,7 +131,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Databáza | Supabase Postgres | Frankfurt, RLS zapnuté |
 | Automatizácia | Vercel Cron (n8n voliteľne) | Polling nových inzerátov |
 | AI | Claude API | Prehľad lokality, drafty správ |
-| Dáta nehnuteľností | Komerčné API (TBD), zatiaľ mock | RealtyAPI / PropAPIS / Apify |
+| Dáta nehnuteľností | Apify (Idealista.it + Immobiliare.it) | REST API run-sync-get-dataset-items |
 | DNS | Webglobe | CNAME na Vercel |
 
 ## Links
@@ -137,4 +144,4 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 
 ---
 *Created: 2026-09-23*
-*Last updated: 2026-09-24*
+*Last updated: 2026-09-24 (v0.3 zadanie)*

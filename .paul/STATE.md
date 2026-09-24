@@ -5,24 +5,26 @@
 See: .paul/PROJECT.md (updated 2026-09-23)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** Reálne dáta cez Apify + ranné privítanie hotové v kóde; čaká na zapnutie vo Verceli a migráciu
+**Current focus:** v0.3 Dizajn, UX a domčeky pri mori – nová session (zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Current Position
 
-Milestone: v0.2 Reálne dáta a privítanie (mimo pôvodnej roadmapy, na požiadanie)
-Status: Implemented, not yet switched on in production
-Last activity: 2026-09-24 — Apify provider (Idealista + Immobiliare), overovanie aktuálnosti, ranné privítanie, Pozrieť teraz, testovací email
+Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – Planned
+Phase: 5 of 8 (Pobrežný pás a nastavenia vyhľadávania) – not started
+Status: Paused – ďalšia session je venovaná dizajnu a UX/UI
+Last activity: 2026-09-24 — Produkcia prepnutá na Apify (overené 12 behov), zapísané zadanie v0.3
 
 Progress:
-- v0.1: [██████████] 100%
-- v0.2: [█████████░] 90% (chýba zapnutie v produkcii)
+- v0.1: [██████████] 100% (live)
+- v0.2: [██████████] 100% (live od 2026-09-24)
+- v0.3: [░░░░░░░░░░] 0%
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ◉     [Čaká na overenie v produkcii]
+  ○        ○        ○     [v0.3 – ready for /paul:plan]
 ```
 
 ## Accumulated Context
@@ -41,6 +43,8 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Overovanie aktuálnosti podľa ID (36 h), skrytie po 4 dňoch | v0.2 | Denne max APIFY_RECHECK_MAX ponúk |
 | app_state + previous_price cez migráciu, kód funguje aj bez nej | v0.2 | Poradie nasadenia nerozbije produkciu |
 | Výber oblastí cez klikateľné regióny → provincie (ISTAT 2026, openpolis CC BY) | v0.2 | Nahrádza obdĺžnikové predvoľby; oblasť sa páruje s miestom podľa názvu |
+| Predvolene len pobrežný pás, vnútrozemie ako nastavenie | v0.3 | Rieši vnútrozemské výsledky (Catania, Caltanissetta, Bari) |
+| Kreslenie oblasti sa ruší, ostávajú regióny/provincie | v0.3 | Jednoduchšie UX |
 
 ### Deferred Issues
 
@@ -57,16 +61,20 @@ PLAN ──▶ APPLY ──▶ UNIFY
 
 | Blocker | Impact | Resolution Path |
 |---------|--------|-----------------|
-| Vercel: PROPERTY_PROVIDER=apify, APIFY_TOKEN | Produkcia stále na mock dátach | Pridať premenné → Redeploy |
-| Migrácia 20260924_privitanie.sql | Privítanie, zlacnenia, Pozrieť teraz vypnuté | Supabase → SQL Editor |
+| Lubkova fotka pre „reklamy“ | Fáza 8 (zábava) | Ľubo dodá fotku |
+| Migrácia 20260924_privitanie.sql – neoverená | Privítanie, zlacnenia, Pozrieť teraz | Ľubo potvrdí / otestuje „Pozrieť teraz“ |
 | DNS adel.orszagh.online | Doména nesmeruje na Vercel | Vercel → Domains, CNAME na Webglobe |
 
 ## Session Continuity
 
 Last session: 2026-09-24
-Stopped at: v0.2 implementované a pushnuté
-Next action: Zapnúť Apify vo Verceli, spustiť migráciu
-Resume context: README.md, supabase/migrations/20260924_privitanie.sql
+Stopped at: Zadanie v0.3 zapísané, session uzavretá na žiadosť Ľuba
+Next action: Nová session – načítať dizajnový skill a navrhnúť Ľubovi dizajn/UX (hamburger menu, nastavenia pobrežia, animácie, tmavý režim, logo, zábava); potom /paul:plan
+Resume file: .paul/HANDOFF-2026-09-24.md
+Resume context:
+- Produkcia live s Apify (Bari, Crotone, Caltanissetta, Catania); výsledky príliš z vnútrozemia
+- Zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md (Ľubo očakáva vlastný návrh)
+- Skontrolovať prvý ranný cron 25. 9. v Apify (APIFY_TOKEN v .env.local)
 
 ---
 *STATE.md — Updated after every significant action*
