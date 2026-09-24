@@ -60,6 +60,10 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Otestovať naživo: AI prehľad lokality, draft emailu, Resend | 2 | S | Teraz (kľúče sú nastavené) |
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
+### Git State
+Last commit: b8f72c8 (fáza 5), branch main, nepushnuté
+Feature branches merged: none
+
 ### Blockers/Concerns
 
 | Blocker | Impact | Resolution Path |
