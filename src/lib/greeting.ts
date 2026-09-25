@@ -39,7 +39,7 @@ function plural(n: number, one: string, few: string, many: string): string {
 }
 
 /**
- * "Dobré ráno, Adelka ☕ Lubko ti v noci našiel …" – what appeared or got
+ * "Buongiorno, Adelka. Lubko ti v noci našiel …" (Italian greeting, Slovak text) – what appeared or got
  * cheaper since she last looked. Null when there is nothing new.
  */
 export function buildGreeting(properties: Property[], lastSeenAt: string, now = new Date()): Greeting | null {
@@ -52,7 +52,7 @@ export function buildGreeting(properties: Property[], lastSeenAt: string, now = 
   const hour = localHour(now);
   const morning = hour >= 4 && hour < 10;
   const title =
-    morning ? "Dobré ráno, Adelka ☕" : hour >= 10 && hour < 18 ? "Dobrý deň, Adelka 👋" : "Dobrý večer, Adelka 🌙";
+    hour >= 4 && hour < 12 ? "Buongiorno, Adelka" : hour >= 12 && hour < 18 ? "Buon pomeriggio, Adelka" : "Buonasera, Adelka";
 
   const found = [
     fresh.length > 0 ? plural(fresh.length, "nový inzerát", "nové inzeráty", "nových inzerátov") : null,

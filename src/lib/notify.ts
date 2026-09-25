@@ -39,7 +39,7 @@ export function buildDigest(result: SyncResult, areas: SearchArea[], appUrl: str
     fresh.length > 0 ? `${fresh.length} ${plural(fresh.length, "nový inzerát", "nové inzeráty", "nových inzerátov")}` : null,
     changed.length > 0 ? `${changed.length} ${plural(changed.length, "zmena ceny", "zmeny cien", "zmien cien")}` : null,
   ].filter(Boolean);
-  const subject = `Domček pri mori: ${parts.join(", ")}`;
+  const subject = `La casetta di Adelka: ${parts.join(", ")}`;
 
   const section = (title: string, items: Item[]) =>
     items.length === 0
@@ -48,7 +48,7 @@ export function buildDigest(result: SyncResult, areas: SearchArea[], appUrl: str
 
   const html = `<!doctype html><html lang="sk"><body style="margin:0;padding:16px;background:#f8fafc;font-family:system-ui,Arial,sans-serif;color:#0f172a">
 <div style="max-width:560px;margin:0 auto">
-<h1 style="font-size:20px;margin:0 0 4px">🏖️ Novinky v tvojich oblastiach</h1>
+<h1 style="font-size:20px;margin:0 0 4px">Novinky v tvojich oblastiach</h1>
 <p style="margin:0;color:#475569">${escapeHtml(parts.join(", "))}</p>
 ${section("Nové inzeráty", fresh)}
 ${section("Zmeny cien", changed)}

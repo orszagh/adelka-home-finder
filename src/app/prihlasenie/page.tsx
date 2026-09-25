@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { safeNextPath } from "@/lib/auth";
+import { LogoMark } from "@/components/Logo";
 import { LoginForm } from "./LoginForm";
 
-export const metadata: Metadata = { title: "Prihlásenie · Domček pri mori" };
+export const metadata: Metadata = { title: "Prihlásenie" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/prihlasenie">) {
   const { next } = await searchParams;
@@ -34,15 +35,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/prihlaseni
       </svg>
 
       <div className="flex flex-col items-center gap-2 text-center">
-        <svg aria-hidden width="88" height="88" viewBox="0 0 32 32">
-          <path d="M6 14.5 L16 6.5 L26 14.5 V27 H6 Z" fill="var(--c-accent)" />
-          <path d="M3.5 15.5 L16 5 L28.5 15.5" fill="none" stroke="var(--c-love)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-          <path
-            d="M16 23.6 C12.4 21 10.9 19.2 10.9 17.3 C10.9 15.9 12 14.8 13.4 14.8 C14.5 14.8 15.4 15.5 16 16.4 C16.6 15.5 17.5 14.8 18.6 14.8 C20 14.8 21.1 15.9 21.1 17.3 C21.1 19.2 19.6 21 16 23.6 Z"
-            fill="var(--c-on-accent)"
-          />
-        </svg>
-        <h1 className="mt-2 font-display text-4xl font-semibold italic leading-tight text-ink">Vitaj, Adelka</h1>
+        <LogoMark size={96} />
+        <h1 className="mt-2 font-display text-4xl font-semibold italic leading-tight text-ink">
+          La casetta
+          <br />
+          di Adelka
+        </h1>
         <p className="text-muted">Tvoj domček pri mori už niekde čaká.</p>
       </div>
 

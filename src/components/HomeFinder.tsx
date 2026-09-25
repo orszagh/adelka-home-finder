@@ -9,6 +9,7 @@ import { pointInArea } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
 import type { Greeting } from "@/lib/greeting";
 import { type Place, REGIONS, areaNameFor } from "@/lib/italy";
+import { AdPopup } from "./AdPopup";
 import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
@@ -150,6 +151,8 @@ export function HomeFinder({
     ) : null;
 
   return (
+    <>
+    <AdPopup />
     <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_65px)] lg:flex-none lg:flex-row">
       {greetingCard("m-3 mb-0 lg:hidden")}
       <section
@@ -350,5 +353,6 @@ export function HomeFinder({
         </div>
       </section>
     </main>
+    </>
   );
 }

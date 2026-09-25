@@ -247,6 +247,7 @@ body {
   --animate-fade-up: fade-up 420ms var(--ease-wave) both;
   --animate-pop: pop 520ms var(--ease-wave);
   --animate-burst: burst 700ms var(--ease-wave) forwards;
+  --animate-shake: shake 420ms ease-in-out;
 
   @keyframes bob {
     0%, 100% { transform: translateY(0) rotate(-3deg); }
@@ -277,6 +278,11 @@ body {
     35% { transform: scale(1.35); }
     65% { transform: scale(0.92); }
     100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
   }
   @keyframes burst {
     from { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0.6); opacity: 1; }

@@ -10,13 +10,13 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 |---------|------|--------|--------|-----------|
 | v0.1 | Initial Release (mapa, notifikácie, AI, nasadenie) | 1-4 | ✅ Live | 2026-09-23 |
 | v0.2 | Reálne dáta (Apify), ranné privítanie, regióny/provincie | – (na požiadanie, bez fáz) | ✅ Live | 2026-09-24 |
-| v0.3 | Dizajn, UX a domčeky pri mori | 5-8 | 🚧 In progress | - |
+| v0.3 | Dizajn, UX a domčeky pri mori | 5-8 | ✅ Live | 2026-09-25 |
 
 ## Current Milestone
 
 **v0.3 Dizajn, UX a domčeky pri mori** (v0.3.0)
-Status: In progress
-Phases: 3 of 4 complete (75 %)
+Status: Complete (live)
+Phases: 4 of 4 complete (100 %)
 Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Phases
@@ -30,7 +30,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 5 | Pobrežný pás a nastavenia vyhľadávania | 2/2 | ✅ Complete | 2026-09-25 |
 | 6 | Hamburger menu, odhlásenie, tmavý režim | 2/2 | ✅ Complete | 2026-09-25 |
 | 7 | Dizajnový systém, animácie, výrazné stavy | 2/2 | ✅ Complete | 2026-09-25 |
-| 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
+| 8 | Značka a zábava (logo, „reklamy“ od Lubka) | 2/2 | ✅ Complete | 2026-09-25 |
 
 ## Phase Details
 
@@ -136,6 +136,10 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 **Goal:** Logo „La casetta di Adelka“ (Higgsfield, domček so srdiečkom), nový názov v UI, vtipné „platené reklamy“ s Lubkovou fotkou a hravé mikrotexty.
 **Depends on:** Phase 7 (vizuálny štýl)
 **Blocker:** Lubkova fotka pre „reklamy“
+
+**Plans:**
+- [x] 08-01: Logo cez Higgsfield (výber Ľubom), názov „La casetta di Adelka“, ikony, hravé mikrotexty
+- [x] 08-02: „Platené reklamy“ s Lubkovou fotkou (čaká na fotky, tón a frekvenciu)
 
 ---
 *Roadmap created: 2026-09-23*

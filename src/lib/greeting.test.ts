@@ -42,7 +42,7 @@ describe("buildGreeting", () => {
       lastSeen,
       morning,
     )!;
-    expect(greeting.title).toBe("Dobré ráno, Adelka ☕");
+    expect(greeting.title).toBe("Buongiorno, Adelka");
     expect(greeting.eyebrow).toMatch(/^[A-ZŠČŽ][a-zá-ž]+ ráno$/);
     expect(greeting.message).toBe(
       "Lubko ti v noci našiel 2 nové inzeráty (a 1 zlacnený). Pozri si ich pri kávičke.",
@@ -53,7 +53,7 @@ describe("buildGreeting", () => {
   it("adapts to the time of day and wording", () => {
     const listings = Array.from({ length: 5 }, (_, i) => property(`n${i}`, { first_seen_at: "2026-09-24T03:00:00Z" }));
     const evening = buildGreeting(listings, lastSeen, new Date("2026-09-24T18:00:00Z"))!;
-    expect(evening.title).toBe("Dobrý večer, Adelka 🌙");
+    expect(evening.title).toBe("Buonasera, Adelka");
     expect(evening.message).toMatch(/^Lubko ti od tvojej poslednej návštevy našiel 5 nových inzerátov\./);
 
     const onlyCheaper = buildGreeting(
@@ -61,7 +61,7 @@ describe("buildGreeting", () => {
       lastSeen,
       new Date("2026-09-24T10:00:00Z"),
     )!;
-    expect(onlyCheaper.title).toBe("Dobrý deň, Adelka 👋");
+    expect(onlyCheaper.title).toBe("Buon pomeriggio, Adelka");
     expect(onlyCheaper.message).toContain("našiel 1 zlacnený inzerát.");
   });
 

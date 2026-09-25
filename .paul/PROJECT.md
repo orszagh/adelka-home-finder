@@ -13,8 +13,8 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | 0.2.0 |
-| Status | Live so skutočnými inzerátmi (v0.2), v0.3 rozpracovaná (fázy 5–7 hotové) |
+| Version | 0.3.0 |
+| Status | Live so skutočnými inzerátmi (v0.2), v0.3 hotová a nasadená (fázy 5–8) |
 | Last Updated | 2026-09-25 |
 
 **Production URLs:**
@@ -45,9 +45,10 @@ Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miest
 - [x] Kreslenie oblasti odstránené — Phase 5
 - [x] Hamburger menu, odhlásenie, tmavý režim (Svetlý / Tmavý / Ako mobil), farby návrhu „Riviéra ráno“ — Phase 6
 - [x] Dizajnový systém (Fraunces + DM Sans, ui.tsx), karta sťahovania s loďkou, hlásenia, animácie — Phase 7
+- [x] Značka „La casetta di Adelka“ (logo z Higgsfield), talianske pozdravy, štipľavé reklamy od Lubka s míľnikmi pusí a emailom Lubkovi — Phase 8
 
 ### Active (In Progress)
-- [ ] Logo „La casetta di Adelka“, nový názov, vtipné „reklamy“ od Lubka (fáza 8)
+None – v0.3 hotová, ďalší míľnik podľa dohody.
 
 ### Planned (Next) – v0.3, zadanie v .paul/phases/v0.3-dizajn-ux/ZADANIE.md
 
@@ -114,6 +115,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 | Apify pozdĺž pobrežia: max 4 úseky, maxItems rozdelené | Rovnaké náklady ako pri celej provincii | 2026-09-24 | Active |
 | Sémantické farebné tokeny s light-dark(), téma v cookie | Tmavý režim bez bliknutia, základ dizajnového systému | 2026-09-25 | Active |
 | Animácie len v CSS, rešpektujú prefers-reduced-motion | Bez knižníc, prístupné | 2026-09-25 | Active |
+| Reklamy: pusy v localStorage, ťuknutia v app_state + email Lubkovi | Zábava bez DB migrácie | 2026-09-25 | Active |
 
 ## Success Metrics
 
@@ -148,4 +150,4 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 
 ---
 *Created: 2026-09-23*
-*Last updated: 2026-09-25 after Phase 7*
+*Last updated: 2026-09-25 after Phase 8 (v0.3 complete)*

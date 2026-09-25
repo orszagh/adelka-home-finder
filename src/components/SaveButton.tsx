@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useOptimistic, useState, useTransition } from "react";
 import { toggleSaved } from "@/app/actions";
+import { useToast } from "./Toast";
 import { ICONS, buttonClass } from "./ui";
 
 function Heart({ filled, size }: { filled: boolean; size: number }) {
@@ -57,11 +58,17 @@ export function SaveButton({
   const [pending, startTransition] = useTransition();
   /** Bumped on every save so the pop and the burst play again. */
   const [celebrate, setCelebrate] = useState(0);
+  const toast = useToast();
 
   const onClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!optimisticSaved) setCelebrate((n) => n + 1);
+    toast.show(
+      optimisticSaved
+        ? { tone: "info", text: "Odložené bokom. Keby si si to rozmyslela, je tu." }
+        : { tone: "success", text: "Uložené do srdiečka ♥", action: { href: "/ulozene", label: "Uložené" } },
+    );
     startTransition(async () => {
       setOptimisticSaved(!optimisticSaved);
       await toggleSaved(propertyId);

@@ -51,7 +51,7 @@ describe("POST /api/cron/test-email", () => {
     expect(url).toBe("https://api.resend.com/emails");
     expect(init.headers.Authorization).toBe("Bearer re_test");
     const payload = JSON.parse(init.body);
-    expect(payload.subject).toBe("[TEST] Domček pri mori: 2 nové inzeráty, 1 zmena ceny");
+    expect(payload.subject).toBe("[TEST] La casetta di Adelka: 2 nové inzeráty, 1 zmena ceny");
     expect(payload.html).toContain("https://app.test/inzerat/");
     expect(payload.text).toMatch(/^TESTOVACÍ EMAIL/);
   });

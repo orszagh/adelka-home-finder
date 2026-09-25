@@ -34,6 +34,7 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `CRON_SECRET` | pre notifikácie | Chráni `/api/cron/sync`. Vercel ho posiela automaticky. |
 | `RESEND_API_KEY`, `NOTIFY_EMAIL` | pre notifikácie | Odoslanie upozornení. Bez nich sync beží, len sa neposiela email. |
 | `EMAIL_FROM` | nie | Odosielateľ. Vlastná adresa vyžaduje overenú doménu v Resende. |
+| `LUBKO_EMAIL` | nie | Komu ide email o ťuknutiach v Lubkových reklamách (predvolene orszagh.lubo@gmail.com). Záznam ťuknutí je v `app_state` pod kľúčom `ad_choices`. |
 | `APP_URL` | nie | Adresa pre odkazy v emailoch (predvolene produkčná Vercel URL). |
 | `PROPERTY_PROVIDER` | nie | `mock` (ukážkové dáta, predvolené) alebo `apify` (reálne inzeráty z Idealista.it a Immobiliare.it). |
 | `APIFY_TOKEN` | pre `apify` | Apify API token. |

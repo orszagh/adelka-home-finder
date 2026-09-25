@@ -25,7 +25,7 @@ export async function sendEmail(message: EmailMessage): Promise<SendResult> {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM ?? "Domček pri mori <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM ?? "La casetta di Adelka <onboarding@resend.dev>",
       to: message.to,
       subject: message.subject,
       html: message.html,

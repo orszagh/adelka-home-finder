@@ -55,7 +55,7 @@ describe("buildDigest", () => {
     };
     const digest = buildDigest(result, [liguria], "https://app.test")!;
     expect(digest.count).toBe(2);
-    expect(digest.subject).toBe("Domček pri mori: 1 nový inzerát, 1 zmena ceny");
+    expect(digest.subject).toBe("La casetta di Adelka: 1 nový inzerát, 1 zmena ceny");
     expect(digest.html).toContain("https://app.test/inzerat/in");
     expect(digest.html).not.toContain("/inzerat/out");
     expect(digest.html).toContain("▼ lacnejšie");

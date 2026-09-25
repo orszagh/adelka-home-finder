@@ -3,6 +3,7 @@ import { DM_Sans, Fraunces } from "next/font/google";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { AppMenu } from "@/components/AppMenu";
+import { APP_NAME, Logo } from "@/components/Logo";
 import { ToastProvider } from "@/components/Toast";
 import { getRepo } from "@/lib/db/repo";
 import { formatSearchSettings, getSearchSettings } from "@/lib/search-settings";
@@ -23,8 +24,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Adelka · Domček pri mori",
-  description: "Hľadanie domčeka pri mori v Taliansku",
+  title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
+  description: "Adelkin domček pri talianskom mori",
+  appleWebApp: { title: "La casetta" },
 };
 
 export const viewport: Viewport = {
@@ -49,9 +51,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ToastProvider>
           <header className="sticky top-0 z-[1000] border-b border-line bg-canvas">
             <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-2.5">
-              <Link href="/" className="mr-auto flex min-h-11 items-center gap-2 font-semibold text-accent-ink">
-                <span aria-hidden className="text-xl">🏖️</span>
-                <span className="font-display text-xl font-semibold italic">Domček pri mori</span>
+              <Link href="/" aria-label={`${APP_NAME} – domov`} className="mr-auto flex min-h-11 items-center">
+                <Logo />
               </Link>
               {menu && <AppMenu savedCount={menu.savedCount} settingsLabel={menu.settingsLabel} theme={theme} />}
             </div>

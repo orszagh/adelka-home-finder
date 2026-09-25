@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useId, useRef, useState, useTransition } fro
 import { logout } from "@/app/session-actions";
 import { setTheme } from "@/app/theme-actions";
 import type { Theme } from "@/lib/theme";
+import { Logo } from "./Logo";
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: "light", label: "Svetlý" },
@@ -128,8 +129,9 @@ export function AppMenu({
           }`}
         >
           <div className="mb-3 flex items-center gap-2">
-            <span aria-hidden className="text-xl">🏖️</span>
-            <span className="flex-1 font-display text-lg font-semibold italic text-accent-ink">Domček pri mori</span>
+            <span className="flex-1">
+              <Logo size={32} />
+            </span>
             <button
               ref={closeButton}
               type="button"
