@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { reportAdChoice } from "@/app/ad-actions";
 import type { AdChoice } from "@/lib/ad-report";
-import { type Ad, type KissMilestone, kissesWord, milestoneFor, paidText, pickAd, shouldShowAd, todayKey } from "@/lib/ads";
+import { type Ad, type KissMilestone, adAt, kissesWord, milestoneFor, paidText, shouldShowAd } from "@/lib/ads";
 import { Button, ICONS, Icon } from "./ui";
 
-const LAST_DAY_KEY = "adelka.ad.lastDay";
+/** When the last ad was shown (ms) and which one comes next. */
+const LAST_SHOWN_KEY = "adelka.ad.lastShownAt";
+const NEXT_AD_KEY = "adelka.ad.next";
 const KISSES_KEY = "adelka.ad.kisses";
 const SHOW_AFTER_MS = 8000;
 const CLOSE_AFTER_S = 3;
@@ -31,22 +33,25 @@ function write(key: string, value: string): boolean {
 type Stage = "ad" | "paid" | "milestone";
 
 /**
- * Lubko's "paid ad": once a day on the home page (or right away with
- * ?reklama=1). Paying with a kiss counts kisses in this browser; at 3 and
+ * Lubko's "paid ad" on the home page: one at a time, in order, at least
+ * five hours apart (or right away with ?reklama=1). Paying with a kiss counts kisses in this browser; at 3 and
  * 10 kisses Lubko gets bolder.
  */
 export function AdPopup() {
   const [ad, setAd] = useState<Ad | null>(null);
 
   useEffect(() => {
-    const today = todayKey();
     const forced = new URLSearchParams(window.location.search).get("reklama") === "1";
-    // Without storage the ad could not be limited to once a day, so it stays away.
-    if (!forced && (!shouldShowAd(read(LAST_DAY_KEY), today) || !write(LAST_DAY_KEY, read(LAST_DAY_KEY) ?? ""))) return;
+    const last = read(LAST_SHOWN_KEY);
+    if (!forced && !shouldShowAd(last === null ? null : Number(last))) return;
+    // Without storage the ads could not be spaced out, so they stay away.
+    if (!write(LAST_SHOWN_KEY, last ?? "")) return;
     const id = setTimeout(
       () => {
-        write(LAST_DAY_KEY, today);
-        setAd(pickAd(today));
+        const position = Number(read(NEXT_AD_KEY)) || 0;
+        write(LAST_SHOWN_KEY, String(Date.now()));
+        write(NEXT_AD_KEY, String(position + 1));
+        setAd(adAt(position));
       },
       forced ? 300 : SHOW_AFTER_MS,
     );

@@ -1,7 +1,7 @@
 /**
  * "Platené reklamy" from Lubko: the app is free, except it isn't. Cheeky
- * and flirty on purpose (Ľubo asked for bold), never explicit. At most one
- * a day, remembered in the browser.
+ * and flirty on purpose (Ľubo asked for bold). One at a time, in order,
+ * at least AD_GAP_MS apart, remembered in the browser.
  */
 export type Ad = {
   /** Which photo from /public/lubko (1–3). */
@@ -81,20 +81,18 @@ export const ADS: Ad[] = [
   },
 ];
 
-/** Europe/Bratislava calendar day, e.g. "2026-09-25". */
-export function todayKey(now = new Date()): string {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Bratislava" }).format(now);
+/** Ľubo: one ad, then the next one no sooner than five hours later. */
+export const AD_GAP_MS = 5 * 60 * 60 * 1000;
+
+/** Whether enough time has passed since the last ad (or none was shown yet). */
+export function shouldShowAd(lastShownAt: number | null, now = Date.now()): boolean {
+  return lastShownAt === null || !Number.isFinite(lastShownAt) || now - lastShownAt >= AD_GAP_MS;
 }
 
-/** Once a day: only when the last ad was shown on another day. */
-export function shouldShowAd(lastShownDay: string | null, today: string): boolean {
-  return lastShownDay !== today;
-}
-
-/** A different ad each day, the same one all day. */
-export function pickAd(today: string): Ad {
-  const days = Math.floor(Date.parse(`${today}T00:00:00Z`) / 86_400_000);
-  return ADS[((days % ADS.length) + ADS.length) % ADS.length];
+/** The ads go one after another; after the last one they start again. */
+export function adAt(position: number): Ad {
+  const i = Number.isInteger(position) && position >= 0 ? position : 0;
+  return ADS[i % ADS.length];
 }
 
 export function kissesWord(n: number): string {

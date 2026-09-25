@@ -38,7 +38,7 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children, modal }: LayoutProps<"/">) {
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   const menu = (await hasSession()) ? await menuData() : null;
   return (
@@ -58,6 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </div>
           </header>
           {children}
+          {modal}
         </ToastProvider>
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice, homesLabel } from "@/lib/format";
 import { pointInArea } from "@/lib/geo";
@@ -27,6 +27,9 @@ type Sort = "newest" | "cheapest" | "priciest";
 
 const SELECT_CLASS =
   "mt-1 min-h-11 w-full rounded-2xl bg-surface px-3 text-sm font-medium text-ink shadow-card focus:outline-2 focus:outline-accent";
+
+/** Set once per browser session, after the region overview was shown. */
+const OVERVIEW_SHOWN_KEY = "adelka.overviewShown";
 
 const PRICE_OPTIONS = [150_000, 200_000, 300_000, 400_000, 600_000];
 
@@ -63,6 +66,17 @@ export function HomeFinder({
   const [highlightIds, setHighlightIds] = useState<string[] | null>(null);
   /** Picking regions/provinces on the map; opens by itself while Adelka has no areas yet. */
   const [chooserOpen, setChooserOpen] = useState(areas.length === 0);
+  // Opening the app starts on the colourful map of regions; coming back from a listing does not.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(OVERVIEW_SHOWN_KEY)) return;
+      sessionStorage.setItem(OVERVIEW_SHOWN_KEY, "1");
+    } catch {
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
+    setChooserOpen(true);
+  }, []);
   const [chooserRegion, setChooserRegion] = useState<string | null>(null);
   const [placeBusy, startPlace] = useTransition();
   /** Name of the place whose listings are being fetched right now. */

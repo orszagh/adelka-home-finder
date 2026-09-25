@@ -1,19 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { ADS, kissesWord, paidText, pickAd, shouldShowAd, todayKey } from "./ads";
+import { ADS, AD_GAP_MS, adAt, kissesWord, paidText, shouldShowAd } from "./ads";
 
 describe("Lubko's ads", () => {
-  it("shows at most one a day, by Slovak time", () => {
-    expect(todayKey(new Date("2026-09-24T22:30:00Z"))).toBe("2026-09-25");
-    expect(shouldShowAd(null, "2026-09-25")).toBe(true);
-    expect(shouldShowAd("2026-09-25", "2026-09-25")).toBe(false);
-    expect(shouldShowAd("2026-09-24", "2026-09-25")).toBe(true);
+  it("shows one ad, the next one at least five hours later", () => {
+    const now = Date.parse("2026-09-25T20:00:00Z");
+    expect(shouldShowAd(null, now)).toBe(true);
+    expect(shouldShowAd(now - AD_GAP_MS + 60_000, now)).toBe(false);
+    expect(shouldShowAd(now - AD_GAP_MS, now)).toBe(true);
+    expect(shouldShowAd(Number.NaN, now)).toBe(true);
   });
 
-  it("picks a different ad on consecutive days, the same one all day", () => {
-    expect(pickAd("2026-09-25")).toBe(pickAd("2026-09-25"));
-    expect(pickAd("2026-09-25")).not.toBe(pickAd("2026-09-26"));
-    const week = new Set(Array.from({ length: ADS.length }, (_, i) => pickAd(`2026-10-${String(i + 1).padStart(2, "0")}`)));
-    expect(week.size).toBe(ADS.length);
+  it("goes through the ads in order and starts again", () => {
+    expect(adAt(0)).toBe(ADS[0]);
+    expect(adAt(1)).toBe(ADS[1]);
+    expect(adAt(ADS.length)).toBe(ADS[0]);
+    expect(adAt(-3)).toBe(ADS[0]);
   });
 
   it("has complete ads with one of the three photos", () => {

@@ -13,7 +13,7 @@ Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – Complete
 Phase: 8 of 8 (Značka a zábava) – Complete
 Plan: 08-01, 08-02 complete
 Status: Milestone v0.3 complete
-Last activity: 2026-09-25 — Phase 8 complete (logo Higgsfield č. 4, názov, reklamy s míľnikmi, sledovanie ťuknutí), v0.3 hotová
+Last activity: 2026-09-25 — Úpravy po v0.3: úvodná mapa s regiónmi, detail v pravom paneli (intercepting route), reklamy po jednej s odstupom 5 h
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -85,6 +85,7 @@ Next action: /paul:complete-milestone (v0.3), potom /paul:discuss-milestone pre 
 Resume file: .paul/ROADMAP.md
 Resume context:
 - Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
+- Po v0.3 (2026-09-25): úvodná mapa s regiónmi (raz za reláciu), detail domčeka v paneli vpravo / na celú obrazovku v mobile (app/@modal/(.)inzerat), reklamy v poradí s odstupom min. 5 h
 - Fáza 8 hotová: logo Higgsfield č. 4, názov La casetta di Adelka, reklamy (?reklama=1 na skúšku), míľniky 3/10 pusí, email Lubkovi pri ťuknutí
 - Fáza 7 hotová: Fraunces/DM Sans, ui.tsx, karta sťahovania s loďkou, toasty, srdiečko, nábeh kariet
 - Fáza 6 hotová: tokeny + tmavý režim (cookie adelka_theme), hamburger menu, odhlásenie. Otvorené: podpora light-dark() na Adelkinom mobile (prehliadač 2024+)
