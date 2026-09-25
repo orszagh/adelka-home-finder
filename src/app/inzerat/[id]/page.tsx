@@ -6,8 +6,10 @@ import { MessageDraft } from "@/components/MessageDraft";
 import { isAiConfigured } from "@/lib/ai/claude";
 import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
+import { ICONS, Icon, buttonClass } from "@/components/ui";
 import { getRepo } from "@/lib/db/repo";
-import { formatDate, formatPrice, roomsLabel } from "@/lib/format";
+import { distanceToSeaKm } from "@/lib/coast";
+import { formatDate, formatPrice, roomsLabel, seaLabel } from "@/lib/format";
 import { isStale } from "@/lib/freshness";
 import { getProvider } from "@/lib/providers";
 import { hasSession } from "@/lib/session";
@@ -36,19 +38,20 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
       "Cena za m²",
       property.price && property.area_sqm ? formatPrice(Math.round(property.price / property.area_sqm)) : "–",
     ],
-    ["Lokalita", `${property.city}, ${property.region}`],
+    ["Od mora", seaLabel(distanceToSeaKm(property.longitude, property.latitude))],
     ["Zdroj", SOURCE_LABELS[property.source] ?? property.source],
     ["V appke od", formatDate(property.first_seen_at)],
   ];
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
-      <Link href="/" className="text-sm font-medium text-accent-ink hover:underline">
-        ‹ Späť na ponuky
+      <Link href="/" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink hover:underline">
+        <Icon d={ICONS.back} size={16} />
+        Späť na ponuky
       </Link>
 
       {!getProvider().isMock && isStale(property) && (
-        <p className="rounded-xl bg-surface-2 px-3 py-2 text-sm text-ink-2 ring-1 ring-line">
+        <p className="rounded-2xl bg-warn-soft px-4 py-3 text-sm text-warn-ink">
           Tento inzerát už na portáli nie je (naposledy videný {formatDate(property.last_seen_at)}). Dom je
           pravdepodobne predaný alebo stiahnutý z ponuky.
         </p>
@@ -58,9 +61,11 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">{property.title}</h1>
-          <p className="mt-1 text-muted">
-            📍 {property.city}, {property.region}
+          <p className="font-display text-3xl font-semibold text-ink">{formatPrice(property.price)}</p>
+          <h1 className="mt-1 text-lg font-medium text-ink">{property.title}</h1>
+          <p className="mt-1 flex items-center gap-1 text-muted">
+            <Icon d={ICONS.pin} size={16} />
+            {property.city}, {property.region}
           </p>
         </div>
         <SaveButton propertyId={property.id} saved={savedEntry !== null} variant="full" />
@@ -68,9 +73,9 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {facts.map(([label, value]) => (
-          <div key={label} className="rounded-xl bg-surface p-3 ring-1 ring-line">
-            <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
-            <dd className="mt-0.5 font-medium text-ink">{value}</dd>
+          <div key={label} className="rounded-2xl bg-surface p-3.5 shadow-card">
+            <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{label}</dt>
+            <dd className="mt-1 font-semibold text-ink">{value}</dd>
           </div>
         ))}
       </dl>
@@ -81,12 +86,13 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
             href={property.listing_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full px-4 py-2 text-sm font-medium text-accent-ink ring-1 ring-accent hover:bg-accent-soft"
+            className={buttonClass("secondary")}
           >
-            Pôvodný inzerát ↗
+            <Icon d={ICONS.external} size={18} />
+            Pôvodný inzerát
           </a>
         ) : (
-          <span className="rounded-full px-4 py-2 text-sm text-muted ring-1 ring-line">
+          <span className="inline-flex min-h-11 items-center rounded-full px-4 text-sm text-muted ring-1 ring-line">
             Ukážkový inzerát bez odkazu na portál
           </span>
         )}
@@ -94,14 +100,15 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
           href={`https://www.openstreetmap.org/?mlat=${property.latitude}&mlon=${property.longitude}#map=15/${property.latitude}/${property.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-full px-4 py-2 text-sm font-medium text-ink-2 ring-1 ring-line-strong hover:bg-surface-2"
+          className={buttonClass("secondary")}
         >
-          Na mape ↗
+          <Icon d={ICONS.map} size={18} />
+          Na mape
         </a>
       </div>
 
       {savedEntry && (
-        <section className="rounded-2xl bg-surface p-4 ring-1 ring-line">
+        <section className="rounded-3xl bg-surface p-5 shadow-card">
           <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
         </section>
       )}

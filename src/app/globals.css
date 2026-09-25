@@ -32,7 +32,8 @@
   --c-sun: #f2c14e;
   --c-on-sun: #3a2a05;
   --c-overlay: light-dark(rgb(14 26 33 / 0.55), rgb(0 0 0 / 0.6));
-  --c-shadow: light-dark(rgb(29 42 51 / 0.12), rgb(0 0 0 / 0.4));
+  --c-shadow: light-dark(rgb(29 42 51 / 0.09), rgb(0 0 0 / 0.35));
+  --c-shadow-soft: light-dark(rgb(29 42 51 / 0.06), rgb(0 0 0 / 0.3));
 }
 :root[data-theme="light"] {
   color-scheme: light;
@@ -54,7 +55,10 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --shadow-card: 0 1px 2px var(--c-shadow-soft), 0 8px 24px var(--c-shadow);
+  --shadow-lift: 0 2px 6px var(--c-shadow-soft), 0 18px 40px var(--c-shadow);
   --color-canvas: var(--c-canvas);
   --color-surface: var(--c-surface);
   --color-surface-2: var(--c-surface-2);
@@ -84,13 +88,13 @@
 body {
   background: var(--c-canvas);
   color: var(--c-ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 
 /* Leaflet chrome in the app's colours. */
 .leaflet-container {
   background: var(--c-surface-2);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 .leaflet-bar a,
 .leaflet-bar a:hover {
@@ -148,7 +152,7 @@ body {
   white-space: nowrap;
   padding: 2px 8px;
   border-radius: 9999px;
-  font: 600 12px/1.4 var(--font-geist-sans), system-ui, sans-serif;
+  font: 600 12px/1.4 var(--font-dm-sans), system-ui, sans-serif;
   background: var(--c-surface);
   color: var(--c-accent-ink);
   border: 1px solid var(--c-accent);
@@ -194,7 +198,7 @@ body {
   border-radius: 10px;
   background: color-mix(in srgb, var(--c-surface) 92%, transparent);
   box-shadow: 0 1px 3px var(--c-shadow);
-  font: 600 13px/1.25 var(--font-geist-sans), system-ui, sans-serif;
+  font: 600 13px/1.25 var(--font-dm-sans), system-ui, sans-serif;
   color: var(--c-ink);
   cursor: pointer;
 }

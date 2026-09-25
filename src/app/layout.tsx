@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { AppMenu } from "@/components/AppMenu";
@@ -9,8 +9,15 @@ import { hasSession } from "@/lib/session";
 import { THEME_COOKIE, parseTheme } from "@/lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "latin-ext"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin", "latin-ext"],
 });
 
@@ -35,14 +42,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="sk"
       data-theme={theme === "system" ? undefined : theme}
-      className={`${geistSans.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <header className="sticky top-0 z-[1000] border-b border-line bg-canvas">
           <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-2.5">
             <Link href="/" className="mr-auto flex min-h-11 items-center gap-2 font-semibold text-accent-ink">
               <span aria-hidden className="text-xl">🏖️</span>
-              <span>Domček pri mori</span>
+              <span className="font-display text-xl font-semibold italic">Domček pri mori</span>
             </Link>
             {menu && <AppMenu savedCount={menu.savedCount} settingsLabel={menu.settingsLabel} theme={theme} />}
           </div>

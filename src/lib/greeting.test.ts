@@ -43,6 +43,7 @@ describe("buildGreeting", () => {
       morning,
     )!;
     expect(greeting.title).toBe("Dobré ráno, Adelka ☕");
+    expect(greeting.eyebrow).toMatch(/^[A-ZŠČŽ][a-zá-ž]+ ráno$/);
     expect(greeting.message).toBe(
       "Lubko ti v noci našiel 2 nové inzeráty (a 1 zlacnený). Pozri si ich pri kávičke.",
     );

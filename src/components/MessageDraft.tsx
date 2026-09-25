@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MAX_INTENT, mailtoHref, type MessageDraft as Draft } from "@/lib/message";
+import { Button, Eyebrow, buttonClass } from "./ui";
 
 const SUGGESTIONS = [
   "Mám záujem o tento dom. Je ešte k dispozícii?",
@@ -65,12 +66,13 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
     }
   };
 
-  const inputClass = "mt-1 w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-base font-normal";
+  const inputClass = "mt-1 w-full rounded-2xl border border-line-strong bg-surface px-3.5 py-2.5 text-base font-normal text-ink";
 
   return (
-    <section aria-labelledby="draft-heading" className="space-y-4 rounded-2xl bg-surface p-4 ring-1 ring-line">
+    <section aria-labelledby="draft-heading" className="space-y-4 rounded-3xl bg-surface p-5 shadow-card">
       <div>
-        <h2 id="draft-heading" className="text-lg font-semibold">
+        <Eyebrow tone="muted">Správa po taliansky</Eyebrow>
+        <h2 id="draft-heading" className="font-display text-2xl font-semibold text-ink">
           Napísať realitke
         </h2>
         <p className="text-sm text-muted">
@@ -85,7 +87,7 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
             key={s}
             type="button"
             onClick={() => setIntent((v) => (v ? `${v} ${s}` : s))}
-            className="rounded-full bg-surface-2 px-3 py-1.5 text-left text-sm text-ink-2 hover:bg-line"
+            className="min-h-11 rounded-2xl bg-surface-2 px-3.5 py-2 text-left text-sm text-ink-2 hover:bg-line"
           >
             {s}
           </button>
@@ -109,18 +111,13 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
         <input value={signature} onChange={(e) => setSignature(e.target.value)} maxLength={80} className={inputClass} />
       </label>
 
-      <button
-        type="button"
-        onClick={generate}
-        disabled={!aiEnabled || loading || intent.trim().length === 0}
-        className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-40"
-      >
-        {loading ? "Pripravujem…" : draft ? "✨ Pripraviť znova" : "✨ Pripraviť správu"}
-      </button>
+      <Button onClick={generate} disabled={!aiEnabled || loading || intent.trim().length === 0}>
+        {loading ? "Pripravujem…" : draft ? "Pripraviť znova" : "Pripraviť správu"}
+      </Button>
       {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
 
       {error && (
-        <p className="rounded-xl bg-love-soft px-3 py-2 text-sm text-love-ink ring-1 ring-love/30" role="alert">
+        <p className="rounded-2xl bg-love-soft px-4 py-3 text-sm text-love-ink" role="alert">
           {error}
         </p>
       )}
@@ -136,7 +133,7 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
             Text emailu (taliansky)
             <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10} className={inputClass} />
           </label>
-          <details className="rounded-xl bg-surface-2 p-3 text-sm">
+          <details className="rounded-2xl bg-surface-2 p-4 text-sm">
             <summary className="cursor-pointer font-medium text-ink-2">Čo v tom je po slovensky</summary>
             <p className="mt-2 whitespace-pre-line text-ink-2">{draft.translation_sk}</p>
             {body !== draft.body_it && (
@@ -156,14 +153,14 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
           <div className="flex flex-wrap gap-2">
             <a
               href={mailtoHref(to, subject, body)}
-              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong"
+              className={buttonClass("primary")}
             >
-              ✉️ Otvoriť v mojom e-maile
+              Otvoriť v mojom e-maile
             </a>
             <button
               type="button"
               onClick={copy}
-              className="rounded-full px-4 py-2 text-sm font-medium text-ink-2 ring-1 ring-line-strong hover:bg-surface-2"
+              className={buttonClass("secondary")}
             >
               {copied ? "Skopírované ✓" : "Kopírovať text"}
             </button>

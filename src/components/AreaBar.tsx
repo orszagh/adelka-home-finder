@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { deleteArea } from "@/app/actions";
 import type { SearchArea } from "@/lib/types";
+import { Button, ICONS, Icon, chipClass } from "./ui";
 
 export function AreaBar({
   areas,
@@ -21,47 +22,33 @@ export function AreaBar({
   const [pending, startTransition] = useTransition();
 
   return (
-    <section aria-labelledby="areas-heading" className="space-y-2">
+    <section aria-labelledby="areas-heading" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="areas-heading" className="text-sm font-semibold uppercase tracking-wide text-muted">
+        <h2 id="areas-heading" className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
           Moje oblasti
         </h2>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onOpenChooser}
-            disabled={busy}
-            className="rounded-full bg-accent px-3 py-1.5 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-50"
-          >
-            🗺️ Vybrať na mape
-          </button>
-        </div>
+        <Button variant="secondary" onClick={onOpenChooser} disabled={busy}>
+          <Icon d={ICONS.map} size={18} />
+          Vybrať na mape
+        </Button>
       </div>
 
       {areas.length === 0 && (
-        <p className="text-sm text-muted">
-          Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori.
-        </p>
+        <p className="text-sm text-muted">Zatiaľ nemáš žiadnu oblasť. Vyber si na mape región alebo provinciu pri mori.</p>
       )}
 
       <div className="flex flex-wrap gap-2">
         {areas.map((area) => {
           const active = activeAreaIds.includes(area.id);
           return (
-            <span
-              key={area.id}
-              className={`inline-flex items-center rounded-full text-sm ring-1 ${
-                active ? "bg-accent-soft text-accent-ink ring-accent" : "bg-surface text-muted ring-line-strong"
-              }`}
-            >
+            <span key={area.id} className={chipClass(active, "pl-0 pr-0")}>
               <button
                 type="button"
                 onClick={() => onToggle(area.id)}
                 aria-pressed={active}
-                className="py-1.5 pl-3 pr-1"
+                className="min-h-11 pl-3.5 pr-1"
                 title={active ? "Skryť ponuky z tejto oblasti" : "Zobraziť ponuky z tejto oblasti"}
               >
-                {active ? "✓ " : ""}
                 {area.name}
               </button>
               <button
@@ -73,9 +60,9 @@ export function AreaBar({
                   }
                 }}
                 aria-label={`Zmazať oblasť ${area.name}`}
-                className="py-1.5 pl-1 pr-3 text-faint hover:text-love"
+                className="grid min-h-11 place-items-center pl-1 pr-3 opacity-60 hover:opacity-100"
               >
-                ×
+                <Icon d={ICONS.close} size={14} />
               </button>
             </span>
           );

@@ -129,7 +129,7 @@ export function AppMenu({
         >
           <div className="mb-3 flex items-center gap-2">
             <span aria-hidden className="text-xl">🏖️</span>
-            <span className="flex-1 font-semibold text-accent-ink">Domček pri mori</span>
+            <span className="flex-1 font-display text-lg font-semibold italic text-accent-ink">Domček pri mori</span>
             <button
               ref={closeButton}
               type="button"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDate } from "@/lib/format";
 import type { LocationNote } from "@/lib/types";
+import { Button, Eyebrow } from "./ui";
 
 const SECTIONS: { key: keyof LocationNote; title: string; icon: string }[] = [
   { key: "ai_summary", title: "Celkový dojem", icon: "🏘️" },
@@ -46,15 +47,18 @@ export function LocationSummary({
   };
 
   return (
-    <section aria-labelledby="location-heading" className="space-y-3 rounded-2xl bg-surface p-4 ring-1 ring-line">
+    <section aria-labelledby="location-heading" className="space-y-3 rounded-3xl bg-surface p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="location-heading" className="text-lg font-semibold">
-          O lokalite {city}
-        </h2>
+        <div>
+          <Eyebrow tone="muted">Prehľad lokality</Eyebrow>
+          <h2 id="location-heading" className="font-display text-2xl font-semibold text-ink">
+            {city}
+          </h2>
+        </div>
         {note && !loading && aiEnabled && (
-          <button type="button" onClick={() => load(true)} className="text-sm font-medium text-accent-ink hover:underline">
-            ↻ Obnoviť
-          </button>
+          <Button variant="ghost" onClick={() => load(true)}>
+            Obnoviť
+          </Button>
         )}
       </div>
 
@@ -64,14 +68,9 @@ export function LocationSummary({
             AI ti pripraví krátky prehľad: čo je v okolí, ako sa tam dostať, aké je počasie a či tam hrozia záplavy alebo iné
             riziká.
           </p>
-          <button
-            type="button"
-            onClick={() => load(false)}
-            disabled={!aiEnabled}
-            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong disabled:opacity-40"
-          >
-            ✨ Zobraziť prehľad lokality
-          </button>
+          <Button onClick={() => load(false)} disabled={!aiEnabled}>
+            Zobraziť prehľad lokality
+          </Button>
           {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
         </div>
       )}
@@ -83,7 +82,7 @@ export function LocationSummary({
       )}
 
       {error && (
-        <p className="rounded-xl bg-love-soft px-3 py-2 text-sm text-love-ink ring-1 ring-love/30" role="alert">
+        <p className="rounded-2xl bg-love-soft px-4 py-3 text-sm text-love-ink" role="alert">
           {error}
         </p>
       )}
@@ -93,7 +92,7 @@ export function LocationSummary({
           {SECTIONS.map(({ key, title, icon }) =>
             note[key] ? (
               <div key={key}>
-                <h3 className="font-medium text-ink">
+                <h3 className="font-semibold text-ink">
                   <span aria-hidden>{icon}</span> {title}
                 </h3>
                 <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink-2">{note[key]}</p>

@@ -8,6 +8,8 @@ export const MANUAL_SYNC_COOLDOWN_MS = 60 * 60 * 1000;
 const TIME_ZONE = "Europe/Bratislava";
 
 export type Greeting = {
+  /** Day and time of day above the title, e.g. "Štvrtok ráno". */
+  eyebrow: string;
   title: string;
   message: string;
   /** Listings to show when Adelka taps "Ukázať mi ich". */
@@ -22,6 +24,14 @@ export function manualSyncWaitMinutes(lastManualSync: string | null, now = Date.
 
 function localHour(now: Date): number {
   return Number(new Intl.DateTimeFormat("sk-SK", { hour: "numeric", hourCycle: "h23", timeZone: TIME_ZONE }).format(now));
+}
+
+/** "Štvrtok ráno", "Štvrtok popoludní", "Štvrtok večer" (Slovak time). */
+export function dayPart(now: Date): string {
+  const hour = localHour(now);
+  const day = new Intl.DateTimeFormat("sk-SK", { weekday: "long", timeZone: TIME_ZONE }).format(now);
+  const part = hour >= 4 && hour < 10 ? "ráno" : hour >= 10 && hour < 12 ? "dopoludnia" : hour >= 12 && hour < 18 ? "popoludní" : "večer";
+  return `${day.charAt(0).toUpperCase()}${day.slice(1)} ${part}`;
 }
 
 function plural(n: number, one: string, few: string, many: string): string {
@@ -58,6 +68,7 @@ export function buildGreeting(properties: Property[], lastSeenAt: string, now = 
   const when = morning ? "v noci" : "od tvojej poslednej návštevy";
   const outro = morning ? "Pozri si ich pri kávičke." : "Pozri sa na ne, keď budeš mať chvíľku.";
   return {
+    eyebrow: dayPart(now),
     title,
     message: `Lubko ti ${when} našiel ${found}. ${outro}`,
     ids: [...fresh, ...cheaper].map((p) => p.id),

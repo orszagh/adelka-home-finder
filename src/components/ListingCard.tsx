@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatPrice, roomsLabel, seaLabel } from "@/lib/format";
 import type { Property } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
+import { ICONS, Icon } from "./ui";
 
 export function ListingCard({
   property,
@@ -25,55 +26,64 @@ export function ListingCard({
   onSelect?: (id: string) => void;
 }) {
   const photo = property.photos[0];
+  const meta = [
+    property.area_sqm ? `${property.area_sqm} m²` : null,
+    property.rooms ? roomsLabel(property.rooms) : null,
+    property.sea_km != null ? seaLabel(property.sea_km) : null,
+  ].filter(Boolean);
+
   return (
     <article
       id={`listing-${property.id}`}
       onMouseEnter={() => onSelect?.(property.id)}
-      className={`group relative flex gap-3 rounded-2xl bg-surface p-2 shadow-sm ring-1 transition ${
-        selected ? "ring-2 ring-accent" : "ring-line hover:ring-line-strong"
+      className={`group relative overflow-hidden rounded-3xl bg-surface shadow-card transition ${
+        selected ? "ring-2 ring-accent" : ""
       }`}
     >
-      <Link href={`/inzerat/${property.id}`} className="flex min-w-0 flex-1 gap-3">
-        <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-surface-2 sm:h-28 sm:w-40">
+      <Link href={`/inzerat/${property.id}`} className="block">
+        <div className="relative aspect-[16/9] max-h-44 w-full overflow-hidden bg-surface-2">
           {photo && (
-            <img src={photo} alt="" loading="lazy" className="h-full w-full object-cover" />
-          )}
-          {gone && (
-            <span className="absolute inset-x-0 bottom-0 bg-slate-900/75 px-2 py-1 text-center text-[11px] font-medium text-white">
-              Už nie je v ponuke
-            </span>
+            <img
+              src={photo}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+            />
           )}
           {isNew && (
-            <span className="absolute left-1.5 top-1.5 rounded-full bg-sun px-2 py-0.5 text-[11px] font-semibold text-on-sun">
+            <span className="absolute left-3 top-3 rounded-full bg-sun px-2.5 py-1 text-xs font-bold text-on-sun">
               Nové
             </span>
           )}
+          {gone && (
+            <span className="absolute inset-x-0 bottom-0 bg-slate-900/75 px-3 py-1.5 text-center text-xs font-semibold text-white">
+              Už nie je v ponuke
+            </span>
+          )}
         </div>
-        <div className="min-w-0 flex-1 py-1 pr-10">
-          <p className={`text-lg font-semibold ${gone ? "text-faint line-through" : "text-ink"}`}>
-            {formatPrice(property.price)}
+        <div className="space-y-1 px-4 pb-4 pt-3">
+          <p className="flex flex-wrap items-baseline gap-x-2">
+            <span className={`font-display text-2xl font-semibold ${gone ? "text-faint line-through" : "text-ink"}`}>
+              {formatPrice(property.price)}
+            </span>
             {previousPrice !== null && (
-              <span className="ml-2 align-middle text-sm font-medium text-success">
-                <span className="text-faint line-through">{formatPrice(previousPrice)}</span> ▼
-              </span>
+              <>
+                <span className="text-sm text-muted line-through">{formatPrice(previousPrice)}</span>
+                <span className="text-sm font-bold text-success">zlacnel</span>
+              </>
             )}
           </p>
-          <p className="truncate text-sm text-ink-2">{property.title}</p>
-          <p className="mt-1 text-sm text-muted">
-            {[
-              property.area_sqm ? `${property.area_sqm} m²` : null,
-              property.rooms ? roomsLabel(property.rooms) : null,
-              property.sea_km != null ? seaLabel(property.sea_km) : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          <p className="truncate text-sm text-muted">
-            📍 {property.city}, {property.region}
+          <p className="truncate text-[15px] font-medium text-ink">{property.title}</p>
+          {meta.length > 0 && <p className="text-sm text-muted">{meta.join(" · ")}</p>}
+          <p className="flex items-center gap-1 truncate text-sm text-muted">
+            <Icon d={ICONS.pin} size={15} className="shrink-0" />
+            <span className="truncate">
+              {property.city}, {property.region}
+            </span>
           </p>
         </div>
       </Link>
-      <div className="absolute right-2 top-2">
+      <div className="absolute right-2.5 top-2.5">
         <SaveButton propertyId={property.id} saved={saved} />
       </div>
     </article>

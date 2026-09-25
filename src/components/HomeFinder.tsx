@@ -13,6 +13,7 @@ import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
+import { Button, ICONS, Icon } from "./ui";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -20,6 +21,15 @@ const MapView = dynamic(() => import("./MapView"), {
 });
 
 type Sort = "newest" | "cheapest" | "priciest";
+
+const SELECT_CLASS =
+  "mt-1 min-h-11 w-full rounded-2xl bg-surface px-3 text-sm font-medium text-ink shadow-card focus:outline-2 focus:outline-accent";
+
+/** "12 domčekov" with Slovak plural forms. */
+function countLabel(n: number): string {
+  const noun = n === 1 ? "domček" : n >= 2 && n <= 4 ? "domčeky" : "domčekov";
+  return `${n} ${noun}`;
+}
 
 const PRICE_OPTIONS = [150_000, 200_000, 300_000, 400_000, 600_000];
 
@@ -145,7 +155,7 @@ export function HomeFinder({
     ) : null;
 
   return (
-    <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_57px)] lg:flex-none lg:flex-row">
+    <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_65px)] lg:flex-none lg:flex-row">
       {greetingCard("m-3 mb-0 lg:hidden")}
       <section
         className={`relative isolate ${chooserOpen ? "h-[65dvh]" : "h-[50dvh]"} shrink-0 lg:order-2 lg:h-auto lg:flex-1`}
@@ -172,29 +182,28 @@ export function HomeFinder({
         />
 
         {chooserOpen && (
-          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-2xl bg-surface/95 p-3 shadow-lg ring-1 ring-line">
+          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-3xl bg-surface/95 p-4 shadow-lift">
             <div className="flex items-center justify-between gap-2">
               {chooserRegionPlace ? (
                 <button
                   type="button"
                   onClick={() => setChooserRegion(null)}
-                  className="text-sm font-medium text-accent-ink hover:underline"
+                  className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink hover:underline"
                 >
-                  ‹ Celé Taliansko
+                  <Icon d={ICONS.back} size={16} />
+                  Celé Taliansko
                 </button>
               ) : (
-                <p className="font-semibold text-ink">Kde hľadáš domček?</p>
+                <p className="font-display text-xl font-semibold text-ink">Kde hľadáš domček?</p>
               )}
-              <button
-                type="button"
+              <Button
                 onClick={() => {
                   setChooserOpen(false);
                   setChooserRegion(null);
                 }}
-                className="rounded-full bg-accent px-3 py-1 text-sm font-medium text-on-accent hover:bg-accent-strong"
               >
                 Hotovo
-              </button>
+              </Button>
             </div>
             {chooserRegionPlace ? (
               <>
@@ -206,7 +215,7 @@ export function HomeFinder({
                   type="button"
                   disabled={placeBusy}
                   onClick={() => togglePlace(chooserRegionPlace)}
-                  className="text-sm font-medium text-accent-ink underline disabled:opacity-50"
+                  className="min-h-11 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
                 >
                   {areaByName(chooserRegionPlace) ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
                 </button>
@@ -222,9 +231,9 @@ export function HomeFinder({
         {!chooserOpen && (
           <Link
             href="/nastavenia"
-            className="absolute right-2 top-2 z-[1000] inline-flex min-h-10 items-center gap-1.5 rounded-full bg-surface/95 px-3 text-sm font-semibold text-ink shadow-md ring-1 ring-line hover:bg-surface"
+            className="absolute right-2.5 top-2.5 z-[1000] inline-flex min-h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-sm font-semibold text-ink shadow-lift hover:bg-surface-2"
           >
-            <span aria-hidden>🌊</span>
+            <Icon d={ICONS.waves} size={18} className="text-accent" />
             {settingsLabel}
             <span className="sr-only"> – zmeniť, kde hľadať</span>
           </Link>
@@ -233,34 +242,34 @@ export function HomeFinder({
         {selected && (
           <Link
             href={`/inzerat/${selected.id}`}
-            className="absolute inset-x-2 bottom-2 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-surface p-2 shadow-lg ring-1 ring-line lg:hidden"
+            className="absolute inset-x-2.5 bottom-2.5 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-3xl bg-surface p-2 shadow-lift lg:hidden"
           >
             {selected.photos[0] && (
-              <img src={selected.photos[0]} alt="" className="h-14 w-20 shrink-0 rounded-lg object-cover" />
+              <img src={selected.photos[0]} alt="" className="h-14 w-20 shrink-0 rounded-2xl object-cover" />
             )}
             <span className="min-w-0 flex-1">
-              <span className="block font-semibold">{formatPrice(selected.price)}</span>
+              <span className="block font-display text-lg font-semibold">{formatPrice(selected.price)}</span>
               <span className="block truncate text-sm text-muted">{selected.title}</span>
             </span>
-            <span className="pr-2 text-sm font-medium text-accent-ink">Detail ›</span>
+            <span className="pr-3 text-sm font-semibold text-accent-ink">Detail ›</span>
           </Link>
         )}
       </section>
 
-      <section className="space-y-4 p-4 lg:order-1 lg:w-[440px] lg:overflow-y-auto lg:border-r lg:border-line">
+      <section className="space-y-5 p-4 lg:order-1 lg:w-[480px] lg:overflow-y-auto lg:border-r lg:border-line">
         {greetingCard("hidden lg:block")}
 
         {highlightIds && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent-ink ring-1 ring-accent/30">
-            <span>Zobrazujem novinky od Lubka ({visible.length})</span>
-            <button type="button" onClick={() => setHighlightIds(null)} className="font-medium underline">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-accent-soft px-4 py-2 text-sm text-accent-ink">
+            <span className="font-medium">Zobrazujem novinky od Lubka ({visible.length})</span>
+            <button type="button" onClick={() => setHighlightIds(null)} className="min-h-11 font-semibold underline">
               Zobraziť všetky ponuky
             </button>
           </div>
         )}
 
         {notices.map((notice) => (
-          <p key={notice} className="rounded-xl bg-warn-soft px-3 py-2 text-sm text-warn-ink ring-1 ring-warn-ink/20">
+          <p key={notice} className="rounded-2xl bg-warn-soft px-4 py-3 text-sm text-warn-ink">
             {notice}
           </p>
         ))}
@@ -276,10 +285,8 @@ export function HomeFinder({
         {areaStatus && (
           <p
             role="status"
-            className={`rounded-xl px-3 py-2 text-sm ring-1 ${
-              areaStatus.tone === "error"
-                ? "bg-love-soft text-love-ink ring-love/30"
-                : "bg-accent-soft text-accent-ink ring-accent/30"
+            className={`rounded-2xl px-4 py-3 text-sm font-medium ${
+              areaStatus.tone === "error" ? "bg-love-soft text-love-ink" : "bg-accent-soft text-accent-ink"
             }`}
           >
             {areaStatus.text}
@@ -287,12 +294,12 @@ export function HomeFinder({
         )}
 
         <div className="grid grid-cols-3 gap-2">
-          <label className="text-xs text-muted">
+          <label className="text-xs font-semibold text-muted">
             Cena do
             <select
               value={maxPrice ?? ""}
               onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : null)}
-              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
+              className={SELECT_CLASS}
             >
               <option value="">Bez limitu</option>
               {PRICE_OPTIONS.map((v) => (
@@ -302,12 +309,12 @@ export function HomeFinder({
               ))}
             </select>
           </label>
-          <label className="text-xs text-muted">
+          <label className="text-xs font-semibold text-muted">
             Izby
             <select
               value={minRooms ?? ""}
               onChange={(e) => setMinRooms(e.target.value ? Number(e.target.value) : null)}
-              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
+              className={SELECT_CLASS}
             >
               <option value="">Všetky</option>
               {[2, 3, 4].map((v) => (
@@ -317,12 +324,12 @@ export function HomeFinder({
               ))}
             </select>
           </label>
-          <label className="text-xs text-muted">
+          <label className="text-xs font-semibold text-muted">
             Zoradiť
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as Sort)}
-              className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-2 text-sm text-ink"
+              className={SELECT_CLASS}
             >
               <option value="newest">Najnovšie</option>
               <option value="cheapest">Najlacnejšie</option>
@@ -331,16 +338,17 @@ export function HomeFinder({
           </label>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-muted" aria-live="polite">
-            {visible.length === 0
-              ? "V zvolených oblastiach a filtroch nie sú žiadne ponuky."
-              : `${visible.length} ${visible.length === 1 ? "ponuka" : visible.length < 5 ? "ponuky" : "ponúk"}`}
-          </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <h2 className="font-display text-[22px] font-semibold text-ink" aria-live="polite">
+            {visible.length === 0 ? "Zatiaľ nič" : countLabel(visible.length)}
+          </h2>
           {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
         </div>
+        {visible.length === 0 && (
+          <p className="-mt-3 text-sm text-muted">V zvolených oblastiach a filtroch nie sú žiadne ponuky.</p>
+        )}
 
-        <div className="space-y-3">
+        <div className="grid gap-4">
           {visible.map((p) => (
             <ListingCard
               key={p.id}

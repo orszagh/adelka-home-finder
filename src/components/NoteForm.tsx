@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateSavedNote } from "@/app/actions";
+import { buttonClass } from "./ui";
 
 export function NoteForm({ savedId, note }: { savedId: string; note: string | null }) {
   const [value, setValue] = useState(note ?? "");
@@ -31,14 +32,14 @@ export function NoteForm({ savedId, note }: { savedId: string; note: string | nu
           rows={3}
           maxLength={2000}
           placeholder="Napr. páči sa mi terasa, overiť parkovanie…"
-          className="mt-1 w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-base font-normal"
+          className="mt-1 w-full rounded-2xl border border-line-strong bg-surface px-3.5 py-2.5 text-base font-normal text-ink"
         />
       </label>
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={pending || !dirty}
-          className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-on-accent disabled:opacity-40"
+          className={buttonClass("primary")}
         >
           {pending ? "Ukladám…" : "Uložiť poznámku"}
         </button>

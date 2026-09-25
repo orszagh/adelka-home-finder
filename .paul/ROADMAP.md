@@ -29,7 +29,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
 | 5 | Pobrežný pás a nastavenia vyhľadávania | 2/2 | ✅ Complete | 2026-09-25 |
 | 6 | Hamburger menu, odhlásenie, tmavý režim | 2/2 | ✅ Complete | 2026-09-25 |
-| 7 | Dizajnový systém, animácie, výrazné stavy | TBD | Not started | - |
+| 7 | Dizajnový systém, animácie, výrazné stavy | 2 | In progress (1/2) | - |
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
 
 ## Phase Details
@@ -126,6 +126,10 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 **Goal:** Appka je pekná, animovaná a interaktívna; stavy (sťahovanie ponúk, chyby, úspech) sú dobre viditeľné; funguje svetlá aj tmavá téma.
 **Depends on:** Phase 6
 **Research:** Likely (načítať dizajnový skill pred návrhom)
+
+**Plans:**
+- [x] 07-01: Písma Fraunces/DM Sans, stavebné prvky, obrazovky podľa návrhu (domov, detail, uložené, nastavenia, prihlásenie)
+- [ ] 07-02: Animácie a výrazné stavy (sťahovanie s loďkou, toasty, srdiečko, nábeh kariet, prázdne stavy)
 
 ### Phase 8: Značka a zábava
 

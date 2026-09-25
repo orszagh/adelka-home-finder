@@ -10,22 +10,22 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 ## Current Position
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – In progress
-Phase: 7 of 8 (Dizajnový systém, animácie, výrazné stavy)
-Plan: Not started
-Status: Ready to plan (fáza 6 nasadená)
-Last activity: 2026-09-25 — Phase 6 complete (06-01, 06-02), nasadená, transitioned to Phase 7
+Phase: 7 of 8 (Dizajnový systém, animácie, výrazné stavy) — In progress (1/2)
+Plan: 07-01 complete (písma, stavebné prvky, obrazovky); 07-02 (animácie, výrazné stavy) nasleduje
+Status: Ready for next PLAN (07-01 necommitnuté)
+Last activity: 2026-09-25 — 07-01 APPLY + UNIFY: Fraunces/DM Sans, ui.tsx, všetky obrazovky podľa návrhu
 
 Progress:
 - v0.1: [██████████] 100% (live)
 - v0.2: [██████████] 100% (live od 2026-09-24)
-- v0.3: [█████░░░░░] 50% (fázy 5–6 hotové)
+- v0.3: [██████▎░░░] 62% (fázy 5–6 hotové, fáza 7: 1/2)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ○        ○        ○     [Ready to plan Phase 7]
+  ✓        ✓        ✓     [07-01 complete - ready for next PLAN (07-02)]
 ```
 
 ## Accumulated Context
@@ -51,6 +51,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Pobrežie z nezdieľaných hrán provincií mínus hranice Natural Earth; filter podľa pásu na serveri | 5 | sea_km sa počíta pri renderi, neukladá sa |
 | Sémantické tokeny s light-dark(), téma v cookie adelka_theme | 6 | Farby len cez tokeny; tmavá mapa cez CSS filter |
 | Hamburger menu (AppMenu) namiesto odkazov v hlavičke, odhlásenie cez server action | 6 | Hlavička bez backdrop-blur |
+| Stavebné prvky v src/components/ui.tsx, ikony ako inline SVG | 7 | Jednotný vzhľad, žiadne emoji v UI |
 
 ### Deferred Issues
 
@@ -77,9 +78,9 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-09-25
-Stopped at: Phase 6 complete and deployed, ready to plan Phase 7
-Next action: /paul:plan pre fázu 7 (písma Fraunces/DM Sans, komponenty podľa návrhu, animácie, výrazné stavy)
-Resume file: .paul/ROADMAP.md
+Stopped at: 07-01 loop closed
+Next action: /paul:plan pre 07-02 (animácie a výrazné stavy)
+Resume file: .paul/phases/07-dizajn-animacie/07-01-SUMMARY.md
 Resume context:
 - Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
 - Fáza 6 hotová: tokeny + tmavý režim (cookie adelka_theme), hamburger menu, odhlásenie. Otvorené: podpora light-dark() na Adelkinom mobile (prehliadač 2024+)

@@ -2,6 +2,24 @@
 
 import { useOptimistic, useTransition } from "react";
 import { toggleSaved } from "@/app/actions";
+import { ICONS, buttonClass } from "./ui";
+
+function Heart({ filled, size }: { filled: boolean; size: number }) {
+  return (
+    <svg
+      aria-hidden
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    >
+      <path d={ICONS.heart} />
+    </svg>
+  );
+}
 
 export function SaveButton({
   propertyId,
@@ -33,13 +51,11 @@ export function SaveButton({
         onClick={onClick}
         disabled={pending}
         aria-pressed={optimisticSaved}
-        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
-          optimisticSaved
-            ? "bg-love-soft text-love-ink ring-1 ring-love/30 hover:bg-love-soft"
-            : "bg-accent text-on-accent hover:bg-accent-strong"
-        }`}
+        className={
+          optimisticSaved ? buttonClass("secondary", "md", "text-love-ink ring-love/40") : buttonClass("primary")
+        }
       >
-        <span aria-hidden>{optimisticSaved ? "♥" : "♡"}</span>
+        <Heart filled={optimisticSaved} size={18} />
         {optimisticSaved ? "Uložené" : "Uložiť"}
       </button>
     );
@@ -53,11 +69,11 @@ export function SaveButton({
       aria-pressed={optimisticSaved}
       aria-label={label}
       title={label}
-      className="grid size-9 place-items-center rounded-full bg-surface/90 text-lg shadow ring-1 ring-line transition hover:scale-105"
+      className={`grid size-11 place-items-center rounded-full bg-surface shadow-card transition-transform hover:scale-105 ${
+        optimisticSaved ? "text-love" : "text-muted"
+      }`}
     >
-      <span aria-hidden className={optimisticSaved ? "text-love" : "text-muted"}>
-        {optimisticSaved ? "♥" : "♡"}
-      </span>
+      <Heart filled={optimisticSaved} size={22} />
     </button>
   );
 }

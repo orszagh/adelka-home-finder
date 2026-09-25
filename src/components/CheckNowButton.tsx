@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { checkNow } from "@/app/actions";
+import { Button, ICONS, Icon } from "./ui";
 
 export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
   const [pending, startTransition] = useTransition();
@@ -15,16 +16,16 @@ export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
     });
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <button
-        type="button"
+    <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+      <Button
+        variant="secondary"
         onClick={run}
         disabled={pending || waitMinutes > 0}
         title="Stiahne čerstvé ponuky pre všetky tvoje oblasti (najviac raz za hodinu)"
-        className="rounded-full px-3 py-1.5 text-sm font-medium text-accent-ink ring-1 ring-accent hover:bg-accent-soft disabled:opacity-50"
       >
-        {pending ? "Pozerám na portáloch…" : "🔄 Pozrieť teraz"}
-      </button>
+        <Icon d={ICONS.refresh} size={18} className={pending ? "animate-spin motion-reduce:animate-none" : ""} />
+        {pending ? "Pozerám na portáloch…" : "Pozrieť teraz"}
+      </Button>
       <span className="text-xs text-muted" role="status">
         {pending
           ? "Môže to trvať do minúty."
