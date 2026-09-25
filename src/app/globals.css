@@ -232,3 +232,65 @@ body {
     display: none;
   }
 }
+
+/*
+ * Motion. One easing ("vlna"), short enter / shorter exit. Everything is
+ * switched off when the phone asks for reduced motion.
+ */
+@theme {
+  --ease-wave: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-bob: bob 2.4s ease-in-out infinite;
+  --animate-wave: wave 1.6s linear infinite;
+  --animate-sheen: sheen 1.8s ease-in-out infinite;
+  --animate-rise: rise 420ms var(--ease-wave) both;
+  --animate-drop: drop 320ms var(--ease-wave) both;
+  --animate-fade-up: fade-up 420ms var(--ease-wave) both;
+  --animate-pop: pop 520ms var(--ease-wave);
+  --animate-burst: burst 700ms var(--ease-wave) forwards;
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-5px) rotate(3deg); }
+  }
+  @keyframes wave {
+    from { transform: translateX(0); }
+    to { transform: translateX(-40px); }
+  }
+  @keyframes sheen {
+    from { transform: translateX(-120%); }
+    to { transform: translateX(320%); }
+  }
+  @keyframes rise {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes drop {
+    from { transform: translateY(-12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fade-up {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35); }
+    65% { transform: scale(0.92); }
+    100% { transform: scale(1); }
+  }
+  @keyframes burst {
+    from { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0.6); opacity: 1; }
+    to { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-26px) scale(1); opacity: 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

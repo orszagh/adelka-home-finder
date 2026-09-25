@@ -16,7 +16,7 @@ Od prázdneho repozitára k funkčnej appke na adel.orszagh.online: najprv mapa 
 
 **v0.3 Dizajn, UX a domčeky pri mori** (v0.3.0)
 Status: In progress
-Phases: 2 of 4 complete (50 %)
+Phases: 3 of 4 complete (75 %)
 Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.md)
 
 ## Phases
@@ -29,7 +29,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 4 | Produkčné nasadenie | 1 | Complete | 2026-09-23 |
 | 5 | Pobrežný pás a nastavenia vyhľadávania | 2/2 | ✅ Complete | 2026-09-25 |
 | 6 | Hamburger menu, odhlásenie, tmavý režim | 2/2 | ✅ Complete | 2026-09-25 |
-| 7 | Dizajnový systém, animácie, výrazné stavy | 2 | In progress (1/2) | - |
+| 7 | Dizajnový systém, animácie, výrazné stavy | 2/2 | ✅ Complete | 2026-09-25 |
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | TBD | Not started | - |
 
 ## Phase Details
@@ -129,7 +129,7 @@ Poradie je návrh; o finálnom poradí a rozdelení na plány sa rozhodne na za�
 
 **Plans:**
 - [x] 07-01: Písma Fraunces/DM Sans, stavebné prvky, obrazovky podľa návrhu (domov, detail, uložené, nastavenia, prihlásenie)
-- [ ] 07-02: Animácie a výrazné stavy (sťahovanie s loďkou, toasty, srdiečko, nábeh kariet, prázdne stavy)
+- [x] 07-02: Animácie a výrazné stavy (sťahovanie s loďkou, toasty, srdiečko, nábeh kariet, prázdne stavy)
 
 ### Phase 8: Značka a zábava
 

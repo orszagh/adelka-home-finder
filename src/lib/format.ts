@@ -35,3 +35,9 @@ export function roomsLabel(rooms: number): string {
 export function seaLabel(km: number): string {
   return km < 1 ? "do 1 km od mora" : `${Math.round(km)} km od mora`;
 }
+
+/** "1 domček", "3 domčeky", "12 domčekov". */
+export function homesLabel(n: number): string {
+  const noun = n === 1 ? "domček" : n >= 2 && n <= 4 ? "domčeky" : "domčekov";
+  return `${n} ${noun}`;
+}

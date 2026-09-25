@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
-import { type SaveSettingsResult, saveSearchSettings } from "@/app/actions";
+import { saveSearchSettings } from "@/app/actions";
+import { homesLabel } from "@/lib/format";
 import { COAST_BAND_KM, INLAND_OPTIONS, type SearchSettings, formatSearchSettings } from "@/lib/search-settings";
+import { SyncSheet } from "./SyncSheet";
+import { useToast } from "./Toast";
 import { ICONS, Icon, buttonClass } from "./ui";
 
 const COAST = "M226 0 C206 36 246 58 230 96 C216 128 262 146 250 200";
@@ -48,16 +50,22 @@ const DISTANCES: { value: SearchSettings["inlandKm"]; label: string }[] = [
 export function SearchSettingsForm({ initial }: { initial: SearchSettings }) {
   const [settings, setSettings] = useState(initial);
   const [saved, setSaved] = useState(initial);
-  const [result, setResult] = useState<SaveSettingsResult | null>(null);
   const [pending, startTransition] = useTransition();
+  const toast = useToast();
   const changed = settings.inland !== saved.inland || settings.inlandKm !== saved.inlandKm;
 
   const save = () =>
     startTransition(async () => {
-      setResult(null);
-      const next = await saveSearchSettings(settings);
-      setResult(next);
-      if (next.ok) setSaved(settings);
+      const result = await saveSearchSettings(settings);
+      if (!result.ok) {
+        toast.show({ tone: "error", text: result.error });
+        return;
+      }
+      setSaved(settings);
+      const back = { href: "/", label: "Ukáž mi ich" };
+      if (result.error) toast.show({ tone: "error", text: result.error });
+      else if (result.fetched === null) toast.show({ tone: "success", text: "Uložené.", action: back });
+      else toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.`, action: back });
     });
 
   return (
@@ -130,38 +138,7 @@ export function SearchSettingsForm({ initial }: { initial: SearchSettings }) {
         Platí na mobile aj počítači. Podľa tohto hľadá Lubkov nočný pomocník každé ráno.
       </p>
 
-      {pending && (
-        <div role="status" className="flex items-center gap-3 rounded-3xl bg-accent p-4 text-on-accent shadow-lift">
-          <span aria-hidden className="size-6 shrink-0 animate-spin rounded-full border-[3px] border-on-accent/30 border-t-on-accent" />
-          <div>
-            <p className="font-semibold">Hľadám domčeky · {formatSearchSettings(settings)}</p>
-            <p className="text-sm text-on-accent/80">Môže to trvať do minúty.</p>
-          </div>
-        </div>
-      )}
-
-      {!pending && result && (
-        <div
-          role="status"
-          className={`space-y-1 rounded-2xl p-4 ring-1 ${
-            !result.ok || result.error ? "bg-love-soft text-love-ink ring-love/30" : "bg-accent-soft text-accent-ink ring-accent/30"
-          }`}
-        >
-          <p className="font-semibold">
-            {!result.ok
-              ? result.error
-              : result.fetched === null
-                ? "Uložené."
-                : `Hotovo, našiel som ${result.fetched} ponúk.`}
-          </p>
-          {result.ok && result.error && <p className="text-sm">{result.error}</p>}
-          {result.ok && (
-            <Link href="/" className="text-sm font-semibold underline">
-              Ukáž mi domčeky
-            </Link>
-          )}
-        </div>
-      )}
+      <SyncSheet open={pending} subtitle={formatSearchSettings(settings)} />
 
       <button
         type="button"

@@ -13,6 +13,7 @@ export function ListingCard({
   isNew = false,
   previousPrice = null,
   gone = false,
+  enterDelayMs = 0,
   onSelect,
 }: {
   property: Property;
@@ -23,6 +24,8 @@ export function ListingCard({
   previousPrice?: number | null;
   /** No longer on offer (sold or withdrawn). */
   gone?: boolean;
+  /** Cards in a list come in one after another. */
+  enterDelayMs?: number;
   onSelect?: (id: string) => void;
 }) {
   const photo = property.photos[0];
@@ -36,7 +39,8 @@ export function ListingCard({
     <article
       id={`listing-${property.id}`}
       onMouseEnter={() => onSelect?.(property.id)}
-      className={`group relative overflow-hidden rounded-3xl bg-surface shadow-card transition ${
+      style={{ animationDelay: `${enterDelayMs}ms` }}
+      className={`group relative animate-fade-up overflow-hidden rounded-3xl bg-surface shadow-card transition ${
         selected ? "ring-2 ring-accent" : ""
       }`}
     >

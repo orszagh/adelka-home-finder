@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, homesLabel } from "@/lib/format";
 import { pointInArea } from "@/lib/geo";
 import type { Property, SearchArea } from "@/lib/types";
 import type { Greeting } from "@/lib/greeting";
@@ -13,6 +13,8 @@ import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
+import { SyncSheet } from "./SyncSheet";
+import { useToast } from "./Toast";
 import { Button, ICONS, Icon } from "./ui";
 
 const MapView = dynamic(() => import("./MapView"), {
@@ -24,12 +26,6 @@ type Sort = "newest" | "cheapest" | "priciest";
 
 const SELECT_CLASS =
   "mt-1 min-h-11 w-full rounded-2xl bg-surface px-3 text-sm font-medium text-ink shadow-card focus:outline-2 focus:outline-accent";
-
-/** "12 domčekov" with Slovak plural forms. */
-function countLabel(n: number): string {
-  const noun = n === 1 ? "domček" : n >= 2 && n <= 4 ? "domčeky" : "domčekov";
-  return `${n} ${noun}`;
-}
 
 const PRICE_OPTIONS = [150_000, 200_000, 300_000, 400_000, 600_000];
 
@@ -68,7 +64,9 @@ export function HomeFinder({
   const [chooserOpen, setChooserOpen] = useState(areas.length === 0);
   const [chooserRegion, setChooserRegion] = useState<string | null>(null);
   const [placeBusy, startPlace] = useTransition();
-  const [areaStatus, setAreaStatus] = useState<{ tone: "info" | "error"; text: string } | null>(null);
+  /** Name of the place whose listings are being fetched right now. */
+  const [syncingPlace, setSyncingPlace] = useState<string | null>(null);
+  const toast = useToast();
 
   const activeAreas = useMemo(
     () => areas.filter((a) => !inactiveAreaIds.includes(a.id)),
@@ -109,13 +107,10 @@ export function HomeFinder({
   const toggleArea = (id: string) =>
     setInactiveAreaIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
-  const onAreaCreating = (name: string) =>
-    setAreaStatus({ tone: "info", text: `Sťahujem ponuky pre ${name}… môže to trvať do minúty.` });
-
   const onAreaCreated = (result: AreaResult) => {
-    if (result.error) setAreaStatus({ tone: "error", text: result.error });
-    else if (result.fetched === null) setAreaStatus(null);
-    else setAreaStatus({ tone: "info", text: `Hotovo, v oblasti som našiel ${result.fetched} ponúk.` });
+    setSyncingPlace(null);
+    if (result.error) toast.show({ tone: "error", text: result.error });
+    else if (result.fetched !== null) toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.` });
   };
 
   const areaByName = (place: Place) => areas.find((a) => a.name === areaNameFor(place));
@@ -124,11 +119,11 @@ export function HomeFinder({
   const togglePlace = (place: Place) => {
     const existing = areaByName(place);
     if (existing) {
-      setAreaStatus({ tone: "info", text: `${place.name} už nesleduješ.` });
+      toast.show({ tone: "info", text: `${place.name} už nesleduješ.` });
       startPlace(() => deleteArea(existing.id));
       return;
     }
-    onAreaCreating(place.name);
+    setSyncingPlace(place.name);
     startPlace(async () => onAreaCreated(await addPlaceArea(place.kind, place.code)));
   };
 
@@ -282,16 +277,7 @@ export function HomeFinder({
           busy={chooserOpen || placeBusy}
         />
 
-        {areaStatus && (
-          <p
-            role="status"
-            className={`rounded-2xl px-4 py-3 text-sm font-medium ${
-              areaStatus.tone === "error" ? "bg-love-soft text-love-ink" : "bg-accent-soft text-accent-ink"
-            }`}
-          >
-            {areaStatus.text}
-          </p>
-        )}
+        <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} />
 
         <div className="grid grid-cols-3 gap-2">
           <label className="text-xs font-semibold text-muted">
@@ -340,7 +326,7 @@ export function HomeFinder({
 
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <h2 className="font-display text-[22px] font-semibold text-ink" aria-live="polite">
-            {visible.length === 0 ? "Zatiaľ nič" : countLabel(visible.length)}
+            {visible.length === 0 ? "Zatiaľ nič" : homesLabel(visible.length)}
           </h2>
           {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
         </div>
@@ -349,9 +335,10 @@ export function HomeFinder({
         )}
 
         <div className="grid gap-4">
-          {visible.map((p) => (
+          {visible.map((p, i) => (
             <ListingCard
               key={p.id}
+              enterDelayMs={Math.min(i, 10) * 40}
               property={p}
               saved={saved.has(p.id)}
               selected={p.id === selectedId}

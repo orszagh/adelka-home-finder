@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { checkNow } from "@/app/actions";
+import { SyncSheet } from "./SyncSheet";
+import { useToast } from "./Toast";
 import { Button, ICONS, Icon } from "./ui";
 
 export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
   const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
+  const toast = useToast();
 
   const run = () =>
     startTransition(async () => {
-      setMessage(null);
       const result = await checkNow();
-      setMessage(result.ok ? "Hotovo, ponuky sú aktuálne." : result.error);
+      toast.show(result.ok ? { tone: "success", text: "Hotovo, ponuky sú aktuálne." } : { tone: "error", text: result.error });
     });
 
   return (
@@ -23,14 +24,11 @@ export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
         disabled={pending || waitMinutes > 0}
         title="Stiahne čerstvé ponuky pre všetky tvoje oblasti (najviac raz za hodinu)"
       >
-        <Icon d={ICONS.refresh} size={18} className={pending ? "animate-spin motion-reduce:animate-none" : ""} />
+        <Icon d={ICONS.refresh} size={18} className={pending ? "animate-spin" : ""} />
         {pending ? "Pozerám na portáloch…" : "Pozrieť teraz"}
       </Button>
-      <span className="text-xs text-muted" role="status">
-        {pending
-          ? "Môže to trvať do minúty."
-          : (message ?? (waitMinutes > 0 ? `Znova to pôjde o ${waitMinutes} min.` : null))}
-      </span>
+      {!pending && waitMinutes > 0 && <span className="text-xs text-muted">Znova to pôjde o {waitMinutes} min.</span>}
+      <SyncSheet open={pending} subtitle="Všetky tvoje oblasti" />
     </div>
   );
 }

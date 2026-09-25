@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { type CSSProperties, useOptimistic, useState, useTransition } from "react";
 import { toggleSaved } from "@/app/actions";
 import { ICONS, buttonClass } from "./ui";
 
@@ -21,6 +21,29 @@ function Heart({ filled, size }: { filled: boolean; size: number }) {
   );
 }
 
+const BURST_ANGLES = [0, 60, 120, 180, 240, 300];
+
+/** Six little hearts flying out when a house is saved. */
+function Burst() {
+  return (
+    <span aria-hidden className="pointer-events-none absolute inset-0">
+      {BURST_ANGLES.map((angle) => (
+        <svg
+          key={angle}
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          style={{ "--angle": `${angle}deg` } as CSSProperties}
+          className="absolute left-1/2 top-1/2 animate-burst text-love"
+        >
+          <path d={ICONS.heart} />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 export function SaveButton({
   propertyId,
   saved,
@@ -32,10 +55,13 @@ export function SaveButton({
 }) {
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(saved);
   const [pending, startTransition] = useTransition();
+  /** Bumped on every save so the pop and the burst play again. */
+  const [celebrate, setCelebrate] = useState(0);
 
   const onClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!optimisticSaved) setCelebrate((n) => n + 1);
     startTransition(async () => {
       setOptimisticSaved(!optimisticSaved);
       await toggleSaved(propertyId);
@@ -55,7 +81,10 @@ export function SaveButton({
           optimisticSaved ? buttonClass("secondary", "md", "text-love-ink ring-love/40") : buttonClass("primary")
         }
       >
-        <Heart filled={optimisticSaved} size={18} />
+        <span key={celebrate} className={`relative inline-grid ${celebrate > 0 && optimisticSaved ? "animate-pop" : ""}`}>
+          <Heart filled={optimisticSaved} size={18} />
+          {celebrate > 0 && optimisticSaved && <Burst />}
+        </span>
         {optimisticSaved ? "Uložené" : "Uložiť"}
       </button>
     );
@@ -73,7 +102,10 @@ export function SaveButton({
         optimisticSaved ? "text-love" : "text-muted"
       }`}
     >
-      <Heart filled={optimisticSaved} size={22} />
+      <span key={celebrate} className={`relative inline-grid ${celebrate > 0 && optimisticSaved ? "animate-pop" : ""}`}>
+        <Heart filled={optimisticSaved} size={22} />
+        {celebrate > 0 && optimisticSaved && <Burst />}
+      </span>
     </button>
   );
 }

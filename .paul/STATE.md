@@ -5,27 +5,27 @@
 See: .paul/PROJECT.md (updated 2026-09-25)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.3 – fáza 7: dizajnový systém, animácie, výrazné stavy
+**Current focus:** v0.3 – fáza 8: značka a zábava (logo, názov, reklamy)
 
 ## Current Position
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – In progress
-Phase: 7 of 8 (Dizajnový systém, animácie, výrazné stavy) — In progress (1/2)
-Plan: 07-01 complete (písma, stavebné prvky, obrazovky); 07-02 (animácie, výrazné stavy) nasleduje
-Status: Ready for next PLAN (07-01 necommitnuté)
-Last activity: 2026-09-25 — 07-01 APPLY + UNIFY: Fraunces/DM Sans, ui.tsx, všetky obrazovky podľa návrhu
+Phase: 8 of 8 (Značka a zábava)
+Plan: Not started
+Status: Ready to plan (fáza 7 nasadená)
+Last activity: 2026-09-25 — Phase 7 complete (07-01, 07-02), nasadená, transitioned to Phase 8
 
 Progress:
 - v0.1: [██████████] 100% (live)
 - v0.2: [██████████] 100% (live od 2026-09-24)
-- v0.3: [██████▎░░░] 62% (fázy 5–6 hotové, fáza 7: 1/2)
+- v0.3: [███████▌░░] 75% (fázy 5–7 hotové)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [07-01 complete - ready for next PLAN (07-02)]
+  ○        ○        ○     [Ready to plan Phase 8]
 ```
 
 ## Accumulated Context
@@ -52,6 +52,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Sémantické tokeny s light-dark(), téma v cookie adelka_theme | 6 | Farby len cez tokeny; tmavá mapa cez CSS filter |
 | Hamburger menu (AppMenu) namiesto odkazov v hlavičke, odhlásenie cez server action | 6 | Hlavička bez backdrop-blur |
 | Stavebné prvky v src/components/ui.tsx, ikony ako inline SVG | 7 | Jednotný vzhľad, žiadne emoji v UI |
+| SyncSheet + toasty namiesto inline hlášok, animácie v CSS | 7 | Výrazné stavy, reduced motion |
 
 ### Deferred Issues
 
@@ -64,7 +65,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Git State
-Last commit: 238862f (fáza 6), branch main, pushnuté a nasadené na Vercel 2026-09-25
+Last commit: f37f197 (07-01), branch main, pushnuté a nasadené na Vercel 2026-09-25
 Feature branches merged: none
 
 ### Blockers/Concerns
@@ -78,11 +79,12 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-09-25
-Stopped at: 07-01 loop closed
-Next action: /paul:plan pre 07-02 (animácie a výrazné stavy)
-Resume file: .paul/phases/07-dizajn-animacie/07-01-SUMMARY.md
+Stopped at: Phase 7 complete and deployed, ready to plan Phase 8
+Next action: /paul:plan pre fázu 8 (logo cez Higgsfield, názov La casetta di Adelka, mikrotexty; reklamy čakajú na Lubkovu fotku)
+Resume file: .paul/ROADMAP.md
 Resume context:
 - Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
+- Fáza 7 hotová: Fraunces/DM Sans, ui.tsx, karta sťahovania s loďkou, toasty, srdiečko, nábeh kariet
 - Fáza 6 hotová: tokeny + tmavý režim (cookie adelka_theme), hamburger menu, odhlásenie. Otvorené: podpora light-dark() na Adelkinom mobile (prehliadač 2024+)
 - Fáza 5 live od 2026-09-25: vnútrozemské ponuky skryté; zmena pásu na /nastavenia hneď spustí Apify sťahovanie. Prvý ranný cron s pásom 3 km: 26. 9.
 - Lokálne overovanie: preview "dev-mock" (port 3100, ukážkové dáta, bez hesla, bez produkčnej DB)
