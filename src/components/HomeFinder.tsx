@@ -2,36 +2,84 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
-import { formatPrice, homesLabel } from "@/lib/format";
-import { pointInArea } from "@/lib/geo";
-import type { Property, SearchArea } from "@/lib/types";
+import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
+import { outerRings, pointInArea } from "@/lib/geo";
 import type { Greeting } from "@/lib/greeting";
-import { type Place, REGIONS, areaNameFor } from "@/lib/italy";
+import { PROVINCES, type Place, REGIONS, areaNameFor, findPlace, provincesOf } from "@/lib/italy";
+import type { Property, SearchArea } from "@/lib/types";
 import { AdPopup } from "./AdPopup";
-import { AreaBar } from "./AreaBar";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
+import type { MapMode } from "./MapView";
 import { SyncSheet } from "./SyncSheet";
 import { useToast } from "./Toast";
-import { Button, ICONS, Icon } from "./ui";
+import { Button, Card, ICONS, Icon, chipClass } from "./ui";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => <div className="grid h-full place-items-center text-muted">Načítavam mapu…</div>,
 });
 
-type Sort = "newest" | "cheapest" | "priciest";
-
-const SELECT_CLASS =
-  "mt-1 min-h-11 w-full rounded-2xl bg-surface px-3 text-sm font-medium text-ink shadow-card focus:outline-2 focus:outline-accent";
-
-/** Set once per browser session, after the region overview was shown. */
-const OVERVIEW_SHOWN_KEY = "adelka.overviewShown";
-
+type Sort = "newest" | "cheapest" | "sea";
+const SORTS: { value: Sort; label: string }[] = [
+  { value: "newest", label: "Najnovšie" },
+  { value: "cheapest", label: "Najlacnejšie" },
+  { value: "sea", label: "Najbližšie k moru" },
+];
 const PRICE_OPTIONS = [150_000, 200_000, 300_000, 400_000, 600_000];
+const SELECT_CLASS =
+  "min-h-10 shrink-0 rounded-full bg-surface px-3.5 text-sm font-semibold text-ink-2 shadow-card focus:outline-2 focus:outline-accent";
+
+/** The view lives in the URL (?r=region&v=list&p=listing&pick=1), so the phone's back gesture steps back through it. */
+type View = { r: string | null; v: "list" | "new" | null; p: string | null; pick: boolean };
+
+function readView(params: URLSearchParams): View {
+  const r = params.get("r");
+  const v = params.get("v");
+  return {
+    r: r && findPlace("region", r) ? r : null,
+    v: v === "list" || v === "new" ? v : null,
+    p: params.get("p"),
+    pick: params.get("pick") === "1",
+  };
+}
+
+function go(next: Partial<View>, replace = false) {
+  const sp = new URLSearchParams();
+  if (next.r) sp.set("r", next.r);
+  if (next.v) sp.set("v", next.v);
+  if (next.p) sp.set("p", next.p);
+  if (next.pick) sp.set("pick", "1");
+  const url = sp.size > 0 ? `?${sp}` : window.location.pathname;
+  if (replace) window.history.replaceState(null, "", url);
+  else window.history.pushState(null, "", url);
+}
+
+/**
+ * Region of a listing: inside its shape, else by the province name the portal gave, else the region
+ * with the nearest outline (houses right on the coast can fall just outside the simplified shapes).
+ */
+function regionOf(p: Property): string | null {
+  const inside = REGIONS.find((r) => pointInArea(p.longitude, p.latitude, r.geometry));
+  if (inside) return inside.code;
+  const byName = PROVINCES.find((pr) => pr.name.toLowerCase() === p.region.toLowerCase());
+  if (byName) return byName.regionCode;
+  let best: string | null = null;
+  let bestDistance = Infinity;
+  for (const r of REGIONS) {
+    for (const ring of outerRings(r.geometry)) {
+      for (const [lng, lat] of ring) {
+        const d = (lat - p.latitude) ** 2 + (lng - p.longitude) ** 2;
+        if (d < bestDistance) [best, bestDistance] = [r.code, d];
+      }
+    }
+  }
+  return best;
+}
 
 export function HomeFinder({
   properties,
@@ -55,49 +103,48 @@ export function HomeFinder({
   /** Current search setting, e.g. "Len pri mori · 3 km". */
   settingsLabel: string;
 }) {
-  const [inactiveAreaIds, setInactiveAreaIds] = useState<string[]>([]);
+  const view = readView(useSearchParams());
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [minRooms, setMinRooms] = useState<number | null>(null);
   const [sort, setSort] = useState<Sort>("newest");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const [showGreeting, setShowGreeting] = useState(greeting !== null);
-  /** "Ukázať mi ich": only the listings from the greeting, regardless of areas and filters. */
-  const [highlightIds, setHighlightIds] = useState<string[] | null>(null);
-  /** Picking regions/provinces on the map; opens by itself while Adelka has no areas yet. */
-  const [chooserOpen, setChooserOpen] = useState(areas.length === 0);
-  // Opening the app starts on the colourful map of regions; coming back from a listing does not.
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem(OVERVIEW_SHOWN_KEY)) return;
-      sessionStorage.setItem(OVERVIEW_SHOWN_KEY, "1");
-    } catch {
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
-    setChooserOpen(true);
-  }, []);
-  const [chooserRegion, setChooserRegion] = useState<string | null>(null);
   const [placeBusy, startPlace] = useTransition();
   /** Name of the place whose listings are being fetched right now. */
   const [syncingPlace, setSyncingPlace] = useState<string | null>(null);
   const toast = useToast();
 
-  const activeAreas = useMemo(
-    () => areas.filter((a) => !inactiveAreaIds.includes(a.id)),
-    [areas, inactiveAreaIds],
-  );
-  const activeAreaIds = useMemo(() => activeAreas.map((a) => a.id), [activeAreas]);
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
+  const fresh = useMemo(() => new Set(newIds), [newIds]);
+  const areaNames = useMemo(() => new Set(areas.map((a) => a.name)), [areas]);
+  const region = view.r ? findPlace("region", view.r)! : null;
 
-  const visible = useMemo(() => {
-    if (highlightIds) {
-      const wanted = new Set(highlightIds);
-      return properties.filter((p) => wanted.has(p.id));
-    }
-    const filtered = properties.filter(
+  const regionByListing = useMemo(() => new Map(properties.map((p) => [p.id, regionOf(p)])), [properties]);
+  const regionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const code of regionByListing.values()) if (code) counts.set(code, (counts.get(code) ?? 0) + 1);
+    return counts;
+  }, [regionByListing]);
+
+  const followedProvinces = useMemo(
+    () => new Set(PROVINCES.filter((p) => areaNames.has(areaNameFor(p))).map((p) => p.code)),
+    [areaNames],
+  );
+  const followedRegions = useMemo(
+    () =>
+      new Set(
+        REGIONS.filter(
+          (r) => areaNames.has(areaNameFor(r)) || provincesOf(r.code).some((p) => followedProvinces.has(p.code)),
+        ).map((r) => r.code),
+      ),
+    [areaNames, followedProvinces],
+  );
+
+  /** Houses of the chosen region (or the greeting's news), with the list filters applied. */
+  const shown = useMemo(() => {
+    const wanted = view.v === "new" && greeting ? new Set(greeting.ids) : null;
+    const base = properties.filter((p) => (wanted ? wanted.has(p.id) : region && regionByListing.get(p.id) === region.code));
+    const filtered = base.filter(
       (p) =>
-        (activeAreas.length === 0 || activeAreas.some((a) => pointInArea(p.longitude, p.latitude, a.polygon))) &&
         (maxPrice === null || (p.price !== null && p.price <= maxPrice)) &&
         (minRooms === null || (p.rooms !== null && p.rooms >= minRooms)),
     );
@@ -105,22 +152,13 @@ export function HomeFinder({
     return filtered.sort((a, b) =>
       sort === "cheapest"
         ? byPrice(a) - byPrice(b)
-        : sort === "priciest"
-          ? byPrice(b) - byPrice(a)
+        : sort === "sea"
+          ? (a.sea_km ?? 99) - (b.sea_km ?? 99)
           : b.first_seen_at.localeCompare(a.first_seen_at),
     );
-  }, [properties, activeAreas, maxPrice, minRooms, sort, highlightIds]);
+  }, [properties, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort]);
 
-  const fresh = useMemo(() => new Set(newIds), [newIds]);
-  const selected = visible.find((p) => p.id === selectedId) ?? null;
-
-  const selectFromMap = (id: string) => {
-    setSelectedId(id);
-    document.getElementById(`listing-${id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  };
-
-  const toggleArea = (id: string) =>
-    setInactiveAreaIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  const peek = view.p ? (shown.find((p) => p.id === view.p) ?? null) : null;
 
   const onAreaCreated = (result: AreaResult) => {
     setSyncingPlace(null);
@@ -128,11 +166,9 @@ export function HomeFinder({
     else if (result.fetched !== null) toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.` });
   };
 
-  const areaByName = (place: Place) => areas.find((a) => a.name === areaNameFor(place));
-
-  /** Adds the place as an area, or removes it when Adelka already follows it. */
+  /** Follows the place, or stops following it when Adelka already does. */
   const togglePlace = (place: Place) => {
-    const existing = areaByName(place);
+    const existing = areas.find((a) => a.name === areaNameFor(place));
     if (existing) {
       toast.show({ tone: "info", text: `${place.name} už nesleduješ.` });
       startPlace(() => deleteArea(existing.id));
@@ -142,231 +178,316 @@ export function HomeFinder({
     startPlace(async () => onAreaCreated(await addPlaceArea(place.kind, place.code)));
   };
 
-  const pickPlace = (place: Place) => {
-    if (place.kind === "region" && chooserRegion === null) setChooserRegion(place.code);
-    else togglePlace(place);
-  };
+  const mode: MapMode = !region
+    ? { kind: "overview" }
+    : view.pick
+      ? {
+          kind: "pick",
+          chooser: { regionCode: region.code, areaNames: [...areaNames], properties, busy: placeBusy, onPick: togglePlace },
+        }
+      : { kind: "region", code: region.code };
 
-  const chooserRegionPlace = REGIONS.find((r) => r.code === chooserRegion) ?? null;
-
-  // Rendered twice: above the map on phones (so it is seen first), atop the list on desktop.
-  const greetingCard = (className: string) =>
-    greeting && showGreeting ? (
-      <GreetingCard
-        greeting={greeting}
-        className={className}
-        onDismiss={() => setShowGreeting(false)}
-        onShow={() => {
-          setShowGreeting(false);
-          setHighlightIds(greeting.ids);
-          setSelectedId(null);
-        }}
-      />
-    ) : null;
+  const followedInRegion = region ? provincesOf(region.code).filter((p) => followedProvinces.has(p.code)).length : 0;
+  const wholeRegionFollowed = region ? areaNames.has(areaNameFor(region)) : false;
+  const listOpen = (region && view.v === "list" && !view.pick) || view.v === "new";
 
   return (
     <>
-    <AdPopup />
-    <main className="flex flex-1 flex-col lg:h-[calc(100dvh_-_65px)] lg:flex-none lg:flex-row">
-      {greetingCard("m-3 mb-0 lg:hidden")}
-      <section
-        className={`relative isolate ${chooserOpen ? "h-[65dvh]" : "h-[50dvh]"} shrink-0 lg:order-2 lg:h-auto lg:flex-1`}
-        aria-label="Mapa"
-      >
-        <MapView
-          properties={visible}
-          areas={areas}
-          activeAreaIds={highlightIds ? [] : activeAreaIds}
-          savedIds={savedIds}
-          selectedId={selectedId}
-          onSelect={selectFromMap}
-          chooser={
-            chooserOpen
-              ? {
-                  regionCode: chooserRegion,
-                  areaNames: areas.map((a) => a.name),
-                  properties,
-                  busy: placeBusy,
-                  onPick: pickPlace,
-                }
-              : null
-          }
-        />
+      <AdPopup />
+      <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} />
+      <main className="relative isolate h-[calc(100dvh-65px)] overflow-hidden">
+        <section className="absolute inset-0" aria-label="Mapa">
+          <MapView
+            mode={mode}
+            properties={region && !view.pick ? shown : []}
+            regionCounts={regionCounts}
+            followedRegions={followedRegions}
+            followedProvinces={followedProvinces}
+            savedIds={savedIds}
+            selectedId={view.p}
+            onRegion={(code) => go({ r: code }, region !== null)}
+            onSelect={(id) => go({ r: view.r, p: id }, view.p !== null)}
+            onBackground={() => view.p && go({ r: view.r }, true)}
+            insets={{ top: region ? 110 : 20, bottom: region ? 90 : 210 }}
+          />
+        </section>
 
-        {chooserOpen && (
-          <div className="absolute inset-x-2 top-2 z-[1000] mx-auto max-w-md space-y-2 rounded-3xl bg-surface/95 p-4 shadow-lift">
-            <div className="flex items-center justify-between gap-2">
-              {chooserRegionPlace ? (
-                <button
-                  type="button"
-                  onClick={() => setChooserRegion(null)}
-                  className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink hover:underline"
-                >
-                  <Icon d={ICONS.back} size={16} />
-                  Celé Taliansko
-                </button>
-              ) : (
-                <p className="font-display text-xl font-semibold text-ink">Kde hľadáš domček?</p>
-              )}
-              <Button
-                onClick={() => {
-                  setChooserOpen(false);
-                  setChooserRegion(null);
+        {/* Italy: tap a region. The greeting, if there is news, takes the card's place. */}
+        {!region && view.v !== "new" && (
+          <div className="absolute inset-x-3 bottom-3 z-[1000] mx-auto max-w-md space-y-2">
+            {greeting && showGreeting ? (
+              <GreetingCard
+                greeting={greeting}
+                onDismiss={() => setShowGreeting(false)}
+                onShow={() => {
+                  setShowGreeting(false);
+                  go({ v: "new" });
                 }}
-              >
-                Hotovo
-              </Button>
-            </div>
-            {chooserRegionPlace ? (
-              <>
-                <p className="text-sm text-ink-2">
-                  <strong>{chooserRegionPlace.name}:</strong> ťukni na provinciu pri mori, ktorú chceš sledovať. Ďalším
-                  ťuknutím ju zrušíš.
-                </p>
-                <button
-                  type="button"
-                  disabled={placeBusy}
-                  onClick={() => togglePlace(chooserRegionPlace)}
-                  className="min-h-11 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
-                >
-                  {areaByName(chooserRegionPlace) ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
-                </button>
-              </>
+              />
             ) : (
-              <p className="text-sm text-ink-2">
-                Ťukni na región, ukážem ti jeho provincie. Farebné sú regióny pri mori.
-              </p>
+              <Card className="animate-rise space-y-3 p-5">
+                <div>
+                  <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">Kde hľadáš domček?</h2>
+                  <p className="text-[15px] text-muted">
+                    {areas.length > 0
+                      ? "Ťukni na región. Čísla ukazujú, koľko domčekov tam už mám."
+                      : "Ťukni na región pri mori a vyber provincie, ktoré mám sledovať."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link href="/nastavenia" className={chipClass(false, "min-h-11")}>
+                    <Icon d={ICONS.waves} size={16} className="text-accent" />
+                    {settingsLabel}
+                  </Link>
+                  {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
+                </div>
+                {notices.map((notice) => (
+                  <p key={notice} className="rounded-2xl bg-warn-soft px-3 py-2 text-sm text-warn-ink">
+                    {notice}
+                  </p>
+                ))}
+              </Card>
             )}
           </div>
         )}
 
-        {!chooserOpen && (
-          <Link
-            href="/nastavenia"
-            className="absolute right-2.5 top-2.5 z-[1000] inline-flex min-h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-sm font-semibold text-ink shadow-lift hover:bg-surface-2"
-          >
-            <Icon d={ICONS.waves} size={18} className="text-accent" />
-            {settingsLabel}
-            <span className="sr-only"> – zmeniť, kde hľadať</span>
-          </Link>
+        {/* List of houses: the region's, or the news from the greeting. */}
+        {listOpen && (
+          <ListingsLayer
+            listings={shown}
+            saved={saved}
+            fresh={fresh}
+            priceDrops={priceDrops}
+            sort={sort}
+            setSort={setSort}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
+            minRooms={minRooms}
+            setMinRooms={setMinRooms}
+            empty={
+              view.v === "new" ? (
+                <p className="text-muted">Novinky si už videla.</p>
+              ) : (
+                <EmptyRegion onPick={() => go({ r: view.r, pick: true })} />
+              )
+            }
+          />
         )}
 
-        {selected && (
-          <Link
-            href={`/inzerat/${selected.id}`}
-            className="absolute inset-x-2.5 bottom-2.5 z-[1000] mx-auto flex max-w-md items-center gap-3 rounded-3xl bg-surface p-2 shadow-lift lg:hidden"
-          >
-            {selected.photos[0] && (
-              <img src={selected.photos[0]} alt="" className="h-14 w-20 shrink-0 rounded-2xl object-cover" />
+        {/* Top bar: back to Italy, the region and what Adelka follows there. */}
+        {(region || view.v === "new") && (
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-[1200] flex flex-col items-start gap-2">
+            <div className="pointer-events-auto flex max-w-full items-center gap-2">
+              <button
+                type="button"
+                onClick={() => (view.pick ? go({ r: view.r }, true) : go({}))}
+                aria-label={view.pick ? "Hotovo s výberom provincií" : "Späť na celé Taliansko"}
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-ink shadow-lift"
+              >
+                <Icon d={ICONS.back} size={22} />
+              </button>
+              <span className="flex min-h-11 min-w-0 items-center gap-2 rounded-full bg-surface px-4 shadow-lift">
+                <span className="truncate font-display text-lg font-semibold text-ink">
+                  {view.v === "new" ? "Novinky od Lubka" : region!.name}
+                </span>
+                <span className="shrink-0 text-sm text-muted">
+                  {shown.length > 0 ? homesLabel(shown.length) : "zatiaľ nič"}
+                </span>
+              </span>
+            </div>
+            {region && !view.pick && (
+              <button
+                type="button"
+                onClick={() => go({ r: view.r, pick: true })}
+                className={chipClass(false, "pointer-events-auto min-h-10 shadow-lift")}
+              >
+                <Icon d={ICONS.heart} size={15} className="text-love" />
+                {wholeRegionFollowed
+                  ? "Sleduješ celý región · Upraviť"
+                  : followedInRegion > 0
+                    ? `Sleduješ ${followedInRegion} ${followedInRegion === 1 ? "provinciu" : followedInRegion < 5 ? "provincie" : "provincií"} · Upraviť`
+                    : "Sledovať provincie"}
+              </button>
             )}
+          </div>
+        )}
+
+        {/* Picking provinces to follow (the old chooser, now inside the region). */}
+        {region && view.pick && (
+          <Card className="absolute inset-x-3 top-[68px] z-[1150] mx-auto max-w-md animate-drop space-y-2 p-4">
+            <p className="text-sm text-ink-2">
+              Ťukni na provinciu, ktorú mám sledovať. Ďalším ťuknutím ju zrušíš. Pre sledované provincie sťahujem ponuky
+              každé ráno.
+            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                disabled={placeBusy}
+                onClick={() => togglePlace(region)}
+                className="min-h-11 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
+              >
+                {wholeRegionFollowed ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
+              </button>
+              <Button onClick={() => go({ r: view.r }, true)}>Hotovo</Button>
+            </div>
+          </Card>
+        )}
+
+        {/* A tapped pin: a small preview, the detail one more tap away. */}
+        {peek && !listOpen && !view.pick && (
+          <Link
+            href={`/inzerat/${peek.id}`}
+            className="absolute inset-x-3 bottom-[84px] z-[1150] mx-auto flex max-w-md animate-rise items-center gap-3 rounded-3xl bg-surface p-2 shadow-lift"
+          >
+            {peek.photos[0] && <img src={peek.photos[0]} alt="" className="h-[72px] w-24 shrink-0 rounded-2xl object-cover" />}
             <span className="min-w-0 flex-1">
-              <span className="block font-display text-lg font-semibold">{formatPrice(selected.price)}</span>
-              <span className="block truncate text-sm text-muted">{selected.title}</span>
+              <span className="block font-display text-xl font-semibold text-ink">{formatPrice(peek.price)}</span>
+              <span className="block truncate text-sm text-ink-2">{peek.title}</span>
+              <span className="block truncate text-sm text-muted">
+                {[
+                  peek.area_sqm ? `${peek.area_sqm} m²` : null,
+                  peek.rooms ? roomsLabel(peek.rooms) : null,
+                  peek.sea_km != null ? seaLabel(peek.sea_km) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
             </span>
-            <span className="pr-3 text-sm font-semibold text-accent-ink">Detail ›</span>
+            <span className="pr-3 text-sm font-bold text-accent-ink">Detail ›</span>
           </Link>
         )}
-      </section>
 
-      <section className="space-y-5 p-4 lg:order-1 lg:w-[480px] lg:overflow-y-auto lg:border-r lg:border-line">
-        {greetingCard("hidden lg:block")}
-
-        {highlightIds && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-accent-soft px-4 py-2 text-sm text-accent-ink">
-            <span className="font-medium">Zobrazujem novinky od Lubka ({visible.length})</span>
-            <button type="button" onClick={() => setHighlightIds(null)} className="min-h-11 font-semibold underline">
-              Zobraziť všetky ponuky
-            </button>
+        {/* Map | List, within reach of the thumb. */}
+        {region && !view.pick && (
+          <div
+            role="group"
+            aria-label="Zobrazenie"
+            className="absolute bottom-4 left-1/2 z-[1200] flex -translate-x-1/2 gap-1 rounded-full bg-ink p-1 shadow-lift"
+          >
+            {(
+              [
+                ["map", "Mapa", ICONS.map],
+                ["list", shown.length > 0 ? `Zoznam (${shown.length})` : "Zoznam", ICONS.list],
+              ] as const
+            ).map(([value, label, icon]) => {
+              const on = value === "list" ? view.v === "list" : view.v !== "list";
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => !on && go({ r: view.r, v: value === "list" ? "list" : null })}
+                  className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-5 text-[15px] font-semibold transition-colors ${
+                    on ? "bg-canvas text-ink" : "text-canvas"
+                  }`}
+                >
+                  <Icon d={icon} size={18} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         )}
+      </main>
+    </>
+  );
+}
 
-        {notices.map((notice) => (
-          <p key={notice} className="rounded-2xl bg-warn-soft px-4 py-3 text-sm text-warn-ink">
-            {notice}
-          </p>
+function EmptyRegion({ onPick }: { onPick: () => void }) {
+  return (
+    <Card className="mx-auto max-w-md space-y-3 p-6 text-center">
+      <h2 className="font-display text-xl font-semibold text-ink">Tu zatiaľ nič nemám</h2>
+      <p className="text-muted">Vyber provincie, ktoré mám sledovať, a ponuky z nich hneď stiahnem.</p>
+      <Button onClick={onPick}>Sledovať provincie</Button>
+    </Card>
+  );
+}
+
+function ListingsLayer({
+  listings,
+  saved,
+  fresh,
+  priceDrops,
+  sort,
+  setSort,
+  maxPrice,
+  setMaxPrice,
+  minRooms,
+  setMinRooms,
+  empty,
+}: {
+  listings: Property[];
+  saved: Set<string>;
+  fresh: Set<string>;
+  priceDrops: Record<string, number>;
+  sort: Sort;
+  setSort: (s: Sort) => void;
+  maxPrice: number | null;
+  setMaxPrice: (v: number | null) => void;
+  minRooms: number | null;
+  setMinRooms: (v: number | null) => void;
+  empty: React.ReactNode;
+}) {
+  return (
+    <section
+      aria-label="Zoznam domčekov"
+      className="absolute inset-0 z-[1100] animate-fade-up overflow-y-auto overscroll-contain bg-canvas px-3.5 pb-28 pt-[124px] sm:px-6"
+    >
+      <div className="mx-auto mb-4 flex max-w-6xl gap-2 overflow-x-auto pb-1">
+        {SORTS.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            aria-pressed={sort === s.value}
+            onClick={() => setSort(s.value)}
+            className={chipClass(sort === s.value, "min-h-10 shrink-0")}
+          >
+            {s.label}
+          </button>
         ))}
-
-        <AreaBar
-          areas={areas}
-          activeAreaIds={activeAreaIds}
-          onToggle={toggleArea}
-          onOpenChooser={() => setChooserOpen(true)}
-          busy={chooserOpen || placeBusy}
-        />
-
-        <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} />
-
-        <div className="grid grid-cols-3 gap-2">
-          <label className="text-xs font-semibold text-muted">
-            Cena do
-            <select
-              value={maxPrice ?? ""}
-              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : null)}
-              className={SELECT_CLASS}
-            >
-              <option value="">Bez limitu</option>
-              {PRICE_OPTIONS.map((v) => (
-                <option key={v} value={v}>
-                  {formatPrice(v)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-semibold text-muted">
-            Izby
-            <select
-              value={minRooms ?? ""}
-              onChange={(e) => setMinRooms(e.target.value ? Number(e.target.value) : null)}
-              className={SELECT_CLASS}
-            >
-              <option value="">Všetky</option>
-              {[2, 3, 4].map((v) => (
-                <option key={v} value={v}>
-                  {v}+
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-xs font-semibold text-muted">
-            Zoradiť
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as Sort)}
-              className={SELECT_CLASS}
-            >
-              <option value="newest">Najnovšie</option>
-              <option value="cheapest">Najlacnejšie</option>
-              <option value="priciest">Najdrahšie</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <h2 className="font-display text-[22px] font-semibold text-ink" aria-live="polite">
-            {visible.length === 0 ? "Zatiaľ nič" : homesLabel(visible.length)}
-          </h2>
-          {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
-        </div>
-        {visible.length === 0 && (
-          <p className="-mt-3 text-sm text-muted">V zvolených oblastiach a filtroch nie sú žiadne ponuky.</p>
-        )}
-
-        <div className="grid gap-4">
-          {visible.map((p, i) => (
+        <select
+          aria-label="Cena do"
+          value={maxPrice ?? ""}
+          onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : null)}
+          className={SELECT_CLASS}
+        >
+          <option value="">Cena: bez limitu</option>
+          {PRICE_OPTIONS.map((v) => (
+            <option key={v} value={v}>
+              do {formatPrice(v)}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Izby"
+          value={minRooms ?? ""}
+          onChange={(e) => setMinRooms(e.target.value ? Number(e.target.value) : null)}
+          className={SELECT_CLASS}
+        >
+          <option value="">Izby: všetky</option>
+          {[2, 3, 4].map((v) => (
+            <option key={v} value={v}>
+              {v}+ izby
+            </option>
+          ))}
+        </select>
+      </div>
+      {listings.length === 0 ? (
+        empty
+      ) : (
+        <div className="mx-auto grid max-w-6xl gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))]">
+          {listings.map((p, i) => (
             <ListingCard
               key={p.id}
               enterDelayMs={Math.min(i, 10) * 40}
               property={p}
               saved={saved.has(p.id)}
-              selected={p.id === selectedId}
               isNew={fresh.has(p.id)}
               previousPrice={priceDrops[p.id] ?? null}
-              onSelect={setSelectedId}
             />
           ))}
         </div>
-      </section>
-    </main>
-    </>
+      )}
+    </section>
   );
 }

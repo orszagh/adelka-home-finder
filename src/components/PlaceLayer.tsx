@@ -19,7 +19,7 @@ export type PlaceChooser = {
 };
 
 /** Pastel fill per coastal region (ISTAT code), in the spirit of a travel poster. */
-const REGION_COLORS: Record<string, string> = {
+export const REGION_COLORS: Record<string, string> = {
   "05": "#a5d8ff",
   "06": "#b2f2bb",
   "07": "#74c0fc",
@@ -36,16 +36,16 @@ const REGION_COLORS: Record<string, string> = {
   "19": "#ffc078",
   "20": "#8ce99a",
 };
-const INLAND = "#dee2e6";
+export const INLAND = "#dee2e6";
 
 type Stats = { count: number; minPrice: number | null };
 
-function latLngs(geometry: AreaGeometry): L.LatLngExpression[][][] {
+export function latLngs(geometry: AreaGeometry): L.LatLngExpression[][][] {
   const polys = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
   return polys.map((rings) => rings.map((ring) => ring.map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
 }
 
-function boundsOf(places: Place[]): L.LatLngBounds {
+export function boundsOf(places: Place[]): L.LatLngBounds {
   return L.latLngBounds(places.flatMap((p) => latLngs(p.geometry).flat(2) as L.LatLngTuple[]));
 }
 
