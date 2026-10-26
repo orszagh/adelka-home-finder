@@ -130,7 +130,7 @@ describe("apifyProvider", () => {
       `/v2/acts/${IMMOBILIARE_ACTOR}/run-sync-get-dataset-items`,
     ]);
     expect(urls[0].searchParams.get("maxItems")).toBe("20");
-    expect(urls[0].searchParams.get("maxTotalChargeUsd")).toBe("0.25");
+    expect(urls[0].searchParams.get("maxTotalChargeUsd")).toBe("0.08");
     const init = fetchMock.mock.calls[0][1]!;
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer apify_test");
   });

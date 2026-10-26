@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { AppMenu } from "@/components/AppMenu";
 import { APP_NAME, Logo } from "@/components/Logo";
+import { OfflineSupport } from "@/components/OfflineSupport";
 import { ToastProvider } from "@/components/Toast";
 import { getRepo } from "@/lib/db/repo";
 import { formatSearchSettings, getSearchSettings } from "@/lib/search-settings";
@@ -26,7 +27,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: "Adelkin domček pri talianskom mori",
-  appleWebApp: { title: "La casetta" },
+  appleWebApp: { title: "La casetta", capable: true, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -59,6 +60,7 @@ export default async function RootLayout({ children, modal }: LayoutProps<"/">) 
           </header>
           {children}
           {modal}
+          <OfflineSupport />
         </ToastProvider>
       </body>
     </html>

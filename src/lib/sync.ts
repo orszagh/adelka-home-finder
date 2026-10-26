@@ -2,6 +2,7 @@ import { distanceToSeaKm } from "./coast";
 import type { Repository } from "./db/repo";
 import { recheckCandidates } from "./freshness";
 import type { PropertyProvider } from "./providers";
+import type { BudgetKind } from "./budget";
 import { withinBand } from "./search-settings";
 import type { PriceChange, Property, ProviderListing, SearchArea, SyncResult } from "./types";
 
@@ -43,8 +44,23 @@ export async function syncFromProvider(
   repo: Repository,
   provider: PropertyProvider,
   areas: SearchArea[],
-  options: { recheck?: boolean; bandKm?: number | null } = {},
+  options: { recheck?: boolean; bandKm?: number | null; budget?: BudgetKind } = {},
 ): Promise<SyncResult> {
+  if (options.budget && provider.budget) {
+    const check = await provider.budget(options.budget);
+    if (!check.allowed) {
+      // Nothing is fetched or changed; what is stored stays as it is.
+      return {
+        total: 0,
+        initialImport: false,
+        inserted: [],
+        priceChanged: [],
+        removed: 0,
+        errors: [],
+        skipped: { reason: check.reason, hard: check.hard, cycleStart: check.cycleStart },
+      };
+    }
+  }
   const bandKm = options.bandKm ?? null;
   const inBand = nearSea(bandKm);
   const fetched = await provider.fetchListings(areas, { bandKm });

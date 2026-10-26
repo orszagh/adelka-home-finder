@@ -74,4 +74,6 @@ export type SyncResult = {
   errors: string[];
   /** Older listings asked about directly, and how many are still on offer. */
   rechecked?: { checked: number; alive: number };
+  /** Nothing was fetched because of the monthly budget. */
+  skipped?: { reason: string; hard: boolean; cycleStart: string };
 };

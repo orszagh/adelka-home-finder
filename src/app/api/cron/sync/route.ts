@@ -4,7 +4,11 @@ import { LAST_SEEN_KEY } from "@/lib/greeting";
 import { buildDigest, getAppUrl } from "@/lib/notify";
 import { getProvider } from "@/lib/providers";
 import { bandKm, getSearchSettings } from "@/lib/search-settings";
+import { LUBKO_EMAIL_DEFAULT } from "@/lib/ad-report";
 import { rejectUnlessCronSecret } from "@/lib/secrets";
+
+/** Billing cycle (its start) for which Lubko was already told that the Apify budget is spent. */
+const BUDGET_WARNED_KEY = "apify_budget_warned";
 import { syncFromProvider } from "@/lib/sync";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +26,27 @@ export async function GET(request: Request) {
   const repo = getRepo();
   const provider = getProvider();
   const [areas, settings] = await Promise.all([repo.listSearchAreas(), getSearchSettings(repo)]);
-  const result = await syncFromProvider(repo, provider, areas, { recheck: true, bandKm: bandKm(settings) });
+  const result = await syncFromProvider(repo, provider, areas, { recheck: true, bandKm: bandKm(settings), budget: "nightly" });
+  if (result.skipped) {
+    // Lubko hears about a spent budget once per billing cycle; a skipped night to stay on pace is routine.
+    let warned = false;
+    if (result.skipped.hard && (await repo.getState<string>(BUDGET_WARNED_KEY)) !== result.skipped.cycleStart) {
+      try {
+        const to = (process.env.LUBKO_EMAIL ?? LUBKO_EMAIL_DEFAULT).split(",").map((s) => s.trim()).filter(Boolean);
+        const sent = await sendEmail({
+          to,
+          subject: "La casetta: rozpočet na Apify je tento mesiac minutý",
+          text: `${result.skipped.reason}\n\nRozpočet zvýšiš premennou APIFY_MONTHLY_BUDGET_USD vo Verceli (a limitom v Apify).`,
+          html: `<p>${result.skipped.reason}</p><p>Rozpočet zvýšiš premennou APIFY_MONTHLY_BUDGET_USD vo Verceli (a limitom v Apify).</p>`,
+        });
+        warned = sent.sent;
+        if (warned) await repo.setState(BUDGET_WARNED_KEY, result.skipped.cycleStart);
+      } catch (error) {
+        console.error("Budget warning email failed", error);
+      }
+    }
+    return Response.json({ provider: provider.id, areas: areas.length, skipped: result.skipped, warned });
+  }
   const digest = buildDigest(result, areas, getAppUrl());
   // A first import (e.g. switching away from demo data) must not greet Adelka with hundreds of "new" listings.
   if (result.initialImport) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());

@@ -36,7 +36,8 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
   try {
     const repo = getRepo();
     const settings = await getSearchSettings(repo);
-    const result = await syncFromProvider(repo, provider, [area], { bandKm: bandKm(settings) });
+    const result = await syncFromProvider(repo, provider, [area], { bandKm: bandKm(settings), budget: "manual" });
+    if (result.skipped) return { areaId: area.id, fetched: 0, error: result.skipped.reason };
     // Adelka is looking at these right now; they are not news for tomorrow's greeting.
     await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
     return {
@@ -80,14 +81,18 @@ export async function saveSearchSettings(input: unknown): Promise<SaveSettingsRe
   let result: SaveSettingsResult = { ok: true, fetched: null, error: null };
   if (bandKm(before) !== bandKm(settings) && !provider.isMock && areas.length > 0) {
     try {
-      const sync = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings) });
-      // Adelka is looking at these right now; they are not news for tomorrow's greeting.
-      await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
-      result = {
-        ok: true,
-        fetched: sync.total,
-        error: sync.errors.length > 0 ? "Časť ponúk sa nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole." : null,
-      };
+      const sync = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings), budget: "manual" });
+      if (sync.skipped) {
+        result = { ok: true, fetched: null, error: `Nastavenie je uložené. ${sync.skipped.reason}` };
+      } else {
+        // Adelka is looking at these right now; they are not news for tomorrow's greeting.
+        await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
+        result = {
+          ok: true,
+          fetched: sync.total,
+          error: sync.errors.length > 0 ? "Časť ponúk sa nepodarilo stiahnuť, doplnia sa pri ďalšej dennej kontrole." : null,
+        };
+      }
     } catch (error) {
       console.error("Fetching listings for new search settings failed", error);
       result = { ok: true, fetched: 0, error: "Nastavenie je uložené, ale ponuky sa teraz nepodarilo stiahnuť. Doplnia sa ráno." };
@@ -124,7 +129,12 @@ export async function checkNow(): Promise<CheckNowResult> {
 
   try {
     const settings = await getSearchSettings(repo);
-    const result = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings) });
+    const result = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings), budget: "manual" });
+    if (result.skipped) {
+      // Nothing was spent, so the hour's wait does not apply.
+      await repo.setState(MANUAL_SYNC_KEY, last ?? "");
+      return { ok: false, error: result.skipped.reason };
+    }
     refreshAll();
     return result.errors.length > 0 && result.total === 0
       ? { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." }

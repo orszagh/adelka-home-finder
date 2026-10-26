@@ -1,3 +1,4 @@
+import type { BudgetCheck, BudgetKind } from "../budget";
 import type { Property, ProviderListing, SearchArea } from "../types";
 import { apifyProvider } from "./apify";
 import { mockProvider } from "./mock";
@@ -26,6 +27,10 @@ export interface PropertyProvider {
    * returned. Returns current data for those still on offer; missing ones are gone.
    */
   recheck?(listings: Property[]): Promise<FetchResult>;
+  /** Whether fetching fits this month's budget (paid sources only). */
+  budget?(kind: BudgetKind): Promise<BudgetCheck>;
+  /** This month's spending, for the settings page. */
+  usage?(): Promise<{ usedUsd: number; budgetUsd: number } | null>;
 }
 
 export type FetchOptions = {

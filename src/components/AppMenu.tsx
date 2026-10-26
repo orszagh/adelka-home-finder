@@ -191,7 +191,11 @@ export function AppMenu({
 
           <div className="flex-1" />
 
-          <form action={logout}>
+          <form
+            action={logout}
+            // Pages saved for offline use hold her houses; they go with the session.
+            onSubmit={() => void globalThis.caches?.delete("pages-v1").catch(() => {})}
+          >
             <button
               type="submit"
               className="flex min-h-13 w-full items-center gap-3 rounded-2xl px-3.5 text-base font-semibold text-love hover:bg-love-soft"

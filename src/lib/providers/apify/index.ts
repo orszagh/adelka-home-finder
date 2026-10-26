@@ -2,7 +2,8 @@ import { bandPolygon, coastChunks, coastLinesForArea } from "../../coast";
 import { enclosingCircle, outerRings, ringArea } from "../../geo";
 import type { Position, Property, ProviderListing, SearchArea } from "../../types";
 import type { FetchOptions, FetchResult, PropertyProvider } from "../index";
-import { ApifyError, runActor } from "./client";
+import { budgetUsd, checkBudget } from "../../budget";
+import { ApifyError, getApifyUsage, runActor } from "./client";
 import {
   IDEALISTA_ACTOR,
   idealistaCircleInput,
@@ -16,8 +17,9 @@ import { IMMOBILIARE_ACTOR, immobiliareInput, immobiliareRecheckInput, mapImmobi
 function config() {
   return {
     maxItems: Number(process.env.APIFY_MAX_ITEMS) || 50,
-    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.25,
-    recheckMax: Number(process.env.APIFY_RECHECK_MAX) || 100,
+    // A run costs ~0.02 USD; the cap only stops a runaway one. Budget: see src/lib/budget.ts.
+    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.08,
+    recheckMax: Number(process.env.APIFY_RECHECK_MAX) || 30,
   };
 }
 
@@ -175,4 +177,13 @@ export const apifyProvider: PropertyProvider = {
   fetchListings: (areas, options?: FetchOptions) =>
     runJobs(areas.flatMap((area) => jobsFor(area, options?.bandKm ?? null))),
   recheck: (listings) => runJobs(recheckJobs(listings)),
+  // Unknown spending (API down) does not block: the Apify account's own limit is the backstop.
+  budget: async (kind) => {
+    const usage = await getApifyUsage();
+    return usage ? checkBudget(usage, budgetUsd(), kind) : { allowed: true };
+  },
+  usage: async () => {
+    const usage = await getApifyUsage();
+    return usage ? { usedUsd: usage.usedUsd, budgetUsd: budgetUsd() } : null;
+  },
 };

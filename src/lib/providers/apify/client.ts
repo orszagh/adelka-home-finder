@@ -47,3 +47,27 @@ export async function runActor(actorId: string, input: unknown, options: RunOpti
   if (!Array.isArray(data)) throw new ApifyError(`Apify ${actorId}: neočakávaná odpoveď`);
   return data;
 }
+
+/** This month's spending on the Apify account (https://docs.apify.com/api/v2/user-limits-get). Null when unknown. */
+export async function getApifyUsage(): Promise<{ usedUsd: number; cycleStart: string; cycleEnd: string } | null> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return null;
+  try {
+    const response = await fetch(`${API_BASE}/users/me/limits`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(10_000),
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const { data } = (await response.json()) as {
+      data?: { current?: { monthlyUsageUsd?: unknown }; monthlyUsageCycle?: { startAt?: unknown; endAt?: unknown } };
+    };
+    const usedUsd = Number(data?.current?.monthlyUsageUsd);
+    const cycleStart = data?.monthlyUsageCycle?.startAt;
+    const cycleEnd = data?.monthlyUsageCycle?.endAt;
+    if (!Number.isFinite(usedUsd) || typeof cycleStart !== "string" || typeof cycleEnd !== "string") return null;
+    return { usedUsd, cycleStart, cycleEnd };
+  } catch {
+    return null;
+  }
+}

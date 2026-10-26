@@ -110,3 +110,21 @@ describe("server actions", () => {
     expect(Date.parse((await repo.getState<string>(LAST_SEEN_KEY))!)).toBeGreaterThan(Date.now() - 5000);
   });
 });
+
+describe("monthly budget in actions", () => {
+  it("tells Adelka why nothing was fetched for a new province", async () => {
+    provider.budget = async () => ({
+      allowed: false,
+      hard: true,
+      reason: "Mesačný rozpočet na sťahovanie je minutý.",
+      cycleStart: "2026-10-23T00:00:00Z",
+    });
+    try {
+      const result = await addPlaceArea("province", "GE");
+      expect(result).toMatchObject({ fetched: 0, error: "Mesačný rozpočet na sťahovanie je minutý." });
+      expect(fetchListings).not.toHaveBeenCalled();
+    } finally {
+      delete provider.budget;
+    }
+  });
+});

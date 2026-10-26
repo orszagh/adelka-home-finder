@@ -26,6 +26,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Cron has its own bearer secret; mock photos must load inside notification emails.
-  matcher: ["/((?!api/cron|mock-photo|_next/static|_next/image|favicon.ico).*)"],
+  // Cron has its own bearer secret; mock photos must load inside notification emails. The service worker,
+  // manifest and icons are fetched without the session (the manifest never sends cookies).
+  matcher: ["/((?!api/cron|mock-photo|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icons/|icon.svg|apple-icon.png).*)"],
 };

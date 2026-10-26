@@ -154,3 +154,28 @@ describe("syncFromProvider", () => {
     expect(new Set(a.map((l) => l.region))).toEqual(new Set(["Liguria", "Toscana", "Puglia"]));
   });
 });
+
+describe("monthly budget", () => {
+  it("fetches nothing when the provider says the budget is spent", async () => {
+    const repo = new MemoryRepository();
+    const fetchListings = vi.fn(async () => ({ listings: buildMockListings(), errors: [] }));
+    const provider: PropertyProvider = {
+      ...providerOf([]),
+      fetchListings,
+      budget: async () => ({ allowed: false, hard: true, reason: "Rozpočet je minutý.", cycleStart: "2026-10-23T00:00:00Z" }),
+    };
+    const result = await syncFromProvider(repo, provider, [], { budget: "nightly" });
+    expect(fetchListings).not.toHaveBeenCalled();
+    expect(result.skipped).toEqual({ reason: "Rozpočet je minutý.", hard: true, cycleStart: "2026-10-23T00:00:00Z" });
+    expect(await repo.listProperties()).toHaveLength(0);
+  });
+
+  it("fetches as usual when the budget allows it or no budget is asked for", async () => {
+    const budget = vi.fn(async () => ({ allowed: true as const }));
+    const provider: PropertyProvider = { ...providerOf(buildMockListings()), budget };
+    expect((await syncFromProvider(new MemoryRepository(), provider, [], { budget: "manual" })).total).toBe(36);
+    expect(budget).toHaveBeenCalledWith("manual");
+    expect((await syncFromProvider(new MemoryRepository(), provider, [])).total).toBe(36);
+    expect(budget).toHaveBeenCalledTimes(1);
+  });
+});
