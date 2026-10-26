@@ -262,3 +262,49 @@ describe("apifyProvider", () => {
     expect(apifyProvider.ownsExternalId("mock-1-1")).toBe(false);
   });
 });
+
+describe("Apify concurrency", () => {
+  it("never runs more Actors at once than the free plan allows, and keeps the order", async () => {
+    const { settleLimited } = await import("./index");
+    let running = 0;
+    let peak = 0;
+    const order: number[] = [];
+    const tasks = Array.from({ length: 10 }, (_, i) => async () => {
+      running++;
+      peak = Math.max(peak, running);
+      order.push(i);
+      await new Promise((r) => setTimeout(r, 5));
+      running--;
+      if (i === 3) throw new Error("boom");
+      return i;
+    });
+    const results = await settleLimited(tasks, 4);
+    expect(peak).toBe(4);
+    expect(order).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(results[3].status).toBe("rejected");
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(9);
+  });
+
+  it("searches a coastal province with both portals within four parallel runs", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    let running = 0;
+    let peak = 0;
+    const actors: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        running++;
+        peak = Math.max(peak, running);
+        actors.push(url.includes(IDEALISTA_ACTOR) ? "idealista" : "immobiliare");
+        await new Promise((r) => setTimeout(r, 5));
+        running--;
+        return Response.json([]);
+      }),
+    );
+    const sicily = findPlace("region", "19")!;
+    await apifyProvider.fetchListings([{ id: "s", name: "Sicília (celý región)", created_at: "", polygon: sicily.geometry }], { bandKm: 3 });
+    expect(peak).toBeLessThanOrEqual(4);
+    expect(actors.filter((a) => a === "immobiliare").length).toBe(actors.filter((a) => a === "idealista").length);
+    expect(actors.slice(0, 2).sort()).toEqual(["idealista", "immobiliare"]);
+  });
+});

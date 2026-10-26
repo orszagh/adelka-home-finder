@@ -85,7 +85,7 @@ Next action: /paul:complete-milestone (v0.3), potom /paul:discuss-milestone pre 
 Resume file: .paul/ROADMAP.md
 Resume context:
 - Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
-- 2026-10-27: fáza 9 – rozpočet Apify (budget.ts, skipped sync, email pri minutí) + PWA (manifest, sw.js, offline hláška). Otvorené: Immobiliare sa v Apify vôbec nespúšťa
+- 2026-10-27: fáza 9 – rozpočet Apify (budget.ts, skipped sync, email pri minutí) + PWA (manifest, sw.js, offline hláška). Immobiliare sa nespúšťal: Apify Free dovolí 5 súbežných behov, appka ich spúšťala naraz → opravené (max 4 naraz, APIFY_CONCURRENCY)
 - 2026-10-27: nové UX domova (prototyp schválený Ľubom): prehľad regiónov s počtami → región (špendlíky, náhľad, Mapa/Zoznam, Sledovať provincie) → detail na celú obrazovku; stav v URL (?r=&v=&p=&pick=); AreaBar zrušený
 - Po v0.3 (2026-09-25): úvodná mapa s regiónmi (raz za reláciu), detail domčeka v paneli vpravo / na celú obrazovku v mobile (app/@modal/(.)inzerat), reklamy v poradí s odstupom min. 5 h
 - Fáza 8 hotová: logo Higgsfield č. 4, názov La casetta di Adelka, reklamy (?reklama=1 na skúšku), míľniky 3/10 pusí, email Lubkovi pri ťuknutí

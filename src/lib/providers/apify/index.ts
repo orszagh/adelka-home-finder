@@ -150,9 +150,36 @@ function toListing(p: Property): ProviderListing {
   return { external_id, title, price, area_sqm, rooms, city, region, latitude, longitude, photos, listing_url, source };
 }
 
-/** Runs jobs in parallel; partial failures become messages, total failure throws. */
+/** Runs jobs a few at a time; partial failures become messages, total failure throws. */
+/**
+ * The free Apify plan runs at most 5 Actors at once and refuses the rest, which used to
+ * starve Immobiliare (its runs started after Idealista's took all the slots). One slot stays free.
+ */
+function concurrency(): number {
+  return Math.max(1, Number(process.env.APIFY_CONCURRENCY) || 4);
+}
+
+/** Like Promise.allSettled, but with at most `limit` tasks running at the same time, in order. */
+export async function settleLimited<T>(tasks: (() => Promise<T>)[], limit: number): Promise<PromiseSettledResult<T>[]> {
+  const results: PromiseSettledResult<T>[] = new Array(tasks.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < tasks.length) {
+      const i = next++;
+      try {
+        results[i] = { status: "fulfilled", value: await tasks[i]() };
+      } catch (reason) {
+        results[i] = { status: "rejected", reason };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+  return results;
+}
+
 async function runJobs(jobs: Job[]): Promise<FetchResult> {
-  const settled = await Promise.allSettled(jobs.map((job) => job.run()));
+  // Jobs alternate Idealista / Immobiliare per coast piece, so both portals get slots early.
+  const settled = await settleLimited(jobs.map((job) => job.run), concurrency());
   const listings: ProviderListing[] = [];
   const errors: string[] = [];
   settled.forEach((result, i) => {
