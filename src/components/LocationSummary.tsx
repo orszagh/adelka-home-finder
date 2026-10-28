@@ -26,6 +26,7 @@ export function LocationSummary({
   const [note, setNote] = useState(initialNote);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const load = async (refresh: boolean) => {
     setLoading(true);
@@ -55,12 +56,66 @@ export function LocationSummary({
             {city}
           </h2>
         </div>
-        {note && !loading && aiEnabled && (
-          <Button variant="ghost" onClick={() => load(true)}>
-            Obnoviť
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {note && !loading && aiEnabled && (
+            <Button variant="ghost" onClick={() => load(true)}>
+              Obnoviť
+            </Button>
+          )}
+          <button
+            type="button"
+            onClick={() => setHelpOpen((open) => !open)}
+            aria-expanded={helpOpen}
+            aria-controls="location-help"
+            aria-label="Ako funguje prehľad lokality"
+            className="-mr-2 grid size-11 place-items-center rounded-full text-muted hover:text-ink"
+          >
+            <span
+              aria-hidden
+              className={`grid size-7 place-items-center rounded-full border text-sm font-bold ${
+                helpOpen ? "border-accent bg-accent text-on-accent" : "border-line"
+              }`}
+            >
+              ?
+            </span>
+          </button>
+        </div>
       </div>
+
+      {helpOpen && (
+        <div id="location-help" className="animate-fade-up space-y-2 rounded-2xl bg-surface-2 p-4 text-sm leading-relaxed text-ink-2">
+          <p className="font-semibold text-ink">Ako to funguje</p>
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>
+              Po ťuknutí na tlačidlo appka požiada umelú inteligenciu (Claude od Anthropicu) o prehľad mesta <b>{city}</b> –
+              nie konkrétneho domu.
+            </li>
+            <li>
+              AI píše zo svojich všeobecných znalostí: z verejných zdrojov, na ktorých sa učila (sprievodcovia, encyklopédie,
+              správy, mapy). Internet práve teraz neprehľadáva a inzerát ani fotky nevidí.
+            </li>
+            <li>
+              Dostaneš celkový dojem, obchody a lekárov, dopravu (letiská, vlaky, diaľnice), počasie a riziká ako horúčavy,
+              požiare, záplavy či zosuvy.
+            </li>
+            <li>
+              Prehľad sa uloží k mestu, takže pri ďalšom dome z {city} sa ukáže hneď. „Obnoviť“ ho napíše nanovo.
+            </li>
+            <li>
+              Je to orientácia, nie posudok. AI sa môže mýliť alebo nemať čerstvé informácie. Riziká si over na{" "}
+              <a
+                href="https://idrogeo.isprambiente.it"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-accent-ink underline"
+              >
+                idrogeo.isprambiente.it
+              </a>{" "}
+              (mapa záplav a zosuvov) alebo na obecnom úrade.
+            </li>
+          </ul>
+        </div>
+      )}
 
       {!note && !loading && (
         <div className="space-y-2">
@@ -71,7 +126,7 @@ export function LocationSummary({
           <Button onClick={() => load(false)} disabled={!aiEnabled}>
             Zobraziť prehľad lokality
           </Button>
-          {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
+          {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je zapnutá – Lubko ju musí nastaviť.</p>}
         </div>
       )}
 

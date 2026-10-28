@@ -30,7 +30,7 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | áno | Databáza. Všetky dotazy idú len zo servera cez service_role kľúč. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | nie | Appka ho nepoužíva (RLS bez policies), môže ostať nastavený. |
 | `ANTHROPIC_API_KEY` | pre AI | Prehľad lokality a návrhy emailov. Bez neho sú AI tlačidlá neaktívne. |
-| `ANTHROPIC_MODEL` | nie | Predvolený `claude-opus-5`. |
+| `ANTHROPIC_MODEL` | nie | Predvolený `claude-opus-5-5`. |
 | `CRON_SECRET` | pre notifikácie | Chráni `/api/cron/sync`. Vercel ho posiela automaticky. |
 | `RESEND_API_KEY`, `NOTIFY_EMAIL` | pre notifikácie | Odoslanie upozornení. Bez nich sync beží, len sa neposiela email. |
 | `EMAIL_FROM` | nie | Odosielateľ. Vlastná adresa vyžaduje overenú doménu v Resende. |

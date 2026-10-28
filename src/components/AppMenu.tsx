@@ -36,6 +36,7 @@ const ICONS = {
   heart: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z",
   sliders: "M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4",
   logout: "M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l4-4-4-4M14 12H4",
+  help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5M12 17h.01",
 };
 
 /** Hamburger menu: pages, search settings, light/dark theme and signing out. */
@@ -163,6 +164,7 @@ export function AppMenu({
                 <span className="text-sm font-normal text-muted">{settingsLabel}</span>
               </span>,
             )}
+            {item("/napoveda", ICONS.help, "Nápoveda")}
           </nav>
 
           <div className="my-3 h-px bg-line" />

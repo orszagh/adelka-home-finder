@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { z } from "zod";
 
-export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5";
+export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5";
 
 /** User-facing failure; the message is safe to show in the UI (Slovak). */
 export class AiError extends Error {}
@@ -18,7 +18,11 @@ function getClient(): Anthropic {
   if (!isAiConfigured()) {
     throw new AiError("AI nie je nastavená (chýba ANTHROPIC_API_KEY).");
   }
-  client ??= new Anthropic();
+  // A key pasted into Vercel with a trailing newline or space is rejected as invalid.
+  client ??= new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY?.trim() || null,
+    authToken: process.env.ANTHROPIC_AUTH_TOKEN?.trim() || null,
+  });
   return client;
 }
 
@@ -51,8 +55,10 @@ export async function generateStructured<Schema extends z.ZodType>(options: {
     if (error instanceof Anthropic.RateLimitError) {
       throw new AiError("AI je momentálne preťažená, skús to o chvíľu.");
     }
-    if (error instanceof Anthropic.AuthenticationError) {
-      throw new AiError("Neplatný ANTHROPIC_API_KEY.");
+    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
+      // For Lubko in the Vercel logs; Adelka gets a plain sentence.
+      console.error("Claude API key rejected – set a valid ANTHROPIC_API_KEY in Vercel", error.status);
+      throw new AiError("AI je dočasne nedostupná (Lubko musí obnoviť prístupový kľúč).");
     }
     if (error instanceof Anthropic.APIError) {
       console.error("Claude API error", error.status, error.message);

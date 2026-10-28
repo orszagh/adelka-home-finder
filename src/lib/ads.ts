@@ -100,8 +100,8 @@ export const ADS: Ad[] = [
   },
 ];
 
-/** Ľubo paused the ads; they show only on ?reklama=1 (to try them out). Set to false to bring them back. */
-export const ADS_PAUSED = true;
+/** When true the ads show only on ?reklama=1 (to try them out). */
+export const ADS_PAUSED = false;
 
 /** Ľubo: one ad, then the next one no sooner than five hours later. */
 export const AD_GAP_MS = 5 * 60 * 60 * 1000;

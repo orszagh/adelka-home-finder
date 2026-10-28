@@ -114,7 +114,7 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
       <Button onClick={generate} disabled={!aiEnabled || loading || intent.trim().length === 0}>
         {loading ? "Pripravujem…" : draft ? "Pripraviť znova" : "Pripraviť správu"}
       </Button>
-      {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je nastavená (chýba ANTHROPIC_API_KEY).</p>}
+      {!aiEnabled && <p className="text-sm text-muted">AI zatiaľ nie je zapnutá – Lubko ju musí nastaviť.</p>}
 
       {error && (
         <p className="rounded-2xl bg-love-soft px-4 py-3 text-sm text-love-ink" role="alert">
