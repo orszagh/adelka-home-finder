@@ -16,7 +16,7 @@ export function Gallery({ photos, title }: { photos: string[]; title: string }) 
         <img
           src={photos[index]}
           alt={`${title} – fotka ${index + 1} z ${photos.length}`}
-          className="aspect-[3/2] w-full object-cover"
+          className="aspect-[3/2] w-full object-cover lg:max-h-[calc(100dvh-13rem)]"
         />
         {photos.length > 1 && (
           <>
@@ -52,7 +52,7 @@ export function Gallery({ photos, title }: { photos: string[]; title: string }) 
               aria-label={`Fotka ${i + 1}`}
               className={`shrink-0 overflow-hidden rounded-xl ring-2 ${i === index ? "ring-accent" : "ring-transparent"}`}
             >
-              <img src={src} alt="" loading="lazy" className="h-14 w-20 object-cover" />
+              <img src={src} alt="" loading="lazy" className="h-14 w-20 object-cover lg:h-16 lg:w-24" />
             </button>
           ))}
         </div>

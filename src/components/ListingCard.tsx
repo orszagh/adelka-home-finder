@@ -45,7 +45,7 @@ export function ListingCard({
       }`}
     >
       <Link href={`/inzerat/${property.id}`} className="block">
-        <div className="relative aspect-[16/9] max-h-44 w-full overflow-hidden bg-surface-2">
+        <div className="relative aspect-[16/9] max-h-44 w-full overflow-hidden bg-surface-2 sm:aspect-[3/2] sm:max-h-none">
           {photo && (
             <img
               src={photo}

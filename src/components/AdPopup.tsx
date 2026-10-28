@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { reportAdChoice } from "@/app/ad-actions";
 import type { AdChoice } from "@/lib/ad-report";
-import { type Ad, type KissMilestone, adAt, kissesWord, milestoneFor, paidText, shouldShowAd } from "@/lib/ads";
+import {
+  type Ad,
+  type KissMilestone,
+  ADS_PAUSED,
+  adAt,
+  kissesWord,
+  milestoneFor,
+  paidText,
+  shouldShowAd,
+} from "@/lib/ads";
 import { Button, ICONS, Icon } from "./ui";
 
 /** When the last ad was shown (ms) and which one comes next. */
@@ -42,6 +51,7 @@ export function AdPopup() {
 
   useEffect(() => {
     const forced = new URLSearchParams(window.location.search).get("reklama") === "1";
+    if (ADS_PAUSED && !forced) return;
     const last = read(LAST_SHOWN_KEY);
     if (!forced && !shouldShowAd(last === null ? null : Number(last))) return;
     // Without storage the ads could not be spaced out, so they stay away.

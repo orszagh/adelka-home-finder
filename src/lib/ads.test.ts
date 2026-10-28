@@ -36,7 +36,7 @@ describe("kiss milestones", () => {
   it("fires exactly on the 3rd and 10th kiss", async () => {
     const { milestoneFor } = await import("./ads");
     expect(milestoneFor(2)).toBeNull();
-    expect(milestoneFor(3)?.text).toContain("pretiahnuť");
+    expect(milestoneFor(3)?.text).toContain("zaspieva do telefónu");
     expect(milestoneFor(4)).toBeNull();
     expect(milestoneFor(10)?.text).toContain("poslala 10× pusu");
   });

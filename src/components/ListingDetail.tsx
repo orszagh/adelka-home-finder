@@ -50,70 +50,77 @@ export async function ListingDetail({ id }: { id: string }) {
         </p>
       )}
 
-      <Gallery photos={property.photos} title={property.title} />
-
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-display text-3xl font-semibold text-ink">{formatPrice(property.price)}</p>
-          <h1 className="mt-1 text-lg font-medium text-ink">{property.title}</h1>
-          <p className="mt-1 flex items-center gap-1 text-muted">
-            <Icon d={ICONS.pin} size={16} />
-            {property.city}, {property.region}
-          </p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
+        <div className="lg:sticky lg:top-0">
+          <Gallery photos={property.photos} title={property.title} />
         </div>
-        <SaveButton propertyId={property.id} saved={savedEntry !== null} variant="full" />
-      </div>
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {facts.map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-surface p-3.5 shadow-card">
-            <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{label}</dt>
-            <dd className="mt-1 font-semibold text-ink">{value}</dd>
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-3xl font-semibold text-ink lg:text-4xl">{formatPrice(property.price)}</p>
+              <h1 className="mt-1 text-lg font-medium text-ink">{property.title}</h1>
+              <p className="mt-1 flex items-center gap-1 text-muted">
+                <Icon d={ICONS.pin} size={16} />
+                {property.city}, {property.region}
+              </p>
+            </div>
+            <SaveButton propertyId={property.id} saved={savedEntry !== null} variant="full" />
           </div>
-        ))}
-      </dl>
 
-      <div className="flex flex-wrap gap-3">
-        {property.listing_url ? (
-          <a
-            href={property.listing_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonClass("secondary")}
-          >
-            <Icon d={ICONS.external} size={18} />
-            Pôvodný inzerát
-          </a>
-        ) : (
-          <span className="inline-flex min-h-11 items-center rounded-full px-4 text-sm text-muted ring-1 ring-line">
-            Ukážkový inzerát bez odkazu na portál
-          </span>
-        )}
-        <a
-          href={`https://www.openstreetmap.org/?mlat=${property.latitude}&mlon=${property.longitude}#map=15/${property.latitude}/${property.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonClass("secondary")}
-        >
-          <Icon d={ICONS.map} size={18} />
-          Na mape
-        </a>
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {facts.map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-surface p-3.5 shadow-card">
+                <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{label}</dt>
+                <dd className="mt-1 font-semibold text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="flex flex-wrap gap-3">
+            {property.listing_url ? (
+              <a
+                href={property.listing_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClass("secondary")}
+              >
+                <Icon d={ICONS.external} size={18} />
+                Pôvodný inzerát
+              </a>
+            ) : (
+              <span className="inline-flex min-h-11 items-center rounded-full px-4 text-sm text-muted ring-1 ring-line">
+                Ukážkový inzerát bez odkazu na portál
+              </span>
+            )}
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${property.latitude}&mlon=${property.longitude}#map=15/${property.latitude}/${property.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClass("secondary")}
+            >
+              <Icon d={ICONS.map} size={18} />
+              Na mape
+            </a>
+          </div>
+
+          {savedEntry && (
+            <section className="rounded-3xl bg-surface p-5 shadow-card">
+              <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
+            </section>
+          )}
+        </div>
       </div>
 
-      {savedEntry && (
-        <section className="rounded-3xl bg-surface p-5 shadow-card">
-          <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
-        </section>
-      )}
-
-      <LocationSummary
-        propertyId={property.id}
-        city={property.city}
-        initialNote={locationNote}
-        aiEnabled={isAiConfigured()}
-      />
-
-      <MessageDraft propertyId={property.id} aiEnabled={isAiConfigured()} />
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-10">
+        <LocationSummary
+          propertyId={property.id}
+          city={property.city}
+          initialNote={locationNote}
+          aiEnabled={isAiConfigured()}
+        />
+        <MessageDraft propertyId={property.id} aiEnabled={isAiConfigured()} />
+      </div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ describe("ad choice report", () => {
       new Date("2026-09-25T19:30:00Z"),
     );
     expect(email.subject).toContain("10 pús");
-    expect(email.text).toContain("Ťukla na: Už bežím");
+    expect(email.text).toContain("Ťukla na: Beriem všetko");
     expect(email.text).toContain("21:30");
     expect(buildAdEmail({ headline: ADS[0].headline, choice: "refuse", label: "Nechcem reklamy", kisses: 0 }, new Date()).subject).toBe(
       "Adelka sa pokúsila vypnúť reklamy",

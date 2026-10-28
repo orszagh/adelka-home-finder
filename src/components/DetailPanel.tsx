@@ -53,7 +53,7 @@ export function DetailPanel({ children }: { children: ReactNode }) {
         </button>
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
-        <div className="mx-auto max-w-3xl">{children}</div>
+        <div className="mx-auto max-w-3xl lg:max-w-screen-2xl">{children}</div>
       </div>
     </aside>
   );

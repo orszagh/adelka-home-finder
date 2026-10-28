@@ -276,7 +276,7 @@ export function HomeFinder({
 
         {/* Top bar: back to Italy, the region and what Adelka follows there. */}
         {(region || view.v === "new") && (
-          <div className="pointer-events-none absolute inset-x-3 top-3 z-[1200] flex flex-col items-start gap-2">
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-[1200] mx-auto flex max-w-screen-2xl flex-col items-start gap-2 px-3 sm:px-4">
             <div className="pointer-events-auto flex max-w-full items-center gap-2">
               <button
                 type="button"
@@ -431,9 +431,9 @@ function ListingsLayer({
   return (
     <section
       aria-label="Zoznam domčekov"
-      className="absolute inset-0 z-[1100] animate-fade-up overflow-y-auto overscroll-contain bg-canvas px-3.5 pb-28 pt-[124px] sm:px-6"
+      className="absolute inset-0 z-[1100] animate-fade-up overflow-y-auto overscroll-contain bg-canvas px-3.5 pb-28 pt-[124px] sm:px-4"
     >
-      <div className="mx-auto mb-4 flex max-w-6xl gap-2 overflow-x-auto pb-1">
+      <div className="mx-auto mb-4 flex max-w-screen-2xl gap-2 overflow-x-auto pb-1">
         {SORTS.map((s) => (
           <button
             key={s.value}
@@ -475,7 +475,7 @@ function ListingsLayer({
       {listings.length === 0 ? (
         empty
       ) : (
-        <div className="mx-auto grid max-w-6xl gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))]">
+        <div className="mx-auto grid max-w-screen-2xl gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {listings.map((p, i) => (
             <ListingCard
               key={p.id}

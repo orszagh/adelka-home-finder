@@ -11,7 +11,7 @@ export default async function ListingPage({ params }: PageProps<"/inzerat/[id]">
   const { id } = await params;
   if (!(await hasSession())) redirect(`/prihlasenie?next=${encodeURIComponent(`/inzerat/${id}`)}`);
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 lg:max-w-screen-2xl">
       <Link href="/" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink hover:underline">
         <Icon d={ICONS.back} size={16} />
         Späť na ponuky
