@@ -1,8 +1,7 @@
 /**
  * "Platené reklamy" from Lubko: the app is free, except it isn't. Cheeky,
- * romantic and funny – nothing crude (Ľubo toned it down). Adelka is travelling
- * with her son Sebastián (Italy now, Thailand after Christmas), so Lubko courts
- * her from afar. One at a time, in order,
+ * romantic and funny – nothing crude (Ľubo toned it down). Adelka is
+ * travelling for a long time, so Lubko courts her from afar. One at a time, in order,
  * at least AD_GAP_MS apart, remembered in the browser.
  */
 export type Ad = {
@@ -29,21 +28,21 @@ export const ADS: Ad[] = [
   },
   {
     photo: 2,
+    eyebrow: "Mesačný výpis",
+    headline: "Máš nezaplatené domčeky.",
+    text: "Tento mesiac si si prezrela kopu domčekov a uhradila podozrivo málo pús. Úroky sa počítajú v objatiach a rastú každý deň.",
+    pay: "Uhradiť pusou",
+    agree: "Požiadať o splátkový kalendár",
+    paid: "Uhradené. Ďakujeme, že si naša verná zákazníčka. Stav účtu: {kisses} {kissesWord}.",
+  },
+  {
+    photo: 3,
     eyebrow: "Upozornenie na vzdialenosť",
     headline: "Medzi vami je vyše 1 000 km.",
     text: "Systém zistil, že Lubko sa nedá poslať kuriérom. Odporúčané riešenie: denná dávka pús na diaľku, kým sa nevrátiš.",
     pay: "Poslať pusu cez Alpy",
     agree: "Poslať aj fotku mora",
-    paid: "Pusa preletela cez Alpy a pristála. Lubko sa červená a ukazuje ju kolegom.",
-  },
-  {
-    photo: 3,
-    eyebrow: "Hlavný hodnotiteľ",
-    headline: "Junior maklér Sebastián má posledné slovo.",
-    text: "Jeho kritériá: zmrzlina do 5 minút pešo, pláž do 10 a izba väčšia ako mamina. Lubko sa k jeho výberu oficiálne pripája.",
-    pay: "Zaplatiť pusou aj za Sebastiána",
-    agree: "Sebastián chce dve zmrzliny",
-    paid: "Zaplatené. Sebastián dostáva bonus: jednu zmrzlinu na Lubkov účet. Pistáciovú.",
+    paid: "Pusa preletela cez Alpy a pristála. Lubko sa červená.",
   },
   {
     photo: 1,
@@ -65,6 +64,15 @@ export const ADS: Ad[] = [
   },
   {
     photo: 3,
+    eyebrow: "Aktualizácia systému",
+    headline: "K dispozícii je verzia 2.0.",
+    text: "Novinky: viac domčekov, rýchlejšia mapa a o 30 % viac Lubka. Inštalácia trvá jednu pusu a nevyžaduje reštart.",
+    pay: "Nainštalovať pusou",
+    agree: "Pripomenúť zajtra",
+    paid: "Aktualizácia úspešná. Lubko 2.0 je nainštalovaný a nedá sa odinštalovať.",
+  },
+  {
+    photo: 1,
     eyebrow: "Zmena obchodných podmienok",
     headline: "Bod 7.3 bol aktualizovaný.",
     text: "Každý domček s výhľadom na more musí mať aj miesto pre Lubka. Stačí kúsok gauča, jedna zásuvka a tanier cestovín.",
@@ -73,31 +81,22 @@ export const ADS: Ad[] = [
     paid: "Ďakujeme. Bod 7.4: kto prvý uvidí more, posiela fotku. Kto ju dostane, posiela pusu.",
   },
   {
-    photo: 1,
-    eyebrow: "Hypotéka od Lubka",
-    headline: "0 % úrok, splátky v pusách",
-    text: "Žiadne papiere, žiadna banka. Prvá splátka je splatná dnes večer cez videohovor, ďalšie podľa dohody. Často.",
-    pay: "Podpísať pusou",
-    agree: "Vyjednať lepšie podmienky",
-    paid: "Zmluva podpísaná. Lubko si ju uložil na bezpečné miesto. Pod vankúš.",
-  },
-  {
     photo: 2,
-    eyebrow: "Do batožiny",
-    headline: "Nechýba ti niečo v kufri?",
-    text: "Talianske more je krásne, ale bez Lubka je to len drahá dovolenka. Balík obsahuje nosenie kufrov, natieranie chrbta krémom a teplé nohy, keď v noci zafúka.",
-    pay: "Pridať Lubka do kufra",
-    agree: "Chcem dva kusy",
-    paid: "Pridané. Dostupnosť: jediný kus na svete, rezervovaný len pre teba.",
+    eyebrow: "Vernostný program",
+    headline: "Zbieraj body, vyhraj Lubka.",
+    text: "Za každú pusu získavaš body. Za 10 bodov: dlhý videohovor. Za 100 bodov: Lubko osobne. Body nikdy nepropadajú.",
+    pay: "Zbierať body",
+    agree: "Čo je za 1 000 bodov?",
+    paid: "Body pripísané. Za 1 000 bodov je prekvapenie. Lubko ho ešte vymýšľa.",
   },
   {
     photo: 3,
-    eyebrow: "Cestovná kancelária Lubko",
-    headline: "Po Vianociach: Thajsko!",
-    text: "Letíte so Sebastiánom hľadať domček aj do Thajska? Lubko ponúka balík all inclusive: nosič kufrov, lovec komárov a odborník na slony. Zadarmo, len ho treba zobrať so sebou.",
-    pay: "Zbaliť Lubka na cestu",
-    agree: "Sebastián hlasuje za",
-    paid: "Rezervácia potvrdená. Lubko už trénuje „sawasdee“ a skúša, či sa zmestí do príručnej batožiny.",
+    eyebrow: "Medzinárodná platnosť",
+    headline: "Pusy platia aj v Thajsku.",
+    text: "Lubkove pusy sú platné v Taliansku, v Thajsku a kdekoľvek na mape. Výmenný kurz: 1 pusa = 1 pusa, bez poplatkov.",
+    pay: "Zameniť pusu",
+    agree: "Chcem lepší kurz",
+    paid: "Zmenené. Kurz pevný, poplatky nulové, Lubko spokojný.",
   },
 ];
 
@@ -133,8 +132,8 @@ export const KISS_MILESTONES: KissMilestone[] = [
   {
     at: 3,
     headline: "Tri pusy? To už nie je náhoda.",
-    text: "Adel, tri pusy na diaľku a Lubko už nevie, ako sa volá. Ešte jedna a zavolá ti a zaspieva do telefónu – po taliansky a falošne. Sebastián môže dávať body.",
-    yes: "Spievaj, počúvame",
+    text: "Adel, tri pusy na diaľku a Lubko už nevie, ako sa volá. Ešte jedna a zavolá ti a zaspieva do telefónu – po taliansky a falošne.",
+    yes: "Spievaj, počúvam",
     no: "Radšej ďalšiu pusu",
   },
   {
