@@ -14,6 +14,7 @@ import { AdPopup } from "./AdPopup";
 import { CheckNowButton } from "./CheckNowButton";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
+import { markReplace } from "./navigation";
 import type { MapMode } from "./MapView";
 import { SyncSheet } from "./SyncSheet";
 import { useToast } from "./Toast";
@@ -55,7 +56,10 @@ function go(next: Partial<View>, replace = false) {
   if (next.p) sp.set("p", next.p);
   if (next.pick) sp.set("pick", "1");
   const url = sp.size > 0 ? `?${sp}` : window.location.pathname;
-  if (replace) window.history.replaceState(null, "", url);
+  if (replace) {
+    markReplace();
+    window.history.replaceState(null, "", url);
+  }
   else window.history.pushState(null, "", url);
 }
 

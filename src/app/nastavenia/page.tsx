@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SearchSettingsForm } from "@/components/SearchSettingsForm";
-import { ICONS, Icon } from "@/components/ui";
+import { CloseBar } from "@/components/CloseBar";
 import { getRepo } from "@/lib/db/repo";
 import { formatUsage } from "@/lib/budget";
 import { getProvider } from "@/lib/providers";
@@ -18,11 +17,8 @@ export default async function SettingsPage() {
   const [settings, usage] = await Promise.all([getSearchSettings(getRepo()), provider.usage?.() ?? null]);
 
   return (
-    <main className="mx-auto w-full max-w-md space-y-4 px-4 py-6">
-      <Link href="/" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink hover:underline">
-        <Icon d={ICONS.back} size={16} />
-        Späť na ponuky
-      </Link>
+    <main className="mx-auto w-full max-w-md space-y-4 px-4 pb-6 pt-2">
+      <CloseBar label="Zavrieť nastavenia" />
       <h1 className="font-display text-3xl font-semibold text-ink">Kde hľadať domček</h1>
       <SearchSettingsForm initial={settings} />
       {usage && (

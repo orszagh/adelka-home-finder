@@ -7,6 +7,7 @@ import { logout } from "@/app/session-actions";
 import { setTheme } from "@/app/theme-actions";
 import type { Theme } from "@/lib/theme";
 import { Logo } from "./Logo";
+import { markReplace } from "./navigation";
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: "light", label: "Svetlý" },
@@ -82,10 +83,16 @@ export function AppMenu({
 
   const item = (href: string, icon: string, label: ReactNode, extra?: ReactNode) => {
     const current = pathname === href;
+    // From one menu page to another the new one takes its place, so Späť / ✕ always lead back to the houses.
+    const replace = pathname !== "/" && href !== "/";
     return (
       <Link
         href={href}
-        onClick={() => setOpen(false)}
+        replace={replace}
+        onClick={() => {
+          if (replace) markReplace();
+          setOpen(false);
+        }}
         aria-current={current ? "page" : undefined}
         className={`flex min-h-13 items-center gap-3 rounded-2xl px-3.5 py-2 text-base ${
           current ? "bg-accent-soft font-semibold text-accent-ink" : "font-medium text-ink hover:bg-surface-2"
@@ -196,7 +203,12 @@ export function AppMenu({
           <form
             action={logout}
             // Pages saved for offline use hold her houses; they go with the session.
-            onSubmit={() => void globalThis.caches?.delete("pages-v1").catch(() => {})}
+            onSubmit={() =>
+              void globalThis.caches
+                ?.keys()
+                .then((names) => Promise.all(names.filter((n) => n.startsWith("pages-")).map((n) => caches.delete(n))))
+                .catch(() => {})
+            }
           >
             <button
               type="submit"

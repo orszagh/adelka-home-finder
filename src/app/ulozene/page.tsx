@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ListingCard } from "@/components/ListingCard";
 import { NoteForm } from "@/components/NoteForm";
+import { CloseBar } from "@/components/CloseBar";
 import { ButtonLink, Card, Eyebrow, ICONS } from "@/components/ui";
 import { getRepo } from "@/lib/db/repo";
 import { isStale } from "@/lib/freshness";
@@ -21,7 +22,8 @@ export default async function SavedPage() {
   ).filter((e) => e.property !== null);
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6">
+    <main className="mx-auto w-full max-w-3xl space-y-5 px-4 pb-6 pt-2">
+      <CloseBar label="Zavrieť uložené" />
       <div>
         <Eyebrow>Domčeky pre teba</Eyebrow>
         <h1 className="font-display text-3xl font-semibold text-ink">Uložené</h1>

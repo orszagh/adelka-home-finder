@@ -9,7 +9,8 @@
  *  - anything that changes data (POST: saving, logging in, fetching from Apify) and
  *    the login page: always the network, never stored.
  */
-const VERSION = "v1";
+// v2: stopped storing RSC data; the new version drops the old copies.
+const VERSION = "v2";
 const PAGES = `pages-${VERSION}`;
 const STATIC = `static-${VERSION}`;
 const TILES = `tiles-${VERSION}`;
@@ -112,8 +113,10 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(staleWhileRevalidate(event, PHOTOS));
     return;
   }
-  // Pages (navigations) and the data Next fetches when moving between them.
-  if (request.mode === "navigate" || request.headers.get("RSC") === "1") {
+  // Whole pages only. The data Next fetches when moving between pages (RSC) is left to the
+  // network: a stale copy from an older version of the app stalls the navigation. Offline,
+  // Next falls back to loading the whole page, which is served from here.
+  if (request.mode === "navigate") {
     event.respondWith(networkFirst(event, PAGES));
   }
 });

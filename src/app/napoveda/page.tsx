@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { ButtonLink, Eyebrow, ICONS, Icon } from "@/components/ui";
+import { CloseBar } from "@/components/CloseBar";
+import { Eyebrow } from "@/components/ui";
 import { hasSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Nápoveda" };
@@ -115,21 +115,12 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
 export default async function HelpPage() {
   if (!(await hasSession())) redirect("/prihlasenie?next=/napoveda");
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6">
-      <div className="flex items-start gap-3">
-        <div className="flex-1">
-          <Eyebrow>Ako na to</Eyebrow>
-          <h1 className="font-display text-3xl font-semibold text-ink">Nápoveda</h1>
-          <p className="mt-1 text-muted">Ťukni na otázku a rozbalí sa odpoveď.</p>
-        </div>
-        {/* The app on the home screen has no browser back button. */}
-        <Link
-          href="/"
-          aria-label="Zavrieť nápovedu"
-          className="-mr-1 grid size-11 shrink-0 place-items-center rounded-full bg-surface text-ink shadow-sm ring-1 ring-line hover:bg-surface-2"
-        >
-          <Icon d={ICONS.close} size={20} />
-        </Link>
+    <main className="mx-auto w-full max-w-3xl space-y-5 px-4 pb-6 pt-2">
+      <CloseBar label="Zavrieť nápovedu" />
+      <div>
+        <Eyebrow>Ako na to</Eyebrow>
+        <h1 className="font-display text-3xl font-semibold text-ink">Nápoveda</h1>
+        <p className="mt-1 text-muted">Ťukni na otázku a rozbalí sa odpoveď.</p>
       </div>
 
       <div className="space-y-2.5">
@@ -159,9 +150,6 @@ export default async function HelpPage() {
         ))}
       </div>
 
-      <ButtonLink href="/" variant="secondary">
-        Späť na domčeky
-      </ButtonLink>
     </main>
   );
 }

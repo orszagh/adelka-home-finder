@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { Suspense } from "react";
 import { AppMenu } from "@/components/AppMenu";
 import { APP_NAME, Logo } from "@/components/Logo";
+import { NavigationTracker } from "@/components/navigation";
 import { OfflineSupport } from "@/components/OfflineSupport";
 import { ToastProvider } from "@/components/Toast";
 import { getRepo } from "@/lib/db/repo";
@@ -61,6 +63,9 @@ export default async function RootLayout({ children, modal }: LayoutProps<"/">) 
           {children}
           {modal}
           <OfflineSupport />
+          <Suspense fallback={null}>
+            <NavigationTracker />
+          </Suspense>
         </ToastProvider>
       </body>
     </html>
