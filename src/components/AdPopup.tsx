@@ -13,12 +13,15 @@ import {
   paidText,
   shouldShowAd,
 } from "@/lib/ads";
+import { isLubkoDevice } from "./ActivityPing";
 import { Button, ICONS, Icon } from "./ui";
 
 /** When the last ad was shown (ms) and which one comes next. */
 const LAST_SHOWN_KEY = "adelka.ad.lastShownAt";
 const NEXT_AD_KEY = "adelka.ad.next";
-const KISSES_KEY = "adelka.ad.kisses";
+/** New name = everyone starts from zero (2026-10-29: Lubko's test kisses were counted under the old one). */
+const KISSES_KEY = "adelka.ad.kisses.v2";
+const OLD_KISSES_KEY = "adelka.ad.kisses";
 const SHOW_AFTER_MS = 8000;
 const CLOSE_AFTER_S = 3;
 
@@ -44,12 +47,15 @@ type Stage = "ad" | "paid" | "milestone";
 /**
  * Lubko's "paid ad" on the home page: one at a time, in order, at least
  * five hours apart (or right away with ?reklama=1). Paying with a kiss counts kisses in this browser; at 3 and
- * 10 kisses Lubko gets bolder.
+ * 10 kisses Lubko gets bolder. On Lubko's devices nothing is counted, saved or emailed.
  */
 export function AdPopup() {
   const [ad, setAd] = useState<Ad | null>(null);
 
   useEffect(() => {
+    try {
+      localStorage.removeItem(OLD_KISSES_KEY);
+    } catch {}
     const forced = new URLSearchParams(window.location.search).get("reklama") === "1";
     if (ADS_PAUSED && !forced) return;
     const last = read(LAST_SHOWN_KEY);
@@ -76,7 +82,9 @@ export function AdPopup() {
 
 function AdDialog({ ad, onClose }: { ad: Ad; onClose: () => void }) {
   const [stage, setStage] = useState<Stage>("ad");
-  const [kisses, setKisses] = useState(() => Number(read(KISSES_KEY)) || 0);
+  // Lubko trying his own ads: the kisses only last until the window closes.
+  const [lubko] = useState(isLubkoDevice);
+  const [kisses, setKisses] = useState(() => (lubko ? 0 : Number(read(KISSES_KEY)) || 0));
   const [milestone, setMilestone] = useState<KissMilestone | null>(null);
   const [countdown, setCountdown] = useState(CLOSE_AFTER_S);
   const [shake, setShake] = useState(0);
@@ -108,6 +116,7 @@ function AdDialog({ ad, onClose }: { ad: Ad; onClose: () => void }) {
 
   /** Every tap is remembered on the server and Lubko gets an email. */
   const track = (choice: AdChoice, label: string, total: number, headline = milestone?.headline ?? ad.headline) => {
+    if (lubko) return;
     void reportAdChoice({ headline, choice, label, kisses: total }).catch(() => {});
   };
 
@@ -115,7 +124,7 @@ function AdDialog({ ad, onClose }: { ad: Ad; onClose: () => void }) {
     const next = kisses + 1;
     track(choice, label, next, choice === "milestone-no" ? milestone?.headline : ad.headline);
     setKisses(next);
-    write(KISSES_KEY, String(next));
+    if (!lubko) write(KISSES_KEY, String(next));
     const reached = milestoneFor(next);
     setMilestone(reached);
     setStage(reached ? "milestone" : "paid");
