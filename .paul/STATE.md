@@ -5,7 +5,7 @@
 See: .paul/PROJECT.md (updated 2026-09-25)
 
 **Core value:** Adelka nájde vhodný domček pri talianskom mori z jedného jednoduchého miesta.
-**Current focus:** v0.3 hotová a nasadená – ďalší míľnik podľa dohody
+**Current focus:** priebežné úpravy pre Adelku na cestách (okolie, štítky, Apify Starter) – všetko live
 
 ## Current Position
 
@@ -13,7 +13,7 @@ Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – Complete
 Phase: 8 of 8 (Značka a zábava) – Complete
 Plan: 08-01, 08-02 complete
 Status: Milestone v0.3 complete
-Last activity: 2026-10-27 — Fáza 9: strážca rozpočtu Apify (4,5 USD/mesiac, tempo) a offline PWA
+Last activity: 2026-10-29 — Domčeky v okolí, štítky Nové/Nevidela/Videla, Apify Starter (rozpočet podľa limitu účtu, 200 ponúk), okno s novinkou
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -54,6 +54,11 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Stavebné prvky v src/components/ui.tsx, ikony ako inline SVG | 7 | Jednotný vzhľad, žiadne emoji v UI |
 | SyncSheet + toasty namiesto inline hlášok, animácie v CSS | 7 | Výrazné stavy, reduced motion |
 | Logo z Higgsfield (návrh 4) prefarbené na tokeny; reklamy s pusami (localStorage) a ťuknutiami (app_state + email) | 8 | Fotky Lubka vo verejnom repe na pokyn Ľuba |
+| Zatváranie stránok = späť v histórii appky (navigation.tsx), staleTimes 10 min, SW bez RSC | 10/2026 | Návrat na mapu okamžite |
+| Videné inzeráty v app_state seen_listings, jeden štítok Nové/Nevidela/Videla | 10/2026 | Platí na mobile aj počítači |
+| Okolie: poloha len v stave stránky (?near=1 bez súradníc) | 10/2026 | Súkromie |
+| Apify Starter: rozpočet = limit účtu − 0,5 USD, 200 ponúk/portál/oblasť, 16 behov naraz | 10/2026 | ~0,29 USD za oblasť, odhad v okne sťahovania |
+| Žiadne emoji v UI, len ICONS | 10/2026 | Pokyn Ľuba natrvalo |
 
 ### Deferred Issues
 
@@ -66,7 +71,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
 
 ### Git State
-Last commit: badcdae (fáza 9), branch main, pushnuté a nasadené na Vercel 2026-10-27
+Last commit: 306fc21, branch main, pushnuté a nasadené na Vercel 2026-10-29
 Feature branches merged: none
 
 ### Blockers/Concerns
@@ -79,22 +84,18 @@ Feature branches merged: none
 
 ## Session Continuity
 
-Last session: 2026-09-25
-Stopped at: v0.3 complete and deployed
-Next action: /paul:complete-milestone (v0.3), potom /paul:discuss-milestone pre ďalší míľnik
-Resume file: .paul/ROADMAP.md
+Last session: 2026-10-29
+Stopped at: všetko nasadené (306fc21), nič rozpracované; Ľubo overil okolie a okno s novinkou na mobile
+Next action: počkať na spätnú väzbu z ostrej verzie; skontrolovať prvé Apify sťahovanie so stropom 200
+Resume file: .paul/HANDOFF-2026-10-29.md
 Resume context:
-- Fáza 5 hotová: pás 3 km predvolene, /nastavenia, štítok na mape, kreslenie preč
-- 2026-10-27: fáza 9 – rozpočet Apify (budget.ts, skipped sync, email pri minutí) + PWA (manifest, sw.js, offline hláška). Immobiliare sa nespúšťal: Apify Free dovolí 5 súbežných behov, appka ich spúšťala naraz → opravené (max 4 naraz, APIFY_CONCURRENCY)
-- 2026-10-27: nové UX domova (prototyp schválený Ľubom): prehľad regiónov s počtami → región (špendlíky, náhľad, Mapa/Zoznam, Sledovať provincie) → detail na celú obrazovku; stav v URL (?r=&v=&p=&pick=); AreaBar zrušený
-- Po v0.3 (2026-09-25): úvodná mapa s regiónmi (raz za reláciu), detail domčeka v paneli vpravo / na celú obrazovku v mobile (app/@modal/(.)inzerat), reklamy v poradí s odstupom min. 5 h
-- Fáza 8 hotová: logo Higgsfield č. 4, názov La casetta di Adelka, reklamy (?reklama=1 na skúšku), míľniky 3/10 pusí, email Lubkovi pri ťuknutí
-- Fáza 7 hotová: Fraunces/DM Sans, ui.tsx, karta sťahovania s loďkou, toasty, srdiečko, nábeh kariet
-- Fáza 6 hotová: tokeny + tmavý režim (cookie adelka_theme), hamburger menu, odhlásenie. Otvorené: podpora light-dark() na Adelkinom mobile (prehliadač 2024+)
-- Fáza 5 live od 2026-09-25: vnútrozemské ponuky skryté; zmena pásu na /nastavenia hneď spustí Apify sťahovanie. Prvý ranný cron s pásom 3 km: 26. 9.
-- Lokálne overovanie: preview "dev-mock" (port 3100, ukážkové dáta, bez hesla, bez produkčnej DB)
-- Návrh dizajnu: https://claude.ai/artifact/ECjAcFZZTRyaQVVH7ABJs6 (fázy 6–8)
-- Skontrolovať ranný cron 25. 9. v Apify (APIFY_TOKEN v .env.local)
+- Adelka cestuje po Taliansku (slabý signál) – okolie (Hľadať v okolí / menu Domčeky v okolí), Google Maps/Waze v detaile
+- Apify Starter: limit 19 USD, cyklus 29. 10.–28. 11., rozpočet 18,50 USD; prvé ~2 noci cron šetrí (tempo), Pozrieť teraz funguje hneď
+- Jednotné zatváranie (CloseBar + navigation.tsx), SW cache mená tiles/photos NEMENIŤ
+- Štítky Nové/Nevidela/Videla (app_state seen_listings), Nápoveda /napoveda
+- Reklamy zapnuté (ADS_PAUSED=false), neutrálne texty
+- .paul/paul.json zmazaný a paul.toml/ledger.toml nové – nie od Claude, bez commitu
+- Lokálne overovanie: preview dev-mock (port 3100)
 
 ---
 *STATE.md — Updated after every significant action*

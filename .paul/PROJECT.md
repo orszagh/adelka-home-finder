@@ -86,7 +86,7 @@ Vercel projekt je prepojený s GitHub repom `orszagh/adelka-home-finder`. Supaba
 - Všetky DB operácie iba cez serverové API routes / server actions so `service_role` kľúčom, nikdy z klienta
 - DB schéma je už spustená v Supabase; zmeny schémy vyžadujú ručné spustenie SQL
 - Webglobe hosting nepodporuje Node.js, appka beží na Verceli (Webglobe = len DNS)
-- Dáta cez Apify actory (igolaizola/idealista-scraper, memo23/immobiliare-scraper), strop 50 ponúk na portál a oblasť
+- Dáta cez Apify actory (igolaizola/idealista-scraper, memo23/immobiliare-scraper), strop 200 ponúk na portál a oblasť (Apify Starter od 2026-10-29, rozpočet = limit účtu − 0,5 USD)
 - Vercel Hobby cron: max 1× denne
 
 ### Business Constraints
