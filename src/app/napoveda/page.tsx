@@ -81,6 +81,10 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
           Navrchu Uložených potom vidíš <b>Plán obhliadok</b> zoradený podľa dátumu, s tlačidlom na navigáciu. Domčeky, ktoré nie sú
           ono, sa presunú na koniec. Platí to na mobile aj na počítači.
         </p>
+        <p>
+          Uloženú obhliadku si ťuknutím na <b>Pridať do kalendára</b> pridáš do kalendára v mobile. Pripomenie ti ju deň vopred a 2
+          hodiny pred ňou.
+        </p>
       </>
     ),
   },

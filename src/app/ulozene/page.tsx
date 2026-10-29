@@ -74,6 +74,15 @@ export default async function SavedPage() {
                         </span>
                         {past && <span className="block text-xs text-muted">Ako to dopadlo? Označ pri domčeku „Videla som“.</span>}
                       </Link>
+                      {!past && (
+                        <a
+                          href={`/api/visit-calendar/${encodeURIComponent(id)}`}
+                          aria-label={`Pridať obhliadku v ${p.city} do kalendára`}
+                          className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-ink"
+                        >
+                          <Icon d={ICONS.calendar} size={18} />
+                        </a>
+                      )}
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
                         target="_blank"

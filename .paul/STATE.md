@@ -11,8 +11,7 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
 Phase: 10 (Novinky) — Complete
-Plan: 10-01 complete
-Status: Loop closed, nasadené
+Plan: 10-01 complete (nasadené), 10-02 complete (obhliadka do kalendára, .ics) – nasadené
 Last activity: 2026-10-29 — Okno s novinkou ako zoznam (src/lib/novelties.tsx), novinka Plán obhliadok; pusinky z reklám od nuly a len Adelke (d9e025f)
 
 Progress:
@@ -59,6 +58,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Okolie: poloha len v stave stránky (?near=1 bez súradníc) | 10/2026 | Súkromie |
 | Apify Starter: rozpočet = limit účtu − 0,5 USD, 200 ponúk/portál/oblasť, 16 behov naraz | 10/2026 | ~0,29 USD za oblasť, odhad v okne sťahovania |
 | Žiadne emoji v UI, len ICONS | 10/2026 | Pokyn Ľuba natrvalo |
+| Obhliadka do kalendára cez .ics (/api/visit-calendar/[id]), pripomienky deň vopred a 2 h pred; nie Google odkaz | 10 | Adelka má iPhone |
 | Novinky v zozname NOVELTIES (src/lib/novelties.tsx), max 1 za návštevu, najstaršia nevidená, kľúč na zariadení | 10 | Nová novinka = nová položka |
 | Pusinky z reklám pod kľúčom adelka.ad.kisses.v2, na Lubkových zariadeniach sa nepočítajú ani neposielajú | 10/2026 | Počíta sa len Adelke |
 

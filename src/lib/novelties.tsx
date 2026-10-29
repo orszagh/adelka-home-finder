@@ -51,6 +51,23 @@ export const NOVELTIES: Novelty[] = [
     primary: { label: "Pozrieť Uložené", href: "/ulozene" },
     later: "Neskôr",
   },
+  {
+    id: "calendar",
+    storageKey: "adelka.novelty.calendar",
+    icon: "calendar",
+    title: "Obhliadka v kalendári",
+    body: () => (
+      <>
+        <p>
+          Keď máš obhliadku dohodnutú aj s dátumom, ťukni pri domčeku na <b>Pridať do kalendára</b> (alebo na ikonu kalendára v
+          Pláne obhliadok). Obhliadka sa ti uloží do kalendára v iPhone.
+        </p>
+        <p>Kalendár ti ju pripomenie <b>deň vopred</b> a ešte raz <b>2 hodiny pred ňou</b>, aby si nič nezmeškala.</p>
+      </>
+    ),
+    primary: { label: "Pozrieť Uložené", href: "/ulozene" },
+    later: "Neskôr",
+  },
 ];
 
 /** The oldest novelty whose key is not among the seen ones. */

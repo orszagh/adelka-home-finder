@@ -19,6 +19,8 @@ export function VisitForm({ propertyId, visit }: { propertyId: string; visit: Vi
 
   const dirty = status !== (visit?.status ?? null) || date !== (visit?.date ?? "") || time !== (visit?.time ?? "");
   const withDate = status === "booked" || status === "visited";
+  // Only what is saved goes to the calendar.
+  const toCalendar = !dirty && status === "booked" && date !== "";
 
   const save = () =>
     startTransition(async () => {
@@ -72,6 +74,15 @@ export function VisitForm({ propertyId, visit }: { propertyId: string; visit: Vi
               Uložené
             </span>
           )}
+        </div>
+      )}
+      {toCalendar && (
+        <div className="space-y-1">
+          <a href={`/api/visit-calendar/${encodeURIComponent(propertyId)}`} className={buttonClass("secondary")}>
+            <Icon d={ICONS.calendar} size={18} />
+            Pridať do kalendára
+          </a>
+          <p className="text-xs text-muted">Kalendár ti pripomenie obhliadku deň vopred a 2 hodiny pred ňou.</p>
         </div>
       )}
     </div>
