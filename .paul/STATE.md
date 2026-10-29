@@ -72,7 +72,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Okno s novinkou pre Plán obhliadok: FeatureAnnouncement ako zoznam noviniek (najviac 1 za návštevu, najstaršia nevidená), kalendár, text o stavoch + Plán obhliadok v Uložených, tlačidlá „Pozrieť Uložené“ (červené) / „Neskôr“ / ✕ | 10/2026 | S | Keď Ľubo povie |
 
 ### Git State
-Last commit: 306fc21, branch main, pushnuté a nasadené na Vercel 2026-10-29
+Last commit: 49599e8, branch main, pushnuté a nasadené na Vercel 2026-10-29
 Feature branches merged: none
 
 ### Blockers/Concerns
@@ -85,18 +85,17 @@ Feature branches merged: none
 
 ## Session Continuity
 
-Last session: 2026-10-29
-Stopped at: všetko nasadené (306fc21), nič rozpracované; Ľubo overil okolie a okno s novinkou na mobile
-Next action: počkať na spätnú väzbu z ostrej verzie; skontrolovať prvé Apify sťahovanie so stropom 200
+Last session: 2026-10-29 (večer)
+Stopped at: všetko nasadené (posledný kód 49599e8), nič rozpracované
+Next action: v novej session spraviť okno s novinkou pre Plán obhliadok (plán v Deferred Issues a v HANDOFF-2026-10-29.md)
 Resume file: .paul/HANDOFF-2026-10-29.md
 Resume context:
-- Adelka cestuje po Taliansku (slabý signál) – okolie (Hľadať v okolí / menu Domčeky v okolí), Google Maps/Waze v detaile
-- Apify Starter: limit 19 USD, cyklus 29. 10.–28. 11., rozpočet 18,50 USD; prvé ~2 noci cron šetrí (tempo), Pozrieť teraz funguje hneď
+- Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)
+- Adelka cestuje po Taliansku – okolie, Google Maps/Waze, štítky Nové/Nevidela/Videla
+- Apify Starter: limit 19 USD, rozpočet 18,50 USD, 200 ponúk/portál/oblasť, odhad ceny v okne sťahovania
 - Jednotné zatváranie (CloseBar + navigation.tsx), SW cache mená tiles/photos NEMENIŤ
-- Štítky Nové/Nevidela/Videla (app_state seen_listings), Nápoveda /napoveda
-- Reklamy zapnuté (ADS_PAUSED=false), neutrálne texty
+- Žiadne emoji v UI; reklamy zapnuté; texty Ľuba preberať doslova (spisovne len na požiadanie)
 - .paul/paul.json zmazaný a paul.toml/ledger.toml nové – nie od Claude, bez commitu
-- Lokálne overovanie: preview dev-mock (port 3100)
 
 ---
 *STATE.md — Updated after every significant action*
