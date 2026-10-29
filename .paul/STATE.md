@@ -69,6 +69,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Mesačný rozpočet na API (PRD §7) | Init | S | Po týždni reálneho behu |
 | Otestovať naživo: AI prehľad lokality, draft emailu, Resend | 2 | S | Teraz (kľúče sú nastavené) |
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
+| Okno s novinkou pre Plán obhliadok: FeatureAnnouncement ako zoznam noviniek (najviac 1 za návštevu, najstaršia nevidená), kalendár, text o stavoch + Plán obhliadok v Uložených, tlačidlá „Pozrieť Uložené“ (červené) / „Neskôr“ / ✕ | 10/2026 | S | Keď Ľubo povie |
 
 ### Git State
 Last commit: 306fc21, branch main, pushnuté a nasadené na Vercel 2026-10-29

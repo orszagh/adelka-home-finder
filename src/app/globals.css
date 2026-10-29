@@ -145,6 +145,58 @@ body {
   stroke-opacity: 0.45;
   fill: none;
 }
+/* Login backdrop (RivieraScene): golden hour by day, dusk with lit windows in the dark theme. */
+.riviera {
+  --rv-sky-1: #f08a5d;
+  --rv-sky-2: #f6b26b;
+  --rv-sky-3: #fbe0b0;
+  --rv-sun: #ffb347;
+  --rv-sun-core: #fff1c9;
+  --rv-glow: rgb(255 170 90 / 0.45);
+  --rv-sea-1: #2b8aa0;
+  --rv-sea-2: #155066;
+  --rv-glitter: rgb(255 226 160 / 0.85);
+  --rv-sail: #fff6e8;
+  --rv-sail-2: #ffd9b8;
+  --rv-hull: #1f3c4a;
+  --rv-terracotta: #c8613f;
+  --rv-heart: #e8604f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .riviera {
+    --rv-sky-1: #1c2148;
+    --rv-sky-2: #6a3a6c;
+    --rv-sky-3: #e0794e;
+    --rv-sun: #ff8a4c;
+    --rv-sun-core: #ffd7a1;
+    --rv-glow: rgb(255 120 70 / 0.4);
+    --rv-sea-1: #1d3d58;
+    --rv-sea-2: #0b1a2c;
+    --rv-glitter: rgb(255 170 110 / 0.7);
+    --rv-sail: #f3e3d0;
+    --rv-sail-2: #f0b9a0;
+    --rv-hull: #0f2230;
+    --rv-terracotta: #b8553a;
+    --rv-heart: #ff7a6b;
+  }
+}
+:root[data-theme="dark"] .riviera {
+  --rv-sky-1: #1c2148;
+  --rv-sky-2: #6a3a6c;
+  --rv-sky-3: #e0794e;
+  --rv-sun: #ff8a4c;
+  --rv-sun-core: #ffd7a1;
+  --rv-glow: rgb(255 120 70 / 0.4);
+  --rv-sea-1: #1d3d58;
+  --rv-sea-2: #0b1a2c;
+  --rv-glitter: rgb(255 170 110 / 0.7);
+  --rv-sail: #f3e3d0;
+  --rv-sail-2: #f0b9a0;
+  --rv-hull: #0f2230;
+  --rv-terracotta: #b8553a;
+  --rv-heart: #ff7a6b;
+}
+
 /* "V okolí": the circle searched and Adelka's own position. */
 .near-circle {
   stroke: var(--c-accent);
@@ -272,6 +324,7 @@ body {
   --animate-burst: burst 700ms var(--ease-wave) forwards;
   --animate-shake: shake 420ms ease-in-out;
   --animate-float-heart: float-heart 3.4s ease-in infinite both;
+  --animate-drift: drift 9s ease-in-out infinite alternate;
 
   @keyframes bob {
     0%, 100% { transform: translateY(0) rotate(-3deg); }
@@ -307,6 +360,10 @@ body {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-6px); }
     40%, 80% { transform: translateX(6px); }
+  }
+  @keyframes drift {
+    from { transform: translateX(-18px); }
+    to { transform: translateX(18px); }
   }
   @keyframes float-heart {
     0% { transform: translateY(0) scale(0.5) rotate(-10deg); opacity: 0; }

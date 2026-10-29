@@ -11,7 +11,7 @@ export function LoginForm({ next }: { next: string }) {
     <form action={action} className="space-y-4">
       <input type="hidden" name="next" value={next} />
       <input type="hidden" name="username" value="adelka" autoComplete="username" />
-      <label className="block text-sm font-semibold text-ink">
+      <label className="block text-sm font-semibold">
         Heslo
         <input
           type="password"
@@ -19,18 +19,18 @@ export function LoginForm({ next }: { next: string }) {
           required
           autoFocus
           autoComplete="current-password"
-          className="mt-1.5 min-h-13 w-full rounded-2xl border-2 border-accent bg-surface px-4 text-lg text-ink"
+          className="mt-1.5 min-h-13 w-full rounded-2xl border-2 border-white/60 bg-surface px-4 text-lg text-ink focus:border-accent"
         />
       </label>
       {state.error && (
-        <p className="text-sm text-love-ink" role="alert">
+        <p className="rounded-xl bg-surface px-3 py-2 text-sm text-love-ink" role="alert">
           {state.error}
         </p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className={buttonClass("primary", "lg", "w-full")}
+        className={buttonClass("danger", "lg", "w-full")}
       >
         {pending ? "Otváram…" : "Vstúpiť"}
       </button>
