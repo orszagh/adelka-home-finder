@@ -3,6 +3,7 @@ import { DM_Sans, Fraunces } from "next/font/google";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ActivityPing } from "@/components/ActivityPing";
 import { AppMenu } from "@/components/AppMenu";
 import { APP_NAME, Logo } from "@/components/Logo";
 import { NavigationTracker } from "@/components/navigation";
@@ -63,6 +64,7 @@ export default async function RootLayout({ children, modal }: LayoutProps<"/">) 
           {children}
           {modal}
           <OfflineSupport />
+          {menu && <ActivityPing />}
           <Suspense fallback={null}>
             <NavigationTracker />
           </Suspense>

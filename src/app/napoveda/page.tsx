@@ -163,6 +163,11 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
+    icon: ICONS.heart,
+    question: "Vidí Lubko, čo v appke robím?",
+    answer: <p>Lubko vidí, kedy si appku naposledy otvorila a ktoré domčeky si pozrela. Je zvedavý, nič viac.</p>,
+  },
+  {
     icon: ICONS.moon,
     question: "Dá sa zmeniť vzhľad?",
     answer: (

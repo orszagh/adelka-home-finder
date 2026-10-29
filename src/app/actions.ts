@@ -6,6 +6,7 @@ import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/g
 import { getProvider } from "@/lib/providers";
 import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
 import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings } from "@/lib/search-settings";
+import { recordLook, recordOpen } from "@/lib/activity";
 import { SEEN_KEY, getSeenIds } from "@/lib/seen";
 import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
 import { assertSession } from "@/lib/session";
@@ -110,9 +111,16 @@ export async function markListingSeen(propertyId: string) {
   await assertSession();
   if (typeof propertyId !== "string" || propertyId.length > 100) return;
   const repo = getRepo();
+  await recordLook(repo, propertyId);
   const seen = await getSeenIds(repo);
   if (seen.includes(propertyId)) return;
   await repo.setState(SEEN_KEY, [...seen, propertyId]);
+}
+
+/** Adelka opened the app (not called on Lubko's devices). For Lubko's /aktivita page. */
+export async function markAppOpened() {
+  await assertSession();
+  await recordOpen(getRepo());
 }
 
 /** Where Adelka is with a saved house (null clears it). */
