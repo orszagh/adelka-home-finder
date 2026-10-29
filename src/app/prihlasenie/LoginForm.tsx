@@ -1,11 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { buttonClass } from "@/components/ui";
 import { login, type LoginState } from "./actions";
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(login, { error: null });
+
+  // While Adelka types the password, the map (Leaflet and the outlines of Italy) downloads in the
+  // background, so after logging in it shows without waiting for it.
+  useEffect(() => {
+    const preload = () => {
+      void import("@/components/HomeFinder");
+      void import("@/components/MapView");
+    };
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(preload, { timeout: 2000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(preload, 500);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
     <form action={action} className="space-y-4">
