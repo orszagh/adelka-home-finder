@@ -14,11 +14,12 @@ import type { Property } from "./types";
 export async function getProperties(): Promise<Property[]> {
   const repo = getRepo();
   const provider = getProvider();
-  const properties = (await repo.listProperties()).filter((p) => provider.ownsExternalId(p.external_id));
+  // Only the first photo of each: the home page shows no more, the detail reads the listing again.
+  const properties = (await repo.listPropertiesLight()).filter((p) => provider.ownsExternalId(p.external_id));
   if (!provider.isMock) return properties.filter((p) => !isStale(p));
   if (properties.length > 0) return properties;
   await syncFromProvider(repo, provider, []);
-  return repo.listProperties();
+  return repo.listPropertiesLight();
 }
 
 /** Remembered price before a recent drop, per listing id (for the "zlacnené" badge). */

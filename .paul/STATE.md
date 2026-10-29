@@ -11,9 +11,9 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
 Phase: 11 (Rýchlosť) — Planning
-Plan: 11-01, 11-02 created, awaiting approval (pred tým 10-01, 10-02 a rýchly detail 531fa58 nasadené)
+Plan: 11-01 complete (fra1, 1 fotka, 7c27b3e); 11-02 (malý index + karty po 30) a 11-03 (mapa pod menu, preload) created, awaiting approval
 Status: PLAN created, ready for APPLY
-Last activity: 2026-10-30 — Created .paul/phases/11-rychlost/11-01-PLAN.md a 11-02-PLAN.md
+Last activity: 2026-10-30 — Meranie produkcie (9 500 ponúk, 6,9 MB, 4,7 s), prerobený 11-02, nový 11-03
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plans 11-01, 11-02 created, awaiting approval]
+  ✓        ○        ○     [11-01 done; 11-02, 11-03 awaiting approval]
 ```
 
 ## Accumulated Context
@@ -60,6 +60,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Apify Starter: rozpočet = limit účtu − 0,5 USD, 200 ponúk/portál/oblasť, 16 behov naraz | 10/2026 | ~0,29 USD za oblasť, odhad v okne sťahovania |
 | Žiadne emoji v UI, len ICONS | 10/2026 | Pokyn Ľuba natrvalo |
 | Obhliadka do kalendára cez .ics (/api/visit-calendar/[id]), pripomienky deň vopred a 2 h pred; nie Google odkaz | 10 | Adelka má iPhone |
+| Funkcie Vercelu v fra1 (pri Supabase); domov ~9 500 ponúk → posielať malý index, karty po 30 | 11 | Rýchlosť na mobile |
 | Novinky v zozname NOVELTIES (src/lib/novelties.tsx), max 1 za návštevu, najstaršia nevidená, kľúč na zariadení | 10 | Nová novinka = nová položka |
 | Pusinky z reklám pod kľúčom adelka.ad.kisses.v2, na Lubkových zariadeniach sa nepočítajú ani neposielajú | 10/2026 | Počíta sa len Adelke |
 
@@ -88,9 +89,9 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-10-29 (večer)
-Stopped at: Plány 11-01 (server fra1, ľahké dáta domova) a 11-02 (mapa pod menu, popisky, preload) vytvorené
-Next action: /paul:apply .paul/phases/11-rychlost/11-01-PLAN.md
-Resume file: .paul/phases/11-rychlost/11-01-PLAN.md
+Stopped at: 11-01 nasadené a zmerané; 11-02 prerobený, 11-03 nový
+Next action: /paul:apply .paul/phases/11-rychlost/11-02-PLAN.md
+Resume file: .paul/phases/11-rychlost/11-02-PLAN.md
 Resume context:
 - Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)
 - Adelka cestuje po Taliansku – okolie, Google Maps/Waze, štítky Nové/Nevidela/Videla

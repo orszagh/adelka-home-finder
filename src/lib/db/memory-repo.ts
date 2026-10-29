@@ -1,6 +1,7 @@
 import type {
   AreaGeometry,
   GeoBox,
+  ListingCardData,
   LocationNote,
   Property,
   ProviderListing,
@@ -26,13 +27,26 @@ export class MemoryRepository implements Repository {
 
   static shared(): MemoryRepository {
     const g = globalThis as Record<symbol, unknown>;
-    // After a hot reload the stored instance may come from an older version of this class.
-    if (!(g[GLOBAL_KEY] instanceof MemoryRepository)) g[GLOBAL_KEY] = new MemoryRepository();
+    // After a hot reload the stored instance may come from an older version of this class (then it lacks
+    // newer methods). API routes are bundled apart from pages, so the class itself is not the same one.
+    const stored = g[GLOBAL_KEY] as Partial<MemoryRepository> | undefined;
+    if (typeof stored?.listCards !== "function") g[GLOBAL_KEY] = new MemoryRepository();
     return g[GLOBAL_KEY] as MemoryRepository;
   }
 
   async listProperties() {
     return [...this.properties.values()];
+  }
+
+  async listPropertiesLight() {
+    return [...this.properties.values()].map((p) => ({ ...p, photos: p.photos.slice(0, 1) }));
+  }
+
+  async listCards(ids: string[]) {
+    return ids.flatMap((id) => {
+      const p = this.properties.get(id);
+      return p ? [toCardData(p)] : [];
+    });
   }
 
   async listPropertiesIn(box: GeoBox) {
@@ -143,4 +157,8 @@ export class MemoryRepository implements Repository {
     this.notes.push(row);
     return row;
   }
+}
+
+function toCardData(p: Property): ListingCardData {
+  return { id: p.id, photo: p.photos[0] ?? null, title: p.title, city: p.city, region: p.region, area_sqm: p.area_sqm, source: p.source };
 }

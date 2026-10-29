@@ -6,15 +6,17 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent, useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
-import { distanceKm, outerRings, pointInArea } from "@/lib/geo";
+import { distanceKm, pointInArea } from "@/lib/geo";
 import type { Greeting } from "@/lib/greeting";
 import { PROVINCES, type Place, REGIONS, areaNameFor, findPlace, provincesOf } from "@/lib/italy";
-import type { Property, SearchArea } from "@/lib/types";
+import { type EncodedIndex, type IndexedListing, decodeIndex } from "@/lib/listing-index";
+import type { SearchArea } from "@/lib/types";
 import { AdPopup } from "./AdPopup";
 import { CheckNowButton } from "./CheckNowButton";
 import { FeatureAnnouncement } from "./FeatureAnnouncement";
 import { GreetingCard } from "./GreetingCard";
-import { ListingCard } from "./ListingCard";
+import { ListingCard, ListingCardSkeleton } from "./ListingCard";
+import { useListingCards } from "./listing-cards";
 import { markReplace } from "./navigation";
 import type { MapMode } from "./MapView";
 import { SyncSheet } from "./SyncSheet";
@@ -73,30 +75,8 @@ function go(next: Partial<View>, replace = false) {
   else window.history.pushState(null, "", url);
 }
 
-/**
- * Region of a listing: inside its shape, else by the province name the portal gave, else the region
- * with the nearest outline (houses right on the coast can fall just outside the simplified shapes).
- */
-function regionOf(p: Property): string | null {
-  const inside = REGIONS.find((r) => pointInArea(p.longitude, p.latitude, r.geometry));
-  if (inside) return inside.code;
-  const byName = PROVINCES.find((pr) => pr.name.toLowerCase() === p.region.toLowerCase());
-  if (byName) return byName.regionCode;
-  let best: string | null = null;
-  let bestDistance = Infinity;
-  for (const r of REGIONS) {
-    for (const ring of outerRings(r.geometry)) {
-      for (const [lng, lat] of ring) {
-        const d = (lat - p.latitude) ** 2 + (lng - p.longitude) ** 2;
-        if (d < bestDistance) [best, bestDistance] = [r.code, d];
-      }
-    }
-  }
-  return best;
-}
-
 export function HomeFinder({
-  properties,
+  index,
   areas,
   savedIds,
   newIds,
@@ -109,7 +89,8 @@ export function HomeFinder({
   settingsLabel,
   costPerAreaUsd,
 }: {
-  properties: Property[];
+  /** Every listing's numbers (see lib/listing-index); cards are fetched for the houses on screen. */
+  index: EncodedIndex;
   areas: SearchArea[];
   savedIds: string[];
   newIds: string[];
@@ -140,6 +121,7 @@ export function HomeFinder({
   const [locating, setLocating] = useState(false);
   const toast = useToast();
 
+  const properties = useMemo(() => decodeIndex(index), [index]);
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const fresh = useMemo(() => new Set(newIds), [newIds]);
   const seen = useMemo(() => new Set(seenIds), [seenIds]);
@@ -152,7 +134,7 @@ export function HomeFinder({
     [here, properties],
   );
 
-  const regionByListing = useMemo(() => new Map(properties.map((p) => [p.id, regionOf(p)])), [properties]);
+  const regionByListing = useMemo(() => new Map(properties.map((p) => [p.id, p.region_code])), [properties]);
   const regionCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const code of regionByListing.values()) if (code) counts.set(code, (counts.get(code) ?? 0) + 1);
@@ -188,7 +170,7 @@ export function HomeFinder({
         (maxPrice === null || (p.price !== null && p.price <= maxPrice)) &&
         (minRooms === null || (p.rooms !== null && p.rooms >= minRooms)),
     );
-    const byPrice = (p: Property) => p.price ?? Number.MAX_SAFE_INTEGER;
+    const byPrice = (p: IndexedListing) => p.price ?? Number.MAX_SAFE_INTEGER;
     return filtered.sort((a, b) =>
       sort === "me" && nearRadius !== null && distances
         ? distances.get(a.id)! - distances.get(b.id)!
@@ -201,6 +183,7 @@ export function HomeFinder({
   }, [properties, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort, nearRadius, distances]);
 
   const peek = view.p ? (shown.find((p) => p.id === view.p) ?? null) : null;
+  const peekCard = useListingCards(peek ? [peek.id] : []).cards.get(peek?.id ?? "") ?? null;
 
   const onAreaCreated = (result: AreaResult) => {
     setSyncingPlace(null);
@@ -477,13 +460,17 @@ export function HomeFinder({
             href={`/inzerat/${peek.id}`}
             className="absolute inset-x-3 bottom-[84px] z-[1150] mx-auto flex max-w-md animate-rise items-center gap-3 rounded-3xl bg-surface p-2 shadow-lift"
           >
-            {peek.photos[0] && <img src={peek.photos[0]} alt="" className="h-[72px] w-24 shrink-0 rounded-2xl object-cover" />}
+            {peekCard?.photo ? (
+              <img src={peekCard.photo} alt="" className="h-[72px] w-24 shrink-0 rounded-2xl object-cover" />
+            ) : (
+              <span aria-hidden className="h-[72px] w-24 shrink-0 animate-pulse rounded-2xl bg-surface-2" />
+            )}
             <span className="min-w-0 flex-1">
               <span className="block font-display text-xl font-semibold text-ink">{formatPrice(peek.price)}</span>
-              <span className="block truncate text-sm text-ink-2">{peek.title}</span>
+              <span className="block truncate text-sm text-ink-2">{peekCard?.title ?? " "}</span>
               <span className="block truncate text-sm text-muted">
                 {[
-                  peek.area_sqm ? `${peek.area_sqm} m²` : null,
+                  peekCard?.area_sqm ? `${peekCard.area_sqm} m²` : null,
                   peek.rooms ? roomsLabel(peek.rooms) : null,
                   peek.sea_km != null ? seaLabel(peek.sea_km) : null,
                 ]
@@ -527,6 +514,9 @@ export function HomeFinder({
     </>
   );
 }
+
+/** Cards fetched and shown at once in the list; "Ukázať ďalšie" adds as many again. */
+const PAGE_SIZE = 30;
 
 const SEGMENT =
   "inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[15px] font-semibold transition-colors sm:px-5";
@@ -627,7 +617,7 @@ function ListingsLayer({
   setMinRooms,
   empty,
 }: {
-  listings: Property[];
+  listings: IndexedListing[];
   saved: Set<string>;
   fresh: Set<string>;
   seen: Set<string>;
@@ -644,6 +634,10 @@ function ListingsLayer({
   setMinRooms: (v: number | null) => void;
   empty: React.ReactNode;
 }) {
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const visible = listings.slice(0, limit);
+  const { cards, failed, retry } = useListingCards(visible.map((p) => p.id));
+
   return (
     <section
       aria-label="Zoznam domčekov"
@@ -692,19 +686,39 @@ function ListingsLayer({
         empty
       ) : (
         <div className="mx-auto grid max-w-screen-2xl gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-          {listings.map((p, i) => (
-            <ListingCard
-              key={p.id}
-              enterDelayMs={Math.min(i, 10) * 40}
-              property={p}
-              saved={saved.has(p.id)}
-              isNew={fresh.has(p.id)}
-              seen={seen.has(p.id)}
-              distanceKm={distances?.get(p.id) ?? null}
-              previousPrice={priceDrops[p.id] ?? null}
-              alsoOn={twinSources[p.id] ?? []}
-            />
-          ))}
+          {visible.map((p, i) => {
+            const card = cards.get(p.id);
+            return card ? (
+              <ListingCard
+                key={p.id}
+                enterDelayMs={Math.min(i % PAGE_SIZE, 10) * 40}
+                property={{ ...p, ...card, photos: card.photo ? [card.photo] : [] }}
+                saved={saved.has(p.id)}
+                isNew={fresh.has(p.id)}
+                seen={seen.has(p.id)}
+                distanceKm={distances?.get(p.id) ?? null}
+                previousPrice={priceDrops[p.id] ?? null}
+                alsoOn={twinSources[p.id] ?? []}
+              />
+            ) : (
+              <ListingCardSkeleton key={p.id} />
+            );
+          })}
+        </div>
+      )}
+      {failed && (
+        <div className="mx-auto mt-4 flex max-w-md flex-col items-center gap-2 text-center">
+          <p className="text-sm text-muted">Domčeky sa nepodarilo načítať. Možno je slabý signál.</p>
+          <Button variant="secondary" onClick={retry}>
+            Skús znova
+          </Button>
+        </div>
+      )}
+      {listings.length > limit && (
+        <div className="mx-auto mt-5 flex max-w-md justify-center">
+          <Button variant="secondary" onClick={() => setLimit((n) => n + PAGE_SIZE)}>
+            Ukázať ďalšie (ešte {listings.length - limit})
+          </Button>
         </div>
       )}
     </section>

@@ -33,7 +33,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | 2/2 | ✅ Complete | 2026-09-25 |
 | 9 | Rozpočet Apify, offline (PWA) | 1/1 | ✅ Complete | 10/2026 |
 | 10 | Novinky (okno s novinkou ako zoznam, Plán obhliadok, kalendár) | 2/2 | ✅ Complete | 2026-10-29 |
-| 11 | Rýchlosť (server fra1, ľahké dáta, mapa pod menu) | 0/2 | Planning | – |
+| 11 | Rýchlosť (server fra1, malý index ponúk, mapa pod menu) | 1/3 | In progress | – |
 
 ## Phase Details
 

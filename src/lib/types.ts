@@ -7,6 +7,20 @@ export type MultiPolygonGeometry = {
 };
 export type AreaGeometry = PolygonGeometry | MultiPolygonGeometry;
 
+/** What the map needs to put a listing on it. */
+export type MapListing = Pick<Property, "id" | "latitude" | "longitude" | "price">;
+
+/** What a listing card shows besides the numbers the home page already has. */
+export type ListingCardData = {
+  id: string;
+  photo: string | null;
+  title: string;
+  city: string;
+  region: string;
+  area_sqm: number | null;
+  source: string;
+};
+
 /** Latitude / longitude bounds of a small piece of the map. */
 export type GeoBox = { south: number; north: number; west: number; east: number };
 

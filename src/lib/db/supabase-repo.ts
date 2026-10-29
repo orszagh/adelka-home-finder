@@ -2,6 +2,7 @@ import "server-only";
 import type {
   AreaGeometry,
   GeoBox,
+  ListingCardData,
   LocationNote,
   Property,
   ProviderListing,
@@ -13,6 +14,17 @@ import { getSupabase } from "./supabase";
 
 const PAGE_SIZE = 1000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Everything but the photos (only the first one comes along, as `photo`). */
+const LIGHT_COLUMNS =
+  "id,external_id,title,price,area_sqm,rooms,city,region,latitude,longitude,listing_url,source,first_seen_at,last_seen_at,photo:photos->>0";
+const PRICE_HISTORY_COLUMNS = "previous_price,price_changed_at";
+const CARD_COLUMNS = "id,title,city,region,area_sqm,source,photo:photos->>0";
+
+function fromLightRow(row: Record<string, unknown>): Property {
+  const { photo, ...rest } = row;
+  return toProperty({ ...rest, photos: typeof photo === "string" ? [photo] : [] });
+}
 
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(`Supabase: ${result.error.message}`);
@@ -60,6 +72,52 @@ export class SupabaseRepository implements Repository {
       rows.push(...page.map(toProperty));
       if (page.length < PAGE_SIZE) return rows;
     }
+  }
+
+  async listPropertiesLight() {
+    const db = getSupabase();
+    const { count, error } = await db.from("properties").select("id", { count: "exact", head: true });
+    if (error) throw new Error(`Supabase: ${error.message}`);
+    // All pages at once instead of one after another; of the photos only the first leaves the database.
+    const pages = await Promise.all(
+      Array.from({ length: Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE)) }, (_, i) => this.lightPage(i * PAGE_SIZE)),
+    );
+    // A listing added between the count and the pages could show up twice.
+    const ids = new Set<string>();
+    return pages.flat().filter((p) => !ids.has(p.id) && ids.add(p.id));
+  }
+
+  private async lightPage(from: number): Promise<Property[]> {
+    const query = (columns: string) =>
+      getSupabase()
+        .from("properties")
+        .select(columns)
+        .order("first_seen_at", { ascending: false })
+        .order("id")
+        .range(from, from + PAGE_SIZE - 1);
+    let result = await query(`${LIGHT_COLUMNS},${PRICE_HISTORY_COLUMNS}`);
+    // Before the migration the price history columns do not exist yet.
+    if (isMissingSchema(result.error)) result = await query(LIGHT_COLUMNS);
+    return (check(result) as unknown as Record<string, unknown>[]).map(fromLightRow);
+  }
+
+  async listCards(ids: string[]) {
+    const valid = ids.filter((id) => UUID.test(id));
+    if (valid.length === 0) return [];
+    const rows = check(
+      await getSupabase().from("properties").select(CARD_COLUMNS).in("id", valid),
+    ) as unknown as Record<string, unknown>[];
+    return rows.map(
+      (row): ListingCardData => ({
+        id: String(row.id),
+        photo: typeof row.photo === "string" ? row.photo : null,
+        title: String(row.title ?? ""),
+        city: String(row.city ?? ""),
+        region: String(row.region ?? ""),
+        area_sqm: row.area_sqm == null ? null : Number(row.area_sqm),
+        source: String(row.source ?? ""),
+      }),
+    );
   }
 
   async listPropertiesIn(box: GeoBox) {

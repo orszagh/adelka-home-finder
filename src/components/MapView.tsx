@@ -6,7 +6,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { Circle, CircleMarker, MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { formatPriceShort, homesLabel } from "@/lib/format";
 import { ITALY_ATTRIBUTION, type Place, REGIONS, findPlace, provincesOf } from "@/lib/italy";
-import type { Property } from "@/lib/types";
+import type { MapListing } from "@/lib/types";
 import { INLAND, type PlaceChooser, PlaceLayer, REGION_COLORS, boundsOf, latLngs } from "./PlaceLayer";
 
 /**
@@ -36,7 +36,7 @@ function viewKey(mode: MapMode): string {
 type Props = {
   mode: MapMode;
   /** Houses shown as pins (region mode). */
-  properties: Property[];
+  properties: MapListing[];
   /** Houses per region code, for the labels on the overview. */
   regionCounts: Map<string, number>;
   /** Region codes where Adelka follows the region or some of its provinces. */
@@ -213,7 +213,7 @@ function PriceMarker({
   compact,
   onSelect,
 }: {
-  property: Property;
+  property: MapListing;
   selected: boolean;
   saved: boolean;
   compact: boolean;
@@ -234,7 +234,7 @@ function PriceMarker({
       position={[property.latitude, property.longitude]}
       icon={icon}
       zIndexOffset={selected ? 1000 : 0}
-      title={property.title}
+      title={formatPriceShort(property.price)}
       eventHandlers={{ click: () => onSelect(property.id) }}
     />
   );

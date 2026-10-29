@@ -2,6 +2,7 @@ import "server-only";
 import type {
   AreaGeometry,
   GeoBox,
+  ListingCardData,
   LocationNote,
   Property,
   ProviderListing,
@@ -18,6 +19,10 @@ export interface Repository {
   readonly kind: "supabase" | "memory";
 
   listProperties(): Promise<Property[]>;
+  /** All listings with only their first photo: what the home page needs (much less to read). */
+  listPropertiesLight(): Promise<Property[]>;
+  /** What a listing card shows, for these ids (missing ones are left out). */
+  listCards(ids: string[]): Promise<ListingCardData[]>;
   getProperty(id: string): Promise<Property | null>;
   /** Listings inside a small box on the map (latitude / longitude bounds), e.g. around one house. */
   listPropertiesIn(box: GeoBox): Promise<Property[]>;

@@ -8,6 +8,12 @@ import { SaveButton } from "./SaveButton";
 import { useOpened } from "./seen-store";
 import { ICONS, Icon } from "./ui";
 
+/** What a card shows: a whole listing (Uložené) or the home page's numbers plus the fetched card. */
+export type CardListing = Pick<
+  Property,
+  "id" | "photos" | "price" | "title" | "area_sqm" | "rooms" | "sea_km" | "source" | "city" | "region"
+>;
+
 const BADGES = {
   new: { label: "Nové", className: "bg-sun text-on-sun" },
   unseen: { label: "Nevidela", className: "bg-accent text-on-accent" },
@@ -27,7 +33,7 @@ export function ListingCard({
   enterDelayMs = 0,
   onSelect,
 }: {
-  property: Property;
+  property: CardListing;
   saved: boolean;
   selected?: boolean;
   isNew?: boolean;
@@ -118,5 +124,19 @@ export function ListingCard({
         <SaveButton propertyId={property.id} saved={saved} />
       </div>
     </article>
+  );
+}
+
+/** The card's place while its photo and title are on the way. */
+export function ListingCardSkeleton() {
+  return (
+    <div aria-hidden className="overflow-hidden rounded-3xl bg-surface shadow-card">
+      <div className="aspect-[16/9] max-h-44 w-full animate-pulse bg-surface-2 sm:aspect-[3/2] sm:max-h-none" />
+      <div className="space-y-2 px-4 pb-4 pt-3">
+        <div className="h-7 w-32 animate-pulse rounded-lg bg-surface-2" />
+        <div className="h-4 w-4/5 animate-pulse rounded bg-surface-2" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-surface-2" />
+      </div>
+    </div>
   );
 }

@@ -4,9 +4,9 @@ import L from "leaflet";
 import { useEffect, useMemo } from "react";
 import { Marker, Polygon, useMap } from "react-leaflet";
 import { formatPriceShort } from "@/lib/format";
-import { pointInArea } from "@/lib/geo";
+import { inBox, pointInArea } from "@/lib/geo";
 import { type Place, REGIONS, areaNameFor, provincesOf } from "@/lib/italy";
-import type { AreaGeometry, Property } from "@/lib/types";
+import type { AreaGeometry, GeoBox, MapListing } from "@/lib/types";
 import { ICONS, iconHtml } from "./ui";
 
 export type PlaceChooser = {
@@ -14,7 +14,7 @@ export type PlaceChooser = {
   regionCode: string | null;
   /** Names of Adelka's current areas; places are matched to areas by name. */
   areaNames: string[];
-  properties: Property[];
+  properties: MapListing[];
   busy: boolean;
   onPick: (place: Place) => void;
 };
@@ -50,11 +50,33 @@ export function boundsOf(places: Place[]): L.LatLngBounds {
   return L.latLngBounds(places.flatMap((p) => latLngs(p.geometry).flat(2) as L.LatLngTuple[]));
 }
 
-function statsFor(place: Place, properties: Property[]): Stats {
+/** The box around a place, so that houses far away skip the exact (slow) test. */
+const boxes = new Map<string, GeoBox>();
+
+function boxOf(place: Place): GeoBox {
+  const key = `${place.kind}:${place.code}`;
+  let box = boxes.get(key);
+  if (!box) {
+    box = { south: Infinity, north: -Infinity, west: Infinity, east: -Infinity };
+    for (const ring of latLngs(place.geometry).flat() as [number, number][][]) {
+      for (const [lat, lng] of ring) {
+        box.south = Math.min(box.south, lat);
+        box.north = Math.max(box.north, lat);
+        box.west = Math.min(box.west, lng);
+        box.east = Math.max(box.east, lng);
+      }
+    }
+    boxes.set(key, box);
+  }
+  return box;
+}
+
+function statsFor(place: Place, properties: MapListing[]): Stats {
   let count = 0;
   let minPrice: number | null = null;
+  const box = boxOf(place);
   for (const p of properties) {
-    if (!pointInArea(p.longitude, p.latitude, place.geometry)) continue;
+    if (!inBox(p, box) || !pointInArea(p.longitude, p.latitude, place.geometry)) continue;
     count++;
     if (p.price !== null && (minPrice === null || p.price < minPrice)) minPrice = p.price;
   }

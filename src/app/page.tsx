@@ -6,7 +6,8 @@ import { findNewIds, findPriceDrops, getProperties } from "@/lib/data";
 import { getRepo } from "@/lib/db/repo";
 import { LAST_SEEN_KEY, MANUAL_SYNC_KEY, buildGreeting, manualSyncWaitMinutes } from "@/lib/greeting";
 import { insideAreas } from "@/lib/geo";
-import { toListingSummary } from "@/lib/listing-summary";
+import { encodeIndex } from "@/lib/listing-index";
+import { regionOf } from "@/lib/regions";
 import { getDataNotices } from "@/lib/notices";
 import { getProvider } from "@/lib/providers";
 import { getSeenIds } from "@/lib/seen";
@@ -47,8 +48,8 @@ export default async function Home() {
 
   return (
     <HomeFinder
-      // Only the first photo of each goes to the phone; the detail has them all.
-      properties={properties.map(toListingSummary)}
+      // Only the numbers of each listing go to the phone; cards are fetched for the houses on screen.
+      index={encodeIndex(properties.map((p) => ({ ...p, region_code: regionOf(p) })))}
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
       seenIds={[...seen]}
