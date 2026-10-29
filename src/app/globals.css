@@ -209,7 +209,7 @@ body {
   12% { opacity: 0.95; }
   40% { color: var(--rv-heart-sea); }
   65% { color: var(--rv-heart); }
-  100% { transform: translateY(-52vh) scale(1.1) rotate(12deg); opacity: 0; color: var(--rv-heart); }
+  100% { transform: translateY(-72vh) scale(1.1) rotate(12deg); opacity: 0; color: var(--rv-heart); }
 }
 
 /* "V okolí": the circle searched and Adelka's own position. */
