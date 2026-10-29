@@ -35,13 +35,13 @@ Otvor http://localhost:3000. Bez akýchkoľvek premenných prostredia appka bež
 | `RESEND_API_KEY`, `NOTIFY_EMAIL` | pre notifikácie | Odoslanie upozornení. Bez nich sync beží, len sa neposiela email. |
 | `EMAIL_FROM` | nie | Odosielateľ. Vlastná adresa vyžaduje overenú doménu v Resende. |
 | `APIFY_MONTHLY_BUDGET_USD` | nie | Mesačný rozpočet na Apify (predvolene 4,5). Po minutí sa nič nesťahuje; nočné sťahovanie sa rozkladá na celý mesiac. Účet v Apify má navyše vlastný limit. |
-| `APIFY_CONCURRENCY` | nie | Koľko behov Apify beží naraz (predvolene 4). Bezplatný plán Apify dovolí najviac 5, ďalšie odmietne. |
-| `APIFY_MAX_CHARGE_USD`, `APIFY_RECHECK_MAX` | nie | Strop na jeden beh (predvolene 0,08 USD) a počet overení starých ponúk za noc (predvolene 30). |
+| `APIFY_CONCURRENCY` | nie | Koľko behov Apify beží naraz (predvolene 16, Starter plán dovolí 32). Na bezplatnom pláne (max. 5) nastav 4. |
+| `APIFY_MAX_CHARGE_USD`, `APIFY_RECHECK_MAX` | nie | Strop na jeden beh (predvolene 0,8 USD) a počet overení starých ponúk za noc (predvolene 30). |
 | `LUBKO_EMAIL` | nie | Komu ide email o ťuknutiach v Lubkových reklamách (predvolene orszagh.lubo@gmail.com). Záznam ťuknutí je v `app_state` pod kľúčom `ad_choices`. |
 | `APP_URL` | nie | Adresa pre odkazy v emailoch (predvolene produkčná Vercel URL). |
 | `PROPERTY_PROVIDER` | nie | `mock` (ukážkové dáta, predvolené) alebo `apify` (reálne inzeráty z Idealista.it a Immobiliare.it). |
 | `APIFY_TOKEN` | pre `apify` | Apify API token. |
-| `APIFY_MAX_ITEMS`, `APIFY_MAX_CHARGE_USD` | nie | Limit inzerátov na portál a oblasť (50) a max. cena jedného behu (0,25 USD). |
+| `APIFY_MAX_ITEMS`, `APIFY_MAX_CHARGE_USD` | nie | Limit inzerátov na portál a oblasť (500) a max. cena jedného behu (0,8 USD). |
 | `APIFY_RECHECK_MAX` | nie | Koľko starších ponúk denne overiť priamo podľa ID (100). |
 
 ## Nasadenie (Vercel)

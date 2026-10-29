@@ -16,9 +16,10 @@ import { IMMOBILIARE_ACTOR, immobiliareInput, immobiliareRecheckInput, mapImmobi
 
 function config() {
   return {
-    maxItems: Number(process.env.APIFY_MAX_ITEMS) || 50,
-    // A run costs ~0.02 USD; the cap only stops a runaway one. Budget: see src/lib/budget.ts.
-    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.08,
+    // Per portal and area; split among the coast pieces. 50 listings cost ~0.03–0.04 USD.
+    maxItems: Number(process.env.APIFY_MAX_ITEMS) || 500,
+    // Room for a full 500-listing run (~0.4 USD); the cap only stops a runaway one. Budget: see src/lib/budget.ts.
+    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.8,
     recheckMax: Number(process.env.APIFY_RECHECK_MAX) || 30,
   };
 }
@@ -150,13 +151,13 @@ function toListing(p: Property): ProviderListing {
   return { external_id, title, price, area_sqm, rooms, city, region, latitude, longitude, photos, listing_url, source };
 }
 
-/** Runs jobs a few at a time; partial failures become messages, total failure throws. */
 /**
- * The free Apify plan runs at most 5 Actors at once and refuses the rest, which used to
- * starve Immobiliare (its runs started after Idealista's took all the slots). One slot stays free.
+ * Runs at once. The Starter plan allows 32; 16 lets both portals fetch the coast pieces of two
+ * areas in one go, so 500-listing areas fit in the 300 s a request may take. (On the free plan,
+ * which allows 5, set APIFY_CONCURRENCY=4.)
  */
 function concurrency(): number {
-  return Math.max(1, Number(process.env.APIFY_CONCURRENCY) || 4);
+  return Math.max(1, Number(process.env.APIFY_CONCURRENCY) || 16);
 }
 
 /** Like Promise.allSettled, but with at most `limit` tasks running at the same time, in order. */
