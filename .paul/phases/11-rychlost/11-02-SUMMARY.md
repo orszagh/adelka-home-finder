@@ -1,7 +1,7 @@
 ---
 phase: 11-rychlost
 plan: 02
-status: applied
+status: complete
 completed: 2026-10-30
 ---
 
@@ -29,5 +29,5 @@ completed: 2026-10-30
 - `dedupe` pri rovnakej cene uprednostní ponuku s fotkou (predtým s viac fotkami) – server má len prvú fotku.
 - Navyše oproti plánu: pamäť výpočtov podľa polohy, príznak Nové v indexe (newIds bolo 398 KB).
 
-## Neoverené
-- Ľubo na mobile (checkpoint).
+## Checkpoint
+- Ľubo schválil („Approved, ďalej 11-03“).

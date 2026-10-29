@@ -10,10 +10,10 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 ## Current Position
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
-Phase: 11 (Rýchlosť) — Planning
-Plan: 11-01 complete (7c27b3e); 11-02 applied a nasadené (e6ac249, 3e05dcf) – čaká na Ľubovu kontrolu na mobile; 11-03 čaká
-Status: PLAN created, ready for APPLY
-Last activity: 2026-10-30 — Domov 958 KB (z 6,9 MB), HTML za 1,4–1,8 s (zo 4,7 s)
+Phase: 11 (Rýchlosť) — Complete
+Plan: 11-01, 11-02, 11-03 complete (7c27b3e, e6ac249, 3e05dcf, d92519d)
+Status: Loop closed, nasadené
+Last activity: 2026-10-30 — Rýchlosť: domov 958 KB (z 6,9 MB), HTML 1,4–1,8 s (zo 4,7 s), stránky z menu ako panel nad mapou, mapa sa sťahuje pri prihlásení
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [11-02 applied, checkpoint; 11-03 next]
+  ✓        ✓        ✓     [fáza 11 complete – ďalšie úpravy podľa Ľuba]
 ```
 
 ## Accumulated Context
@@ -61,6 +61,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Žiadne emoji v UI, len ICONS | 10/2026 | Pokyn Ľuba natrvalo |
 | Obhliadka do kalendára cez .ics (/api/visit-calendar/[id]), pripomienky deň vopred a 2 h pred; nie Google odkaz | 10 | Adelka má iPhone |
 | Funkcie Vercelu v fra1 (pri Supabase); domov ~9 500 ponúk → posielať malý index, karty po 30 | 11 | Rýchlosť na mobile |
+| Uložené, Nastavenia, Nápoveda z appky ako @modal panel nad mapou; karty cez GET /api/listing-cards | 11 | Mapa sa nestavia znova |
 | Novinky v zozname NOVELTIES (src/lib/novelties.tsx), max 1 za návštevu, najstaršia nevidená, kľúč na zariadení | 10 | Nová novinka = nová položka |
 | Pusinky z reklám pod kľúčom adelka.ad.kisses.v2, na Lubkových zariadeniach sa nepočítajú ani neposielajú | 10/2026 | Počíta sa len Adelke |
 
@@ -89,9 +90,9 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-10-29 (večer)
-Stopped at: 11-02 nasadené a zmerané, čaká checkpoint (mobil)
-Next action: po schválení /paul:apply .paul/phases/11-rychlost/11-03-PLAN.md
-Resume file: .paul/phases/11-rychlost/11-02-SUMMARY.md
+Stopped at: fáza 11 nasadená a zmeraná, nič rozpracované
+Next action: spätná väzba z mobilu (Ľubo / Adelka)
+Resume file: .paul/phases/11-rychlost/11-03-SUMMARY.md
 Resume context:
 - Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)
 - Adelka cestuje po Taliansku – okolie, Google Maps/Waze, štítky Nové/Nevidela/Videla
