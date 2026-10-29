@@ -11,9 +11,9 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
 Phase: 11 (Rýchlosť) — Planning
-Plan: 11-01 complete (fra1, 1 fotka, 7c27b3e); 11-02 (malý index + karty po 30) a 11-03 (mapa pod menu, preload) created, awaiting approval
+Plan: 11-01 complete (7c27b3e); 11-02 applied a nasadené (e6ac249, 3e05dcf) – čaká na Ľubovu kontrolu na mobile; 11-03 čaká
 Status: PLAN created, ready for APPLY
-Last activity: 2026-10-30 — Meranie produkcie (9 500 ponúk, 6,9 MB, 4,7 s), prerobený 11-02, nový 11-03
+Last activity: 2026-10-30 — Domov 958 KB (z 6,9 MB), HTML za 1,4–1,8 s (zo 4,7 s)
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [11-01 done; 11-02, 11-03 awaiting approval]
+  ✓        ○        ○     [11-02 applied, checkpoint; 11-03 next]
 ```
 
 ## Accumulated Context
@@ -89,9 +89,9 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-10-29 (večer)
-Stopped at: 11-01 nasadené a zmerané; 11-02 prerobený, 11-03 nový
-Next action: /paul:apply .paul/phases/11-rychlost/11-02-PLAN.md
-Resume file: .paul/phases/11-rychlost/11-02-PLAN.md
+Stopped at: 11-02 nasadené a zmerané, čaká checkpoint (mobil)
+Next action: po schválení /paul:apply .paul/phases/11-rychlost/11-03-PLAN.md
+Resume file: .paul/phases/11-rychlost/11-02-SUMMARY.md
 Resume context:
 - Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)
 - Adelka cestuje po Taliansku – okolie, Google Maps/Waze, štítky Nové/Nevidela/Videla
