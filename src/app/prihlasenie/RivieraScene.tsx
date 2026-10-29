@@ -14,16 +14,19 @@ const BOATS: [left: number, bottom: number, size: number, drift: number, sail: s
   [70, 6, 80, 9, "var(--rv-sail)"],
 ];
 
-/** Hearts rising over the sea: left %, bottom %, size px, delay s, duration s. */
+/**
+ * Hearts rising out of the sea into the sky: left %, bottom %, size px, delay s, duration s.
+ * In the water they take the sea's colour, in the sky they turn red (rise-heart, globals.css).
+ */
 const HEARTS: [left: number, bottom: number, size: number, delay: number, duration: number][] = [
-  [6, 30, 14, 0, 6],
-  [16, 18, 20, 2.4, 7],
-  [27, 36, 12, 4.1, 5.5],
-  [40, 22, 16, 1.2, 6.5],
-  [55, 33, 12, 3.3, 5],
-  [66, 16, 22, 0.6, 7.5],
-  [78, 34, 14, 2.9, 6],
-  [91, 20, 18, 4.8, 6.8],
+  [5, 14, 40, 0, 8],
+  [15, 4, 56, 2.6, 9],
+  [27, 20, 32, 5.2, 7.5],
+  [39, 8, 48, 1.4, 8.5],
+  [52, 16, 36, 3.9, 7],
+  [63, 2, 60, 0.7, 9.5],
+  [76, 12, 42, 3.1, 8],
+  [90, 6, 50, 5.8, 8.8],
 ];
 
 /** A wave line repeating every 40 units, long enough to slide (animate-wave moves it 40 left). */
@@ -80,15 +83,15 @@ export function RivieraScene() {
         </div>
       ))}
 
-      {/* Hearts rising from the sea. */}
+      {/* Hearts rising from the sea into the sky. */}
       {HEARTS.map(([left, bottom, size, delay, duration]) => (
         <svg
           key={`${left}-${delay}`}
           width={size}
           height={size}
           viewBox="0 0 24 24"
-          fill="var(--rv-heart)"
-          className="absolute animate-float-heart"
+          fill="currentColor"
+          className="rv-heart absolute"
           style={{ left: `${left}%`, bottom: `${bottom}%`, animationDelay: `${delay}s`, animationDuration: `${duration}s` }}
         >
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />

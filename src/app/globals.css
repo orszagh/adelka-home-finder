@@ -161,6 +161,7 @@ body {
   --rv-hull: #1f3c4a;
   --rv-terracotta: #c8613f;
   --rv-heart: #e8604f;
+  --rv-heart-sea: #a9e4ec;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .riviera {
@@ -178,6 +179,7 @@ body {
     --rv-hull: #0f2230;
     --rv-terracotta: #b8553a;
     --rv-heart: #ff7a6b;
+    --rv-heart-sea: #6fb7d4;
   }
 }
 :root[data-theme="dark"] .riviera {
@@ -195,6 +197,19 @@ body {
   --rv-hull: #0f2230;
   --rv-terracotta: #b8553a;
   --rv-heart: #ff7a6b;
+  --rv-heart-sea: #6fb7d4;
+}
+
+/* Login hearts: sea-coloured in the water, red once they rise into the sky. */
+.rv-heart {
+  animation: rise-heart 8s ease-in infinite both;
+}
+@keyframes rise-heart {
+  0% { transform: translateY(0) scale(0.6) rotate(-8deg); opacity: 0; color: var(--rv-heart-sea); }
+  12% { opacity: 0.95; }
+  40% { color: var(--rv-heart-sea); }
+  65% { color: var(--rv-heart); }
+  100% { transform: translateY(-52vh) scale(1.1) rotate(12deg); opacity: 0; color: var(--rv-heart); }
 }
 
 /* "V okolí": the circle searched and Adelka's own position. */
