@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useEffectEvent, useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
 import { distanceKm, outerRings, pointInArea } from "@/lib/geo";
@@ -12,6 +12,7 @@ import { PROVINCES, type Place, REGIONS, areaNameFor, findPlace, provincesOf } f
 import type { Property, SearchArea } from "@/lib/types";
 import { AdPopup } from "./AdPopup";
 import { CheckNowButton } from "./CheckNowButton";
+import { FeatureAnnouncement } from "./FeatureAnnouncement";
 import { GreetingCard } from "./GreetingCard";
 import { ListingCard } from "./ListingCard";
 import { markReplace } from "./navigation";
@@ -42,7 +43,7 @@ const SELECT_CLASS =
  * The view lives in the URL (?r=region&v=list&p=listing&pick=1, near=1 around Adelka), so the phone's back
  * gesture steps back through it. Her position itself never goes into the URL, it stays in this page.
  */
-type View = { r: string | null; v: "list" | "new" | null; p: string | null; pick: boolean; near: boolean };
+type View = { r: string | null; v: "list" | "new" | null; p: string | null; pick: boolean; near: boolean; locate: boolean };
 
 function readView(params: URLSearchParams): View {
   const r = params.get("r");
@@ -53,6 +54,7 @@ function readView(params: URLSearchParams): View {
     p: params.get("p"),
     pick: params.get("pick") === "1",
     near: params.get("near") === "1",
+    locate: params.get("locate") === "1",
   };
 }
 
@@ -233,7 +235,7 @@ export function HomeFinder({
         // About 10 m is plenty for a circle of kilometres.
         setHere([Math.round(coords.latitude * 1e4) / 1e4, Math.round(coords.longitude * 1e4) / 1e4]);
         setSort("me");
-        go({ near: true }, view.near);
+        go({ near: true }, view.near || view.locate);
       },
       (error) => {
         setLocating(false);
@@ -244,10 +246,18 @@ export function HomeFinder({
               ? "Appka nemá povolenú polohu. Povoľ ju v nastaveniach prehliadača pre túto stránku a skús znova."
               : "Polohu sa nepodarilo zistiť. Skús to o chvíľu znova, ideálne vonku.",
         });
+        if (view.locate) go({}, true);
       },
       { enableHighAccuracy: false, timeout: 15_000, maximumAge: 5 * 60_000 },
     );
   };
+
+  // "Domčeky v okolí" in the menu opens the map with ?locate=1.
+  const locateFromLink = useEffectEvent(locate);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the position arrives from the browser, once per tap in the menu
+    if (view.locate) locateFromLink();
+  }, [view.locate]);
 
   const mode: MapMode = near
     ? { kind: "near", center: near.center, radiusKm: near.radiusKm }
@@ -279,6 +289,7 @@ export function HomeFinder({
   return (
     <>
       <AdPopup />
+      <FeatureAnnouncement />
       <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} costUsd={costPerAreaUsd} />
       <main className="relative isolate h-[calc(100dvh-65px)] overflow-hidden">
         <section className="absolute inset-0" aria-label="Mapa">
@@ -300,6 +311,9 @@ export function HomeFinder({
         {/* Italy: tap a region. The greeting, if there is news, takes the card's place. */}
         {!region && !near && view.v !== "new" && (
           <div className="absolute inset-x-3 bottom-3 z-[1000] mx-auto max-w-md space-y-2">
+            <div className="flex justify-center">
+              <NearButton active={false} busy={locating} onClick={locate} wide />
+            </div>
             {greeting && showGreeting ? (
               <GreetingCard
                 greeting={greeting}
@@ -366,7 +380,7 @@ export function HomeFinder({
 
         {/* Top bar: back to Italy, the region and what Adelka follows there. */}
         {(region || near || view.v === "new") && (
-          <div className="pointer-events-none absolute inset-x-0 top-3 z-[1200] mx-auto flex max-w-screen-2xl flex-col items-start gap-2 pl-3 pr-16 sm:pl-4">
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-[1200] mx-auto flex max-w-screen-2xl flex-col items-start gap-2 px-3 sm:px-4">
             <div className="pointer-events-auto flex max-w-full items-center gap-2">
               <button
                 type="button"
@@ -453,22 +467,6 @@ export function HomeFinder({
         {/* Around Adelka, nothing inside the circle: say why and what helps. */}
         {nearEmpty && !listOpen && <div className="absolute inset-x-3 bottom-[84px] z-[1150] mx-auto max-w-md">{nearEmpty}</div>}
 
-        {/* Where am I: the houses in a circle around Adelka. */}
-        {!listOpen && !view.pick && view.v !== "new" && (
-          <button
-            type="button"
-            onClick={locate}
-            disabled={locating}
-            aria-label={near ? "Znova zistiť moju polohu" : "Domčeky v mojom okolí"}
-            title="Domčeky v mojom okolí"
-            className={`absolute right-3 top-3 z-[1250] grid size-11 place-items-center rounded-full shadow-lift sm:right-4 ${
-              near ? "bg-accent text-on-accent" : "bg-surface text-accent-ink"
-            } ${locating ? "animate-pulse" : ""}`}
-          >
-            <Icon d={ICONS.locate} size={22} />
-          </button>
-        )}
-
         {/* A tapped pin: a small preview, the detail one more tap away. */}
         {peek && !listOpen && !view.pick && (
           <Link
@@ -493,39 +491,65 @@ export function HomeFinder({
           </Link>
         )}
 
-        {/* Map | List, within reach of the thumb. */}
+        {/* Map | List, within reach of the thumb, and "Hľadať v okolí" next to it. */}
         {(region || near) && !view.pick && (
-          <div
-            role="group"
-            aria-label="Zobrazenie"
-            className="absolute bottom-4 left-1/2 z-[1200] flex -translate-x-1/2 gap-1 rounded-full bg-ink p-1 shadow-lift"
-          >
-            {(
-              [
-                ["map", "Mapa", ICONS.map],
-                ["list", shown.length > 0 ? `Zoznam (${shown.length})` : "Zoznam", ICONS.list],
-              ] as const
-            ).map(([value, label, icon]) => {
-              const on = value === "list" ? view.v === "list" : view.v !== "list";
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => !on && go({ ...place, v: value === "list" ? "list" : null })}
-                  className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-5 text-[15px] font-semibold transition-colors ${
-                    on ? "bg-canvas text-ink" : "text-canvas"
-                  }`}
-                >
-                  <Icon d={icon} size={18} />
-                  {label}
-                </button>
-              );
-            })}
+          <div className="absolute bottom-4 left-1/2 z-[1200] flex -translate-x-1/2 gap-2">
+            <div role="group" aria-label="Zobrazenie" className="flex gap-1 rounded-full bg-ink p-1 shadow-lift">
+              {(
+                [
+                  ["map", "Mapa", ICONS.map],
+                  ["list", shown.length > 0 ? `Zoznam (${shown.length})` : "Zoznam", ICONS.list],
+                ] as const
+              ).map(([value, label, icon]) => {
+                const on = value === "list" ? view.v === "list" : view.v !== "list";
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => !on && go({ ...place, v: value === "list" ? "list" : null })}
+                    className={`${SEGMENT} ${on ? "bg-canvas text-ink" : "text-canvas"}`}
+                  >
+                    <Icon d={icon} size={18} />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <NearButton active={near !== null} busy={locating} onClick={locate} />
           </div>
         )}
       </main>
     </>
+  );
+}
+
+const SEGMENT =
+  "inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[15px] font-semibold transition-colors sm:px-5";
+
+/** "Hľadať v okolí": the same dark pill as Map | List; lit while Adelka looks around herself. */
+function NearButton({ active, busy, onClick, wide = false }: { active: boolean; busy: boolean; onClick: () => void; wide?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      aria-pressed={active}
+      aria-label={active ? "Znova zistiť moju polohu" : "Hľadať domčeky v mojom okolí"}
+      className="flex rounded-full bg-ink p-1 shadow-lift"
+    >
+      <span className={`${SEGMENT} ${active ? "bg-canvas text-ink" : "text-canvas"}`}>
+        <Icon d={ICONS.locate} size={18} className={busy ? "animate-spin" : ""} />
+        {wide ? (
+          "Hľadať v okolí"
+        ) : (
+          <>
+            <span className="sm:hidden">V okolí</span>
+            <span className="hidden sm:inline">Hľadať v okolí</span>
+          </>
+        )}
+      </span>
+    </button>
   );
 }
 

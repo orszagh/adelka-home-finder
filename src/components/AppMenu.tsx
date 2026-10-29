@@ -38,6 +38,7 @@ const ICONS = {
   sliders: "M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4",
   logout: "M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l4-4-4-4M14 12H4",
   help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5M12 17h.01",
+  locate: "M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M2 12h3M19 12h3",
 };
 
 /** Hamburger menu: pages, search settings, light/dark theme and signing out. */
@@ -84,7 +85,7 @@ export function AppMenu({
   const item = (href: string, icon: string, label: ReactNode, extra?: ReactNode) => {
     const current = pathname === href;
     // From one menu page to another the new one takes its place, so Späť / ✕ always lead back to the houses.
-    const replace = pathname !== "/" && href !== "/";
+    const replace = pathname !== "/" && !href.startsWith("/?") && href !== "/";
     return (
       <Link
         href={href}
@@ -152,6 +153,14 @@ export function AppMenu({
           </div>
 
           <nav aria-label="Hlavné" className="flex flex-col gap-1">
+            {item(
+              "/?locate=1",
+              ICONS.locate,
+              <span className="flex flex-col">
+                <span>Domčeky v okolí</span>
+                <span className="text-sm font-normal text-muted">Tam, kde práve si</span>
+              </span>,
+            )}
             {item("/", ICONS.home, "Domčeky")}
             {item(
               "/ulozene",

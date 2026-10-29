@@ -58,6 +58,8 @@ export function AdPopup() {
     if (!write(LAST_SHOWN_KEY, last ?? "")) return;
     const id = setTimeout(
       () => {
+        // A new-feature window was shown in this visit: the ad waits for another one.
+        if (!forced && document.documentElement.dataset.noveltyShown) return;
         const position = Number(read(NEXT_AD_KEY)) || 0;
         write(LAST_SHOWN_KEY, String(Date.now()));
         write(NEXT_AD_KEY, String(position + 1));
