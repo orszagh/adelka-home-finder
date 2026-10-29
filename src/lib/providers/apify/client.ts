@@ -1,3 +1,5 @@
+import type { Usage } from "../../budget";
+
 const API_BASE = "https://api.apify.com/v2";
 /** Apify caps synchronous runs at 300 s; stay below the Vercel function limit too. */
 const RUN_TIMEOUT_SECS = 240;
@@ -49,7 +51,7 @@ export async function runActor(actorId: string, input: unknown, options: RunOpti
 }
 
 /** This month's spending on the Apify account (https://docs.apify.com/api/v2/user-limits-get). Null when unknown. */
-export async function getApifyUsage(): Promise<{ usedUsd: number; cycleStart: string; cycleEnd: string } | null> {
+export async function getApifyUsage(): Promise<Usage | null> {
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
   try {
@@ -60,13 +62,18 @@ export async function getApifyUsage(): Promise<{ usedUsd: number; cycleStart: st
     });
     if (!response.ok) return null;
     const { data } = (await response.json()) as {
-      data?: { current?: { monthlyUsageUsd?: unknown }; monthlyUsageCycle?: { startAt?: unknown; endAt?: unknown } };
+      data?: {
+        current?: { monthlyUsageUsd?: unknown };
+        limits?: { maxMonthlyUsageUsd?: unknown };
+        monthlyUsageCycle?: { startAt?: unknown; endAt?: unknown };
+      };
     };
     const usedUsd = Number(data?.current?.monthlyUsageUsd);
     const cycleStart = data?.monthlyUsageCycle?.startAt;
     const cycleEnd = data?.monthlyUsageCycle?.endAt;
     if (!Number.isFinite(usedUsd) || typeof cycleStart !== "string" || typeof cycleEnd !== "string") return null;
-    return { usedUsd, cycleStart, cycleEnd };
+    const limitUsd = Number(data?.limits?.maxMonthlyUsageUsd);
+    return { usedUsd, cycleStart, cycleEnd, limitUsd: Number.isFinite(limitUsd) ? limitUsd : null };
   } catch {
     return null;
   }

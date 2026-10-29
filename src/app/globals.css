@@ -145,6 +145,16 @@ body {
   stroke-opacity: 0.45;
   fill: none;
 }
+/* "V okolí": the circle searched and Adelka's own position. */
+.near-circle {
+  stroke: var(--c-accent);
+  stroke-dasharray: 6 6;
+  fill: var(--c-accent);
+}
+.near-me {
+  stroke: var(--c-surface);
+  fill: #2f7de1;
+}
 .place-label.is-region-count small {
   color: var(--c-love-ink);
   font-weight: 700;

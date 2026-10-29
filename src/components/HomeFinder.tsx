@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
 import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
-import { outerRings, pointInArea } from "@/lib/geo";
+import { distanceKm, outerRings, pointInArea } from "@/lib/geo";
 import type { Greeting } from "@/lib/greeting";
 import { PROVINCES, type Place, REGIONS, areaNameFor, findPlace, provincesOf } from "@/lib/italy";
 import type { Property, SearchArea } from "@/lib/types";
@@ -25,7 +25,10 @@ const MapView = dynamic(() => import("./MapView"), {
   loading: () => <div className="grid h-full place-items-center text-muted">Načítavam mapu…</div>,
 });
 
-type Sort = "newest" | "cheapest" | "sea";
+type Sort = "newest" | "cheapest" | "sea" | "me";
+const NEAR_SORT: { value: Sort; label: string } = { value: "me", label: "Najbližšie ku mne" };
+/** Circles Adelka can choose around herself, in km. */
+const NEAR_RADII = [5, 10, 20, 40];
 const SORTS: { value: Sort; label: string }[] = [
   { value: "newest", label: "Najnovšie" },
   { value: "cheapest", label: "Najlacnejšie" },
@@ -35,8 +38,11 @@ const PRICE_OPTIONS = [150_000, 200_000, 300_000, 400_000, 600_000];
 const SELECT_CLASS =
   "min-h-10 shrink-0 rounded-full bg-surface px-3.5 text-sm font-semibold text-ink-2 shadow-card focus:outline-2 focus:outline-accent";
 
-/** The view lives in the URL (?r=region&v=list&p=listing&pick=1), so the phone's back gesture steps back through it. */
-type View = { r: string | null; v: "list" | "new" | null; p: string | null; pick: boolean };
+/**
+ * The view lives in the URL (?r=region&v=list&p=listing&pick=1, near=1 around Adelka), so the phone's back
+ * gesture steps back through it. Her position itself never goes into the URL, it stays in this page.
+ */
+type View = { r: string | null; v: "list" | "new" | null; p: string | null; pick: boolean; near: boolean };
 
 function readView(params: URLSearchParams): View {
   const r = params.get("r");
@@ -46,6 +52,7 @@ function readView(params: URLSearchParams): View {
     v: v === "list" || v === "new" ? v : null,
     p: params.get("p"),
     pick: params.get("pick") === "1",
+    near: params.get("near") === "1",
   };
 }
 
@@ -55,6 +62,7 @@ function go(next: Partial<View>, replace = false) {
   if (next.v) sp.set("v", next.v);
   if (next.p) sp.set("p", next.p);
   if (next.pick) sp.set("pick", "1");
+  if (next.near) sp.set("near", "1");
   const url = sp.size > 0 ? `?${sp}` : window.location.pathname;
   if (replace) {
     markReplace();
@@ -118,6 +126,10 @@ export function HomeFinder({
   const [placeBusy, startPlace] = useTransition();
   /** Name of the place whose listings are being fetched right now. */
   const [syncingPlace, setSyncingPlace] = useState<string | null>(null);
+  /** Where Adelka stands, after she asked for the houses around her. */
+  const [here, setHere] = useState<[lat: number, lng: number] | null>(null);
+  const [radiusKm, setRadiusKm] = useState(10);
+  const [locating, setLocating] = useState(false);
   const toast = useToast();
 
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
@@ -125,6 +137,12 @@ export function HomeFinder({
   const seen = useMemo(() => new Set(seenIds), [seenIds]);
   const areaNames = useMemo(() => new Set(areas.map((a) => a.name)), [areas]);
   const region = view.r ? findPlace("region", view.r)! : null;
+  const near = view.near && here !== null && !region ? { center: here, radiusKm } : null;
+  const nearRadius = near?.radiusKm ?? null;
+  const distances = useMemo(
+    () => (here ? new Map(properties.map((p) => [p.id, distanceKm([here[1], here[0]], [p.longitude, p.latitude])])) : null),
+    [here, properties],
+  );
 
   const regionByListing = useMemo(() => new Map(properties.map((p) => [p.id, regionOf(p)])), [properties]);
   const regionCounts = useMemo(() => {
@@ -150,7 +168,13 @@ export function HomeFinder({
   /** Houses of the chosen region (or the greeting's news), with the list filters applied. */
   const shown = useMemo(() => {
     const wanted = view.v === "new" && greeting ? new Set(greeting.ids) : null;
-    const base = properties.filter((p) => (wanted ? wanted.has(p.id) : region && regionByListing.get(p.id) === region.code));
+    const base = properties.filter((p) =>
+      wanted
+        ? wanted.has(p.id)
+        : nearRadius !== null
+          ? (distances?.get(p.id) ?? Infinity) <= nearRadius
+          : region && regionByListing.get(p.id) === region.code,
+    );
     const filtered = base.filter(
       (p) =>
         (maxPrice === null || (p.price !== null && p.price <= maxPrice)) &&
@@ -158,13 +182,15 @@ export function HomeFinder({
     );
     const byPrice = (p: Property) => p.price ?? Number.MAX_SAFE_INTEGER;
     return filtered.sort((a, b) =>
-      sort === "cheapest"
+      sort === "me" && nearRadius !== null && distances
+        ? distances.get(a.id)! - distances.get(b.id)!
+        : sort === "cheapest"
         ? byPrice(a) - byPrice(b)
         : sort === "sea"
           ? (a.sea_km ?? 99) - (b.sea_km ?? 99)
           : b.first_seen_at.localeCompare(a.first_seen_at),
     );
-  }, [properties, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort]);
+  }, [properties, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort, nearRadius, distances]);
 
   const peek = view.p ? (shown.find((p) => p.id === view.p) ?? null) : null;
 
@@ -186,7 +212,43 @@ export function HomeFinder({
     startPlace(async () => onAreaCreated(await addPlaceArea(place.kind, place.code)));
   };
 
-  const mode: MapMode = !region
+  /** The province Adelka stands in, and whether its houses are being downloaded. */
+  const hereProvince = here ? (PROVINCES.find((p) => pointInArea(here[1], here[0], p.geometry)) ?? null) : null;
+  const hereFollowed =
+    hereProvince !== null &&
+    (followedProvinces.has(hereProvince.code) || areaNames.has(areaNameFor(findPlace("region", hereProvince.regionCode)!)));
+
+  const locate = () => {
+    if (!("geolocation" in navigator)) {
+      toast.show({ tone: "error", text: "Tento prehliadač nevie zistiť polohu." });
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocating(false);
+        // About 10 m is plenty for a circle of kilometres.
+        setHere([Math.round(coords.latitude * 1e4) / 1e4, Math.round(coords.longitude * 1e4) / 1e4]);
+        setSort("me");
+        go({ near: true }, view.near);
+      },
+      (error) => {
+        setLocating(false);
+        toast.show({
+          tone: "error",
+          text:
+            error.code === error.PERMISSION_DENIED
+              ? "Appka nemá povolenú polohu. Povoľ ju v nastaveniach prehliadača pre túto stránku a skús znova."
+              : "Polohu sa nepodarilo zistiť. Skús to o chvíľu znova, ideálne vonku.",
+        });
+      },
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 5 * 60_000 },
+    );
+  };
+
+  const mode: MapMode = near
+    ? { kind: "near", center: near.center, radiusKm: near.radiusKm }
+    : !region
     ? { kind: "overview" }
     : view.pick
       ? {
@@ -197,7 +259,19 @@ export function HomeFinder({
 
   const followedInRegion = region ? provincesOf(region.code).filter((p) => followedProvinces.has(p.code)).length : 0;
   const wholeRegionFollowed = region ? areaNames.has(areaNameFor(region)) : false;
-  const listOpen = (region && view.v === "list" && !view.pick) || view.v === "new";
+  const listOpen = ((region || near) && view.v === "list" && !view.pick) || view.v === "new";
+  /** Region, or the circle around Adelka: what the pins, the peek and Map | List belong to. */
+  const place = { r: view.r, near: view.near };
+  const nearEmpty = near && shown.length === 0 && (
+    <NearEmpty
+      radiusKm={near.radiusKm}
+      province={hereProvince}
+      followed={hereFollowed}
+      busy={placeBusy}
+      onFollow={() => hereProvince && togglePlace(hereProvince)}
+      onWider={() => setRadiusKm(NEAR_RADII.find((r) => r > near.radiusKm) ?? near.radiusKm)}
+    />
+  );
 
   return (
     <>
@@ -207,21 +281,21 @@ export function HomeFinder({
         <section className="absolute inset-0" aria-label="Mapa">
           <MapView
             mode={mode}
-            properties={region && !view.pick ? shown : []}
+            properties={(region && !view.pick) || near ? shown : []}
             regionCounts={regionCounts}
             followedRegions={followedRegions}
             followedProvinces={followedProvinces}
             savedIds={savedIds}
             selectedId={view.p}
             onRegion={(code) => go({ r: code }, region !== null)}
-            onSelect={(id) => go({ r: view.r, p: id }, view.p !== null)}
-            onBackground={() => view.p && go({ r: view.r }, true)}
-            insets={{ top: region ? 110 : 20, bottom: region ? 90 : 210 }}
+            onSelect={(id) => go({ ...place, p: id }, view.p !== null)}
+            onBackground={() => view.p && go(place, true)}
+            insets={{ top: near ? 120 : region ? 110 : 20, bottom: region || near ? 90 : 210 }}
           />
         </section>
 
         {/* Italy: tap a region. The greeting, if there is news, takes the card's place. */}
-        {!region && view.v !== "new" && (
+        {!region && !near && view.v !== "new" && (
           <div className="absolute inset-x-3 bottom-3 z-[1000] mx-auto max-w-md space-y-2">
             {greeting && showGreeting ? (
               <GreetingCard
@@ -273,8 +347,12 @@ export function HomeFinder({
             setMaxPrice={setMaxPrice}
             minRooms={minRooms}
             setMinRooms={setMinRooms}
+            sorts={near ? [NEAR_SORT, ...SORTS] : SORTS}
+            distances={near ? distances : null}
             empty={
-              view.v === "new" ? (
+              nearEmpty ? (
+                nearEmpty
+              ) : view.v === "new" ? (
                 <p className="text-muted">Novinky si už videla.</p>
               ) : (
                 <EmptyRegion onPick={() => go({ r: view.r, pick: true })} />
@@ -284,8 +362,8 @@ export function HomeFinder({
         )}
 
         {/* Top bar: back to Italy, the region and what Adelka follows there. */}
-        {(region || view.v === "new") && (
-          <div className="pointer-events-none absolute inset-x-0 top-3 z-[1200] mx-auto flex max-w-screen-2xl flex-col items-start gap-2 px-3 sm:px-4">
+        {(region || near || view.v === "new") && (
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-[1200] mx-auto flex max-w-screen-2xl flex-col items-start gap-2 pl-3 pr-16 sm:pl-4">
             <div className="pointer-events-auto flex max-w-full items-center gap-2">
               <button
                 type="button"
@@ -297,13 +375,39 @@ export function HomeFinder({
               </button>
               <span className="flex min-h-11 min-w-0 items-center gap-2 rounded-full bg-surface px-4 shadow-lift">
                 <span className="truncate font-display text-lg font-semibold text-ink">
-                  {view.v === "new" ? "Novinky od Lubka" : region!.name}
+                  {view.v === "new" ? "Novinky od Lubka" : near ? "V okolí" : region!.name}
                 </span>
                 <span className="shrink-0 text-sm text-muted">
                   {shown.length > 0 ? homesLabel(shown.length) : "zatiaľ nič"}
                 </span>
               </span>
             </div>
+            {near && (
+              <div className="pointer-events-auto flex max-w-full flex-wrap gap-1.5">
+                {NEAR_RADII.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={r === near.radiusKm}
+                    onClick={() => setRadiusKm(r)}
+                    className={chipClass(r === near.radiusKm, "min-h-10 shadow-lift")}
+                  >
+                    {r} km
+                  </button>
+                ))}
+                {hereProvince && !hereFollowed && (
+                  <button
+                    type="button"
+                    disabled={placeBusy}
+                    onClick={() => togglePlace(hereProvince)}
+                    className={chipClass(false, "min-h-10 shadow-lift disabled:opacity-50")}
+                  >
+                    <Icon d={ICONS.heart} size={15} className="text-love" />
+                    Sledovať {hereProvince.name}
+                  </button>
+                )}
+              </div>
+            )}
             {region && !view.pick && (
               <button
                 type="button"
@@ -343,6 +447,25 @@ export function HomeFinder({
           </Card>
         )}
 
+        {/* Around Adelka, nothing inside the circle: say why and what helps. */}
+        {nearEmpty && !listOpen && <div className="absolute inset-x-3 bottom-[84px] z-[1150] mx-auto max-w-md">{nearEmpty}</div>}
+
+        {/* Where am I: the houses in a circle around Adelka. */}
+        {!listOpen && !view.pick && view.v !== "new" && (
+          <button
+            type="button"
+            onClick={locate}
+            disabled={locating}
+            aria-label={near ? "Znova zistiť moju polohu" : "Domčeky v mojom okolí"}
+            title="Domčeky v mojom okolí"
+            className={`absolute right-3 top-3 z-[1250] grid size-11 place-items-center rounded-full shadow-lift sm:right-4 ${
+              near ? "bg-accent text-on-accent" : "bg-surface text-accent-ink"
+            } ${locating ? "animate-pulse" : ""}`}
+          >
+            <Icon d={ICONS.locate} size={22} />
+          </button>
+        )}
+
         {/* A tapped pin: a small preview, the detail one more tap away. */}
         {peek && !listOpen && !view.pick && (
           <Link
@@ -368,7 +491,7 @@ export function HomeFinder({
         )}
 
         {/* Map | List, within reach of the thumb. */}
-        {region && !view.pick && (
+        {(region || near) && !view.pick && (
           <div
             role="group"
             aria-label="Zobrazenie"
@@ -386,7 +509,7 @@ export function HomeFinder({
                   key={value}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => !on && go({ r: view.r, v: value === "list" ? "list" : null })}
+                  onClick={() => !on && go({ ...place, v: value === "list" ? "list" : null })}
                   className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-5 text-[15px] font-semibold transition-colors ${
                     on ? "bg-canvas text-ink" : "text-canvas"
                   }`}
@@ -400,6 +523,49 @@ export function HomeFinder({
         )}
       </main>
     </>
+  );
+}
+
+/** Nothing in the circle around Adelka: follow the province she is in, or look further. */
+function NearEmpty({
+  radiusKm,
+  province,
+  followed,
+  busy,
+  onFollow,
+  onWider,
+}: {
+  radiusKm: number;
+  province: Place | null;
+  followed: boolean;
+  busy: boolean;
+  onFollow: () => void;
+  onWider: () => void;
+}) {
+  const wider = radiusKm < NEAR_RADII[NEAR_RADII.length - 1];
+  return (
+    <Card className="mx-auto max-w-md animate-rise space-y-3 p-5">
+      <h2 className="font-display text-xl font-semibold text-ink">Do {radiusKm} km zatiaľ nič nemám</h2>
+      <p className="text-[15px] text-muted">
+        {!province
+          ? "Si mimo Talianska, tu domčeky nehľadám."
+          : followed
+            ? `Provinciu ${province.name} sledujem, len v tomto okruhu teraz nič nie je.`
+            : `Provinciu ${province.name} zatiaľ nesledujem. Keď ju začneš sledovať, ponuky z nej hneď stiahnem.`}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {province && !followed && (
+          <Button onClick={onFollow} disabled={busy}>
+            Sledovať {province.name}
+          </Button>
+        )}
+        {wider && (
+          <Button variant="secondary" onClick={onWider}>
+            Hľadať ďalej
+          </Button>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -418,6 +584,8 @@ function ListingsLayer({
   saved,
   fresh,
   seen,
+  sorts,
+  distances,
   priceDrops,
   sort,
   setSort,
@@ -431,6 +599,9 @@ function ListingsLayer({
   saved: Set<string>;
   fresh: Set<string>;
   seen: Set<string>;
+  sorts: { value: Sort; label: string }[];
+  /** Km from Adelka, around her. */
+  distances: Map<string, number> | null;
   priceDrops: Record<string, number>;
   sort: Sort;
   setSort: (s: Sort) => void;
@@ -446,7 +617,7 @@ function ListingsLayer({
       className="absolute inset-0 z-[1100] animate-fade-up overflow-y-auto overscroll-contain bg-canvas px-3.5 pb-28 pt-[124px] sm:px-4"
     >
       <div className="mx-auto mb-4 flex max-w-screen-2xl gap-2 overflow-x-auto pb-1">
-        {SORTS.map((s) => (
+        {sorts.map((s) => (
           <button
             key={s.value}
             type="button"
@@ -496,6 +667,7 @@ function ListingsLayer({
               saved={saved.has(p.id)}
               isNew={fresh.has(p.id)}
               seen={seen.has(p.id)}
+              distanceKm={distances?.get(p.id) ?? null}
               previousPrice={priceDrops[p.id] ?? null}
             />
           ))}

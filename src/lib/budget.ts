@@ -1,9 +1,16 @@
 /**
- * Keeps Apify within Ľubo's monthly budget (the account itself stops at 5 USD).
+ * Keeps Apify within Ľubo's monthly budget: a little under the limit set on the Apify
+ * account (so raising it there, e.g. after topping up, is enough), or APIFY_MONTHLY_BUDGET_USD.
  * The nightly sync also paces itself over the billing cycle, so the money
  * lasts the whole month instead of running out in week three.
  */
-export type Usage = { usedUsd: number; cycleStart: string; cycleEnd: string };
+export type Usage = {
+  usedUsd: number;
+  cycleStart: string;
+  cycleEnd: string;
+  /** The monthly usage limit set on the Apify account, when Apify reports it. */
+  limitUsd?: number | null;
+};
 
 export type BudgetKind = "nightly" | "manual";
 
@@ -18,12 +25,18 @@ export type BudgetCheck =
     };
 
 export const DEFAULT_BUDGET_USD = 4.5;
+/** Kept free below the account limit, so a run in flight does not hit it. */
+export const LIMIT_MARGIN_USD = 0.5;
 /** Spending may run this far ahead of the even pace before a night is skipped. */
 export const PACE_SLACK_USD = 0.25;
 
-export function budgetUsd(): number {
+export function budgetUsd(accountLimitUsd?: number | null): number {
   const value = Number(process.env.APIFY_MONTHLY_BUDGET_USD);
-  return Number.isFinite(value) && value > 0 ? value : DEFAULT_BUDGET_USD;
+  if (Number.isFinite(value) && value > 0) return value;
+  if (accountLimitUsd != null && Number.isFinite(accountLimitUsd) && accountLimitUsd > LIMIT_MARGIN_USD) {
+    return accountLimitUsd - LIMIT_MARGIN_USD;
+  }
+  return DEFAULT_BUDGET_USD;
 }
 
 const usd = (n: number) => `${n.toFixed(2).replace(".", ",")} $`;

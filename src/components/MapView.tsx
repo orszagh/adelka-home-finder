@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
-import { MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { Circle, CircleMarker, MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { formatPriceShort, homesLabel } from "@/lib/format";
 import { ITALY_ATTRIBUTION, type Place, REGIONS, findPlace, provincesOf } from "@/lib/italy";
 import type { Property } from "@/lib/types";
@@ -17,7 +17,21 @@ import { INLAND, type PlaceChooser, PlaceLayer, REGION_COLORS, boundsOf, latLngs
 export type MapMode =
   | { kind: "overview" }
   | { kind: "region"; code: string }
-  | { kind: "pick"; chooser: PlaceChooser };
+  | { kind: "pick"; chooser: PlaceChooser }
+  /** Around Adelka: where she stands and the houses within the circle. */
+  | { kind: "near"; center: [lat: number, lng: number]; radiusKm: number };
+
+/** What the map frames for a mode (the province picker positions the map itself). */
+function boundsFor(mode: MapMode): L.LatLngBounds {
+  if (mode.kind === "near") return L.latLng(mode.center).toBounds(mode.radiusKm * 2000);
+  return boundsOf(mode.kind === "region" ? [findPlace("region", mode.code)!] : REGIONS);
+}
+
+function viewKey(mode: MapMode): string {
+  if (mode.kind === "region") return `region:${mode.code}`;
+  if (mode.kind === "near") return `near:${mode.center.join(",")}:${mode.radiusKm}`;
+  return mode.kind;
+}
 
 type Props = {
   mode: MapMode;
@@ -49,7 +63,7 @@ export default function MapView(props: Props) {
   // Open straight on the region (or Italy) instead of Italy first and then zooming in: coming
   // back to the map, the phone would load two sets of tiles and show the half-loaded zoom.
   const [initial] = useState(() => ({
-    bounds: boundsOf(mode.kind === "region" ? [findPlace("region", mode.code)!] : REGIONS),
+    bounds: boundsFor(mode),
     options: {
       paddingTopLeft: [16, props.insets.top] as L.PointTuple,
       paddingBottomRight: [16, props.insets.bottom] as L.PointTuple,
@@ -73,8 +87,24 @@ export default function MapView(props: Props) {
       {mode.kind === "overview" && <OverviewLayer {...props} />}
       {mode.kind === "region" && <RegionLayer {...props} code={mode.code} />}
       {mode.kind === "pick" && <PlaceLayer {...mode.chooser} />}
+      {mode.kind === "near" && (
+        <>
+          <Circle
+            center={mode.center}
+            radius={mode.radiusKm * 1000}
+            pathOptions={{ className: "near-circle", weight: 2, fillOpacity: 0.08 }}
+            interactive={false}
+          />
+          <CircleMarker
+            center={mode.center}
+            radius={8}
+            pathOptions={{ className: "near-me", weight: 3, fillOpacity: 1 }}
+            interactive={false}
+          />
+        </>
+      )}
 
-      {mode.kind === "region" &&
+      {(mode.kind === "region" || mode.kind === "near") &&
         properties.map((p) => (
           <PriceMarker
             key={p.id}
@@ -229,7 +259,7 @@ function MapEvents({ onZoom, onBackground }: { onZoom: (zoom: number) => void; o
 /** Flies to Italy or to the chosen region; keeps the selected pin in view. */
 function ViewController({ mode, properties, selectedId, insets }: Props) {
   const map = useMap();
-  const key = mode.kind === "region" ? `region:${mode.code}` : mode.kind;
+  const key = viewKey(mode);
   const lastKey = useRef<string | null>(null);
 
   const fit = useEffectEvent(() => {
@@ -240,7 +270,7 @@ function ViewController({ mode, properties, selectedId, insets }: Props) {
     if (x === 0 || y === 0) return;
     const first = lastKey.current === null;
     lastKey.current = key;
-    const bounds = mode.kind === "region" ? boundsOf([findPlace("region", mode.code)!]) : boundsOf(REGIONS);
+    const bounds = boundsFor(mode);
     const options = { paddingTopLeft: [16, insets.top] as L.PointTuple, paddingBottomRight: [16, insets.bottom] as L.PointTuple };
     if (first) map.fitBounds(bounds, options);
     else map.flyToBounds(bounds, { ...options, duration: 0.7 });

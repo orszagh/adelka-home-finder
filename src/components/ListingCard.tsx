@@ -20,6 +20,7 @@ export function ListingCard({
   selected = false,
   isNew = false,
   seen = false,
+  distanceKm = null,
   previousPrice = null,
   gone = false,
   enterDelayMs = 0,
@@ -31,6 +32,8 @@ export function ListingCard({
   isNew?: boolean;
   /** Adelka has opened this listing before (remembered on the server). */
   seen?: boolean;
+  /** Km from Adelka when she looks around herself. */
+  distanceKm?: number | null;
   /** Price before a recent drop. */
   previousPrice?: number | null;
   /** No longer on offer (sold or withdrawn). */
@@ -43,6 +46,7 @@ export function ListingCard({
   const badge = listingBadge(isNew, seen || opened);
   const photo = property.photos[0];
   const meta = [
+    distanceKm != null ? `${distanceKm < 10 ? distanceKm.toFixed(1).replace(".", ",") : Math.round(distanceKm)} km od teba` : null,
     property.area_sqm ? `${property.area_sqm} m²` : null,
     property.rooms ? roomsLabel(property.rooms) : null,
     property.sea_km != null ? seaLabel(property.sea_km) : null,

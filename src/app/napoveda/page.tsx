@@ -21,6 +21,23 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
+    icon: ICONS.locate,
+    question: "Ako nájdem domčeky okolo seba?",
+    answer: (
+      <>
+        <p>
+          Na mape vpravo hore ťukni na tlačidlo s terčíkom. Telefón sa raz opýta, či môže appka použiť tvoju polohu – povoľ to. Mapa sa
+          priblíži na miesto, kde stojíš (modrá bodka), a ukáže domčeky v kruhu okolo teba. Okruh si prepneš na 5, 10, 20 alebo 40 km.
+        </p>
+        <p>V zozname sú zoradené od najbližšieho a pri každom vidíš, ako ďaleko je od teba.</p>
+        <p>
+          Ukazujem len domčeky z provincií, ktoré sledujem. Keď si v provincii, ktorú ešte nesledujem, ťukni na <b>Sledovať …</b> a
+          ponuky z nej hneď stiahnem. Tvoja poloha sa nikam neukladá ani neposiela.
+        </p>
+      </>
+    ),
+  },
+  {
     icon: ICONS.home,
     question: "Odkiaľ sú ponuky?",
     answer: (

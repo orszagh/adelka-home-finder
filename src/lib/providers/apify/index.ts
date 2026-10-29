@@ -207,10 +207,10 @@ export const apifyProvider: PropertyProvider = {
   // Unknown spending (API down) does not block: the Apify account's own limit is the backstop.
   budget: async (kind) => {
     const usage = await getApifyUsage();
-    return usage ? checkBudget(usage, budgetUsd(), kind) : { allowed: true };
+    return usage ? checkBudget(usage, budgetUsd(usage.limitUsd), kind) : { allowed: true };
   },
   usage: async () => {
     const usage = await getApifyUsage();
-    return usage ? { usedUsd: usage.usedUsd, budgetUsd: budgetUsd() } : null;
+    return usage ? { usedUsd: usage.usedUsd, budgetUsd: budgetUsd(usage.limitUsd) } : null;
   },
 };

@@ -25,3 +25,17 @@ describe("Apify budget", () => {
     expect(formatUsage(0.5485, 4.5)).toBe("0,55 $ z 4,50 $");
   });
 });
+
+describe("budget from the Apify account limit", () => {
+  it("stays a little under the account limit, unless the budget is set by hand", async () => {
+    const { budgetUsd } = await import("./budget");
+    const saved = process.env.APIFY_MONTHLY_BUDGET_USD;
+    delete process.env.APIFY_MONTHLY_BUDGET_USD;
+    expect(budgetUsd(15)).toBe(14.5);
+    expect(budgetUsd(null)).toBe(4.5);
+    process.env.APIFY_MONTHLY_BUDGET_USD = "8";
+    expect(budgetUsd(15)).toBe(8);
+    if (saved === undefined) delete process.env.APIFY_MONTHLY_BUDGET_USD;
+    else process.env.APIFY_MONTHLY_BUDGET_USD = saved;
+  });
+});
