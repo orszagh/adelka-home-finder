@@ -42,8 +42,8 @@ export default async function ActivityPage() {
         <Eyebrow>Len pre Lubka</Eyebrow>
         <h1 className="font-display text-3xl font-semibold text-ink">Čo robí Adelka</h1>
         <p className="mt-1 text-sm text-muted">
-          Stránka nie je v menu. Na svojich zariadeniach ju raz otvor s <code>?lubko=1</code> na konci adresy, aby sa tvoje návštevy
-          nepočítali.
+          Stránka nie je v menu. Keď ju otvoríš, zariadenie si zapamätá, že je tvoje, a tvoje návštevy sa nepočítajú. V anonymnom okne
+          si to prehliadač po zatvorení zabudne – tam sa prihlasuj cez tento odkaz.
         </p>
       </div>
 

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { markAppOpened } from "@/app/actions";
 
-/** Set by opening any page with ?lubko=1 (and cleared with ?lubko=0): this device is Lubko's. */
+/** Set by opening /aktivita or any page with ?lubko=1 (cleared with ?lubko=0): this device is Lubko's. */
 const LUBKO_KEY = "adelka.lubko";
 const LAST_PING_KEY = "adelka.opened.at";
 /** Coming back to the app after this long counts as opening it again. */
@@ -22,7 +22,8 @@ export function ActivityPing() {
   useEffect(() => {
     const flag = new URLSearchParams(window.location.search).get("lubko");
     try {
-      if (flag === "1") localStorage.setItem(LUBKO_KEY, "1");
+      // Only Lubko opens /aktivita; after logging in there he lands on it, before anything is counted.
+      if (flag === "1" || window.location.pathname.startsWith("/aktivita")) localStorage.setItem(LUBKO_KEY, "1");
       if (flag === "0") localStorage.removeItem(LUBKO_KEY);
     } catch {}
     if (isLubkoDevice()) return;
