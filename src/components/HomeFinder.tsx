@@ -102,6 +102,7 @@ export function HomeFinder({
   newIds,
   seenIds,
   priceDrops,
+  twinSources,
   greeting,
   manualSync,
   notices,
@@ -115,6 +116,8 @@ export function HomeFinder({
   /** Listings Adelka has opened before. */
   seenIds: string[];
   priceDrops: Record<string, number>;
+  /** The same house is also on these portals (shown as one card). */
+  twinSources: Record<string, string[]>;
   greeting: Greeting | null;
   manualSync: { waitMinutes: number } | null;
   notices: string[];
@@ -358,6 +361,7 @@ export function HomeFinder({
             fresh={fresh}
             seen={seen}
             priceDrops={priceDrops}
+            twinSources={twinSources}
             sort={sort}
             setSort={setSort}
             maxPrice={maxPrice}
@@ -614,6 +618,7 @@ function ListingsLayer({
   sorts,
   distances,
   priceDrops,
+  twinSources,
   sort,
   setSort,
   maxPrice,
@@ -630,6 +635,7 @@ function ListingsLayer({
   /** Km from Adelka, around her. */
   distances: Map<string, number> | null;
   priceDrops: Record<string, number>;
+  twinSources: Record<string, string[]>;
   sort: Sort;
   setSort: (s: Sort) => void;
   maxPrice: number | null;
@@ -696,6 +702,7 @@ function ListingsLayer({
               seen={seen.has(p.id)}
               distanceKm={distances?.get(p.id) ?? null}
               previousPrice={priceDrops[p.id] ?? null}
+              alsoOn={twinSources[p.id] ?? []}
             />
           ))}
         </div>

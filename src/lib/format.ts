@@ -10,6 +10,15 @@ const dateFormat = new Intl.DateTimeFormat("sk-SK", {
   year: "numeric",
 });
 
+const SOURCE_LABELS: Record<string, string> = {
+  immobiliare: "Immobiliare.it",
+  idealista: "Idealista.it",
+};
+
+export function sourceLabel(source: string): string {
+  return SOURCE_LABELS[source] ?? source;
+}
+
 export function formatPrice(price: number | null): string {
   return price === null ? "Cena na vyžiadanie" : priceFormat.format(price);
 }

@@ -1,13 +1,17 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ListingCard } from "@/components/ListingCard";
 import { NoteForm } from "@/components/NoteForm";
+import { VisitForm } from "@/components/VisitForm";
 import { CloseBar } from "@/components/CloseBar";
-import { ButtonLink, Card, Eyebrow, ICONS } from "@/components/ui";
+import { ButtonLink, Card, Eyebrow, ICONS, Icon } from "@/components/ui";
+import { formatPrice } from "@/lib/format";
 import { getRepo } from "@/lib/db/repo";
 import { isStale } from "@/lib/freshness";
 import { getProvider } from "@/lib/providers";
 import { getSeenIds } from "@/lib/seen";
 import { hasSession } from "@/lib/session";
+import { getVisits, plannedVisits, todayInItaly, visitWhen } from "@/lib/visits";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +19,19 @@ export default async function SavedPage() {
   if (!(await hasSession())) redirect("/prihlasenie?next=/ulozene");
   const repo = getRepo();
   const trackFreshness = !getProvider().isMock;
-  const [saved, seenIds] = await Promise.all([repo.listSaved(), getSeenIds(repo)]);
+  const [saved, seenIds, visits] = await Promise.all([repo.listSaved(), getSeenIds(repo), getVisits(repo)]);
   const seen = new Set(seenIds);
   const entries = (
     await Promise.all(
       saved.map(async (s) => ({ saved: s, property: await repo.getProperty(s.property_id) })),
     )
-  ).filter((e) => e.property !== null);
+  )
+    .filter((e) => e.property !== null)
+    // Houses she ruled out go to the end.
+    .sort((a, b) => Number(visits[a.property!.id]?.status === "no") - Number(visits[b.property!.id]?.status === "no"));
+  const byId = new Map(entries.map((e) => [e.property!.id, e.property!]));
+  const today = todayInItaly();
+  const planned = plannedVisits(visits).filter(([id]) => byId.has(id));
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-5 px-4 pb-6 pt-2">
@@ -45,16 +55,54 @@ export default async function SavedPage() {
           </ButtonLink>
         </Card>
       ) : (
-        <ul className="grid gap-5">
-          {entries.map(({ saved: s, property }) => (
-            <li key={s.id} className="space-y-3">
-              <ListingCard property={property!} saved seen={seen.has(property!.id)} gone={trackFreshness && isStale(property!)} />
-              <div className="rounded-3xl bg-surface p-4 shadow-card">
-                <NoteForm savedId={s.id} note={s.note} />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          {planned.length > 0 && (
+            <section aria-labelledby="visits-heading" className="space-y-2 rounded-3xl bg-surface p-4 shadow-card">
+              <h2 id="visits-heading" className="px-1 font-display text-xl font-semibold text-ink">
+                Plán obhliadok
+              </h2>
+              <ul className="divide-y divide-line">
+                {planned.map(([id, visit]) => {
+                  const p = byId.get(id)!;
+                  const past = visit.date! < today;
+                  return (
+                    <li key={id} className="flex items-center gap-3 py-2.5">
+                      <Link href={`/inzerat/${id}`} className="min-w-0 flex-1">
+                        <span className={`block text-sm font-bold ${past ? "text-muted" : "text-accent-ink"}`}>{visitWhen(visit)}</span>
+                        <span className="block truncate font-medium text-ink">
+                          {p.city} · {formatPrice(p.price)}
+                        </span>
+                        {past && <span className="block text-xs text-muted">Ako to dopadlo? Označ pri domčeku „Videla som“.</span>}
+                      </Link>
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Navigovať do ${p.city} (Google Maps)`}
+                        className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-ink"
+                      >
+                        <Icon d={ICONS.navigate} size={18} />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+          <ul className="grid gap-5">
+            {entries.map(({ saved: s, property }) => (
+              <li key={s.id} className="space-y-3">
+                <ListingCard property={property!} saved seen={seen.has(property!.id)} gone={trackFreshness && isStale(property!)} />
+                <div className="rounded-3xl bg-surface p-4 shadow-card">
+                  <NoteForm savedId={s.id} note={s.note} />
+                  <div className="mt-4 border-t border-line pt-4">
+                    <VisitForm propertyId={property!.id} visit={visits[property!.id] ?? null} />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </main>
   );

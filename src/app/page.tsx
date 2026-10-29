@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { HomeFinder } from "@/components/HomeFinder";
 import { distanceToSeaKm } from "@/lib/coast";
+import { dedupe } from "@/lib/duplicates";
 import { findNewIds, findPriceDrops, getProperties } from "@/lib/data";
 import { getRepo } from "@/lib/db/repo";
 import { LAST_SEEN_KEY, MANUAL_SYNC_KEY, buildGreeting, manualSyncWaitMinutes } from "@/lib/greeting";
@@ -30,9 +31,14 @@ export default async function Home() {
 
   // Only houses within the chosen distance of the sea; the rest stay in the database, hidden.
   const band = bandKm(settings);
-  const properties = allProperties
+  const inBand = allProperties
     .map((p) => ({ ...p, sea_km: Math.round(distanceToSeaKm(p.longitude, p.latitude) * 10) / 10 }))
     .filter((p) => withinBand(p.sea_km, band));
+  // The same house on both portals: one card (the saved one stays, so her heart and note do too).
+  const { listings: properties, twins } = dedupe(inBand, new Set(saved.map((s) => s.property_id)));
+  const seen = new Set(seenIds);
+  for (const [id, others] of Object.entries(twins)) if (others.some((t) => seen.has(t.id))) seen.add(id);
+  const twinSources = Object.fromEntries(Object.entries(twins).map(([id, others]) => [id, others.map((t) => t.source)]));
 
   // First visit: start counting from now instead of greeting with everything.
   if (lastSeen === null) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
@@ -43,7 +49,8 @@ export default async function Home() {
       properties={properties}
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
-      seenIds={seenIds}
+      seenIds={[...seen]}
+      twinSources={twinSources}
       newIds={findNewIds(properties)}
       priceDrops={findPriceDrops(properties)}
       greeting={greeting}

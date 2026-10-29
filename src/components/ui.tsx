@@ -91,6 +91,7 @@ export const ICONS = {
   map: "M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14",
   navigate: "M3 11l18-8-8 18-2-8z",
   check: "M5 12l5 5L20 7",
+  calendar: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
   home: "M3 11l9-7 9 7v9H3zM10 20v-5h4v5",
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
   compass: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15.5 8.5l-2 5-5 2 2-5z",

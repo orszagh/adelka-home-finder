@@ -69,6 +69,32 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
+    icon: ICONS.calendar,
+    question: "Ako si naplánujem obhliadky?",
+    answer: (
+      <>
+        <p>
+          Pri uloženom domčeku (v <b>Uložených</b> alebo v jeho detaile) si označ, kde s ním si: <b>Napísala som</b>, <b>Obhliadka
+          dohodnutá</b>, <b>Videla som</b> alebo <b>Nie je to ono</b>. Pri dohodnutej obhliadke doplň dátum a čas a ťukni na Uložiť.
+        </p>
+        <p>
+          Navrchu Uložených potom vidíš <b>Plán obhliadok</b> zoradený podľa dátumu, s tlačidlom na navigáciu. Domčeky, ktoré nie sú
+          ono, sa presunú na koniec. Platí to na mobile aj na počítači.
+        </p>
+      </>
+    ),
+  },
+  {
+    icon: ICONS.list,
+    question: "Prečo je pri domčeku „Aj na Idealista.it aj Immobiliare.it“?",
+    answer: (
+      <p>
+        Ten istý dom býva ponúkaný na oboch portáloch. Appka ho spozná (rovnaké miesto, cena a veľkosť) a ukáže ho len raz, s lacnejšou
+        cenou. V detaile nájdeš odkaz aj na druhý inzerát.
+      </p>
+    ),
+  },
+  {
     icon: ICONS.search,
     question: "Čo nájdem v detaile domčeka?",
     answer: (

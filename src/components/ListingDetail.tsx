@@ -5,18 +5,16 @@ import { MarkSeen } from "@/components/MarkSeen";
 import { MessageDraft } from "@/components/MessageDraft";
 import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
+import { VisitForm } from "@/components/VisitForm";
 import { ICONS, Icon, buttonClass } from "@/components/ui";
 import { isAiConfigured } from "@/lib/ai/claude";
 import { distanceToSeaKm } from "@/lib/coast";
+import { sameHouse } from "@/lib/duplicates";
 import { getRepo } from "@/lib/db/repo";
-import { formatDate, formatPrice, roomsLabel, seaLabel } from "@/lib/format";
+import { formatDate, formatPrice, roomsLabel, seaLabel, sourceLabel } from "@/lib/format";
 import { isStale } from "@/lib/freshness";
 import { getProvider } from "@/lib/providers";
-
-const SOURCE_LABELS: Record<string, string> = {
-  immobiliare: "Immobiliare.it",
-  idealista: "Idealista.it",
-};
+import { getVisits } from "@/lib/visits";
 
 /**
  * Everything about one listing. Shown as a full page (/inzerat/[id] opened
@@ -24,9 +22,15 @@ const SOURCE_LABELS: Record<string, string> = {
  */
 export async function ListingDetail({ id }: { id: string }) {
   const repo = getRepo();
-  const [property, saved] = await Promise.all([repo.getProperty(id), repo.listSaved()]);
+  const [property, saved, all, visits] = await Promise.all([
+    repo.getProperty(id),
+    repo.listSaved(),
+    repo.listProperties(),
+    getVisits(repo),
+  ]);
   if (!property) notFound();
   const locationNote = await repo.getLocationNote(property.city, property.region);
+  const twins = all.filter((p) => p.id !== property.id && sameHouse(property, p));
   const savedEntry = saved.find((s) => s.property_id === property.id) ?? null;
 
   const facts = [
@@ -38,7 +42,7 @@ export async function ListingDetail({ id }: { id: string }) {
       property.price && property.area_sqm ? formatPrice(Math.round(property.price / property.area_sqm)) : "–",
     ],
     ["Od mora", seaLabel(distanceToSeaKm(property.longitude, property.latitude))],
-    ["Zdroj", SOURCE_LABELS[property.source] ?? property.source],
+    ["Zdroj", [property, ...twins].map((p) => sourceLabel(p.source)).join(" aj ")],
     ["V appke od", formatDate(property.first_seen_at)],
   ];
 
@@ -115,6 +119,19 @@ export async function ListingDetail({ id }: { id: string }) {
               Waze
             </a>
           </div>
+          {twins.map((t) => (
+            <p key={t.id} className="-mt-3 text-sm text-ink-2">
+              Ten istý domček je aj na {sourceLabel(t.source)} za <b>{formatPrice(t.price)}</b>
+              {t.listing_url && (
+                <>
+                  {" · "}
+                  <a href={t.listing_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-ink underline">
+                    otvoriť inzerát
+                  </a>
+                </>
+              )}
+            </p>
+          ))}
           <p className="-mt-3 text-xs text-muted">
             Portály často uvádzajú len približnú polohu, adresu si over v inzeráte alebo u realitky.
           </p>
@@ -122,6 +139,9 @@ export async function ListingDetail({ id }: { id: string }) {
           {savedEntry && (
             <section className="rounded-3xl bg-surface p-5 shadow-card">
               <NoteForm savedId={savedEntry.id} note={savedEntry.note} />
+              <div className="mt-5 border-t border-line pt-4">
+                <VisitForm propertyId={property.id} visit={visits[property.id] ?? null} />
+              </div>
             </section>
           )}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { formatPrice, roomsLabel, seaLabel } from "@/lib/format";
+import { formatPrice, roomsLabel, seaLabel, sourceLabel } from "@/lib/format";
 import { listingBadge } from "@/lib/seen";
 import type { Property } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
@@ -21,6 +21,7 @@ export function ListingCard({
   isNew = false,
   seen = false,
   distanceKm = null,
+  alsoOn = [],
   previousPrice = null,
   gone = false,
   enterDelayMs = 0,
@@ -34,6 +35,8 @@ export function ListingCard({
   seen?: boolean;
   /** Km from Adelka when she looks around herself. */
   distanceKm?: number | null;
+  /** Portals where the same house is offered too (one card for both). */
+  alsoOn?: string[];
   /** Price before a recent drop. */
   previousPrice?: number | null;
   /** No longer on offer (sold or withdrawn). */
@@ -98,6 +101,11 @@ export function ListingCard({
           </p>
           <p className="truncate text-[15px] font-medium text-ink">{property.title}</p>
           {meta.length > 0 && <p className="text-sm text-muted">{meta.join(" · ")}</p>}
+          {alsoOn.length > 0 && (
+            <p className="text-sm font-medium text-accent-ink">
+              Aj na {[property.source, ...alsoOn].map(sourceLabel).join(" aj ")}
+            </p>
+          )}
           <p className="flex items-center gap-1 truncate text-sm text-muted">
             <Icon d={ICONS.pin} size={15} className="shrink-0" />
             <span className="truncate">

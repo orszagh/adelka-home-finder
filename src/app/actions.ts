@@ -7,6 +7,7 @@ import { getProvider } from "@/lib/providers";
 import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
 import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings } from "@/lib/search-settings";
 import { SEEN_KEY, getSeenIds } from "@/lib/seen";
+import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import type { SearchArea } from "@/lib/types";
@@ -112,6 +113,21 @@ export async function markListingSeen(propertyId: string) {
   const seen = await getSeenIds(repo);
   if (seen.includes(propertyId)) return;
   await repo.setState(SEEN_KEY, [...seen, propertyId]);
+}
+
+/** Where Adelka is with a saved house (null clears it). */
+export async function setVisit(propertyId: string, input: unknown): Promise<{ ok: boolean }> {
+  await assertSession();
+  if (typeof propertyId !== "string" || propertyId.length > 100) return { ok: false };
+  const visit = input === null ? null : parseVisit(input);
+  if (input !== null && !visit) return { ok: false };
+  const repo = getRepo();
+  const visits = await getVisits(repo);
+  if (visit) visits[propertyId] = { ...visit, updated_at: new Date().toISOString() };
+  else delete visits[propertyId];
+  const ok = await repo.setState(VISITS_KEY, visits);
+  refreshAll();
+  return { ok };
 }
 
 export async function markNewsSeen() {
