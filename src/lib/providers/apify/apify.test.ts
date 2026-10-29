@@ -130,7 +130,7 @@ describe("apifyProvider", () => {
       `/v2/acts/${IMMOBILIARE_ACTOR}/run-sync-get-dataset-items`,
     ]);
     expect(urls[0].searchParams.get("maxItems")).toBe("20");
-    expect(urls[0].searchParams.get("maxTotalChargeUsd")).toBe("0.8");
+    expect(urls[0].searchParams.get("maxTotalChargeUsd")).toBe("0.4");
     const init = fetchMock.mock.calls[0][1]!;
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer apify_test");
   });
@@ -224,7 +224,7 @@ describe("apifyProvider", () => {
     expect(idealista.length).toBeLessThanOrEqual(4);
     const perPortal = idealista.reduce((s, i) => s + i.maxItems, 0);
     // The listings per portal are split among the coast pieces, not multiplied by them.
-    expect(perPortal).toBeLessThanOrEqual(Math.max(500 + idealista.length, 15 * idealista.length));
+    expect(perPortal).toBeLessThanOrEqual(Math.max(200 + idealista.length, 15 * idealista.length));
 
     // The Idealista circles stay near the coast: much smaller than the whole province.
     const whole = idealistaInput(catania.geometry.coordinates[0] as Position[], 50).distanceKm;

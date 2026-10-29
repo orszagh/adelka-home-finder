@@ -47,7 +47,7 @@ const DISTANCES: { value: SearchSettings["inlandKm"]; label: string }[] = [
   { value: null, label: "Celá oblasť" },
 ];
 
-export function SearchSettingsForm({ initial }: { initial: SearchSettings }) {
+export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: SearchSettings; syncCostUsd?: number | null }) {
   const [settings, setSettings] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [pending, startTransition] = useTransition();
@@ -138,7 +138,7 @@ export function SearchSettingsForm({ initial }: { initial: SearchSettings }) {
         Platí na mobile aj počítači. Podľa tohto hľadá Lubkov nočný pomocník každé ráno.
       </p>
 
-      <SyncSheet open={pending} subtitle={formatSearchSettings(settings)} />
+      <SyncSheet open={pending} subtitle={formatSearchSettings(settings)} costUsd={syncCostUsd} />
 
       <button
         type="button"

@@ -40,6 +40,17 @@ export function budgetUsd(accountLimitUsd?: number | null): number {
 }
 
 const usd = (n: number) => `${n.toFixed(2).replace(".", ",")} $`;
+export const formatUsd = usd;
+
+/** What one listing costs on each portal (measured on real runs, October 2026). */
+const USD_PER_LISTING = { idealista: 0.0006, immobiliare: 0.0008 };
+/** Starting a run costs a little even when it finds nothing. */
+const USD_PER_RUN_START = 0.005;
+
+/** At most what fetching one area costs: both portals, maxItems listings each. */
+export function estimateAreaUsd(maxItems: number): number {
+  return maxItems * (USD_PER_LISTING.idealista + USD_PER_LISTING.immobiliare) + 2 * USD_PER_RUN_START;
+}
 const day = (iso: string) =>
   new Intl.DateTimeFormat("sk-SK", { day: "numeric", month: "numeric", timeZone: "Europe/Bratislava" }).format(new Date(iso));
 

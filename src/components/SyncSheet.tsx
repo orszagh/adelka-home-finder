@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatUsd } from "@/lib/budget";
 
 const MESSAGES = [
   "Pýtam sa Idealista.it…",
@@ -14,12 +15,12 @@ const MESSAGES = [
  * an indeterminate bar. The server does not report progress, so the bar
  * does not pretend to know how far along it is.
  */
-export function SyncSheet({ open, subtitle }: { open: boolean; subtitle: string }) {
+export function SyncSheet({ open, subtitle, costUsd = null }: { open: boolean; subtitle: string; costUsd?: number | null }) {
   if (!open) return null;
-  return <SyncSheetCard subtitle={subtitle} />;
+  return <SyncSheetCard subtitle={subtitle} costUsd={costUsd} />;
 }
 
-function SyncSheetCard({ subtitle }: { subtitle: string }) {
+function SyncSheetCard({ subtitle, costUsd }: { subtitle: string; costUsd: number | null }) {
   const [message, setMessage] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setMessage((m) => Math.min(m + 1, MESSAGES.length - 1)), 4000);
@@ -60,6 +61,13 @@ function SyncSheetCard({ subtitle }: { subtitle: string }) {
         <p className="rounded-2xl bg-canvas px-4 py-3 text-sm text-muted">
           Trvá to asi minútu. Pokojne zatiaľ listuj – keď budem hotový, zakývam.
         </p>
+        {/* So Adelka knows each download is paid for. An upper bound: fewer listings cost less. */}
+        {costUsd !== null && costUsd > 0 && (
+          <p className="px-1 text-xs text-muted">
+            Toto sťahovanie stojí Lubka najviac asi <strong className="text-ink-2">{formatUsd(costUsd)}</strong> z kreditu na
+            Apify.
+          </p>
+        )}
       </section>
     </div>
   );

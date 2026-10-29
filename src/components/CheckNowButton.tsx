@@ -6,7 +6,7 @@ import { SyncSheet } from "./SyncSheet";
 import { useToast } from "./Toast";
 import { Button, ICONS, Icon } from "./ui";
 
-export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
+export function CheckNowButton({ waitMinutes, costUsd = null }: { waitMinutes: number; costUsd?: number | null }) {
   const [pending, startTransition] = useTransition();
   const toast = useToast();
 
@@ -28,7 +28,7 @@ export function CheckNowButton({ waitMinutes }: { waitMinutes: number }) {
         {pending ? "Pozerám na portáloch…" : "Pozrieť teraz"}
       </Button>
       {!pending && waitMinutes > 0 && <span className="text-xs text-muted">Znova to pôjde o {waitMinutes} min.</span>}
-      <SyncSheet open={pending} subtitle="Všetky tvoje oblasti" />
+      <SyncSheet open={pending} subtitle="Všetky tvoje oblasti" costUsd={costUsd} />
     </div>
   );
 }

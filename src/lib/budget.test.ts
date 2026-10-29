@@ -39,3 +39,10 @@ describe("budget from the Apify account limit", () => {
     else process.env.APIFY_MONTHLY_BUDGET_USD = saved;
   });
 });
+
+describe("cost estimate shown while downloading", () => {
+  it("is about 0.29 USD per area at 200 listings per portal", async () => {
+    const { estimateAreaUsd, formatUsd } = await import("./budget");
+    expect(formatUsd(estimateAreaUsd(200))).toBe("0,29 $");
+  });
+});

@@ -104,6 +104,7 @@ export function HomeFinder({
   manualSync,
   notices,
   settingsLabel,
+  costPerAreaUsd,
 }: {
   properties: Property[];
   areas: SearchArea[];
@@ -117,6 +118,8 @@ export function HomeFinder({
   notices: string[];
   /** Current search setting, e.g. "Len pri mori · 3 km". */
   settingsLabel: string;
+  /** At most what fetching one area costs, for the note while downloading (null for demo data). */
+  costPerAreaUsd: number | null;
 }) {
   const view = readView(useSearchParams());
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
@@ -276,7 +279,7 @@ export function HomeFinder({
   return (
     <>
       <AdPopup />
-      <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} />
+      <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} costUsd={costPerAreaUsd} />
       <main className="relative isolate h-[calc(100dvh-65px)] overflow-hidden">
         <section className="absolute inset-0" aria-label="Mapa">
           <MapView
@@ -321,7 +324,7 @@ export function HomeFinder({
                     <Icon d={ICONS.waves} size={16} className="text-accent" />
                     {settingsLabel}
                   </Link>
-                  {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} />}
+                  {manualSync && areas.length > 0 && <CheckNowButton waitMinutes={manualSync.waitMinutes} costUsd={costPerAreaUsd && costPerAreaUsd * areas.length} />}
                 </div>
                 {notices.map((notice) => (
                   <p key={notice} className="rounded-2xl bg-warn-soft px-3 py-2 text-sm text-warn-ink">

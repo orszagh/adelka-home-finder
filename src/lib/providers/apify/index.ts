@@ -2,7 +2,7 @@ import { bandPolygon, coastChunks, coastLinesForArea } from "../../coast";
 import { enclosingCircle, outerRings, ringArea } from "../../geo";
 import type { Position, Property, ProviderListing, SearchArea } from "../../types";
 import type { FetchOptions, FetchResult, PropertyProvider } from "../index";
-import { budgetUsd, checkBudget } from "../../budget";
+import { budgetUsd, checkBudget, estimateAreaUsd } from "../../budget";
 import { ApifyError, getApifyUsage, runActor } from "./client";
 import {
   IDEALISTA_ACTOR,
@@ -17,9 +17,9 @@ import { IMMOBILIARE_ACTOR, immobiliareInput, immobiliareRecheckInput, mapImmobi
 function config() {
   return {
     // Per portal and area; split among the coast pieces. 50 listings cost ~0.03–0.04 USD.
-    maxItems: Number(process.env.APIFY_MAX_ITEMS) || 500,
-    // Room for a full 500-listing run (~0.4 USD); the cap only stops a runaway one. Budget: see src/lib/budget.ts.
-    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.8,
+    maxItems: Number(process.env.APIFY_MAX_ITEMS) || 200,
+    // Room for a full 200-listing run (~0.16 USD); the cap only stops a runaway one. Budget: see src/lib/budget.ts.
+    maxChargeUsd: Number(process.env.APIFY_MAX_CHARGE_USD) || 0.4,
     recheckMax: Number(process.env.APIFY_RECHECK_MAX) || 30,
   };
 }
@@ -210,6 +210,7 @@ export const apifyProvider: PropertyProvider = {
     const usage = await getApifyUsage();
     return usage ? checkBudget(usage, budgetUsd(usage.limitUsd), kind) : { allowed: true };
   },
+  costPerAreaUsd: () => estimateAreaUsd(config().maxItems),
   usage: async () => {
     const usage = await getApifyUsage();
     return usage ? { usedUsd: usage.usedUsd, budgetUsd: budgetUsd(usage.limitUsd) } : null;

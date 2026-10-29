@@ -50,6 +50,7 @@ export default async function Home() {
       manualSync={getProvider().isMock ? null : { waitMinutes: manualSyncWaitMinutes(lastManualSync) }}
       notices={getDataNotices({ areaCount: areas.length })}
       settingsLabel={formatSearchSettings(settings)}
+      costPerAreaUsd={getProvider().costPerAreaUsd?.() ?? null}
     />
   );
 }

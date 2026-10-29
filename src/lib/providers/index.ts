@@ -31,6 +31,8 @@ export interface PropertyProvider {
   budget?(kind: BudgetKind): Promise<BudgetCheck>;
   /** This month's spending, for the settings page. */
   usage?(): Promise<{ usedUsd: number; budgetUsd: number } | null>;
+  /** At most what fetching one area costs, in USD (none for the demo data). */
+  costPerAreaUsd?(): number;
 }
 
 export type FetchOptions = {
