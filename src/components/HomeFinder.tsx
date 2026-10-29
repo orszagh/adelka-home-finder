@@ -333,9 +333,10 @@ export function HomeFinder({
                 type="button"
                 disabled={placeBusy}
                 onClick={() => togglePlace(region)}
-                className="min-h-11 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
+                className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
               >
-                {wholeRegionFollowed ? "✓ Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
+                {wholeRegionFollowed && <Icon d={ICONS.check} size={16} />}
+                {wholeRegionFollowed ? "Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
               </button>
               <Button onClick={() => go({ r: view.r }, true)}>Hotovo</Button>
             </div>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateSavedNote } from "@/app/actions";
-import { buttonClass } from "./ui";
+import { ICONS, Icon, buttonClass } from "./ui";
 
 export function NoteForm({ savedId, note }: { savedId: string; note: string | null }) {
   const [value, setValue] = useState(note ?? "");
@@ -43,7 +43,12 @@ export function NoteForm({ savedId, note }: { savedId: string; note: string | nu
         >
           {pending ? "Ukladám…" : "Uložiť poznámku"}
         </button>
-        {savedAt && !dirty && <span className="text-sm text-success">Uložené ✓</span>}
+        {savedAt && !dirty && (
+          <span className="inline-flex items-center gap-1 text-sm text-success">
+            <Icon d={ICONS.check} size={16} />
+            Uložené
+          </span>
+        )}
       </div>
     </form>
   );

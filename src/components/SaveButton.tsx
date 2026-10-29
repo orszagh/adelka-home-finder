@@ -67,7 +67,7 @@ export function SaveButton({
     toast.show(
       optimisticSaved
         ? { tone: "info", text: "Odložené bokom. Keby si si to rozmyslela, je tu." }
-        : { tone: "success", text: "Uložené do srdiečka ♥", action: { href: "/ulozene", label: "Uložené" } },
+        : { tone: "success", text: "Uložené do srdiečka", action: { href: "/ulozene", label: "Uložené" } },
     );
     startTransition(async () => {
       setOptimisticSaved(!optimisticSaved);

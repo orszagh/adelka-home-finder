@@ -56,6 +56,11 @@ export function Eyebrow({ children, tone = "love" }: { children: ReactNode; tone
   );
 }
 
+/** The same icon as markup, for Leaflet labels built from HTML strings. */
+export function iconHtml(d: string, size = 14): string {
+  return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px"><path d="${d}"/></svg>`;
+}
+
 /** Stroke icons in the style of the design (24 px grid, 2 px line). */
 export function Icon({ d, size = 20, className = "" }: { d: string; size?: number; className?: string }) {
   return (
@@ -93,6 +98,8 @@ export const ICONS = {
   wifi: "M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01",
   moon: "M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z",
   tag: "M3 12V4h8l10 10-8 8zM7.5 7.5h.01",
+  sun: "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
+  droplet: "M12 3s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11z",
   external: "M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5",
   close: "M6 6l12 12M18 6L6 18",
   list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",

@@ -115,7 +115,7 @@ function OverviewLayer({ regionCounts, followedRegions, onRegion }: Props) {
           <Marker
             key={`lbl-${r.code}`}
             position={r.label}
-            icon={regionLabel(r.name, count > 0 ? `♥ ${homesLabel(count)}` : "sledované, zatiaľ nič")}
+            icon={regionLabel(r.name, count > 0 ? homesLabel(count) : "sledované, zatiaľ nič")}
             eventHandlers={{ click: () => onRegion(r.code) }}
           />
         );

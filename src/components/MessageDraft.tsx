@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MAX_INTENT, mailtoHref, type MessageDraft as Draft } from "@/lib/message";
-import { Button, Eyebrow, buttonClass } from "./ui";
+import { Button, Eyebrow, ICONS, Icon, buttonClass } from "./ui";
 
 const SUGGESTIONS = [
   "Mám záujem o tento dom. Je ešte k dispozícii?",
@@ -162,7 +162,8 @@ export function MessageDraft({ propertyId, aiEnabled }: { propertyId: string; ai
               onClick={copy}
               className={buttonClass("secondary")}
             >
-              {copied ? "Skopírované ✓" : "Kopírovať text"}
+              {copied && <Icon d={ICONS.check} size={18} />}
+              {copied ? "Skopírované" : "Kopírovať text"}
             </button>
           </div>
           <p className="text-xs text-muted">

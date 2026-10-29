@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { formatDate } from "@/lib/format";
 import type { LocationNote } from "@/lib/types";
-import { Button, Eyebrow } from "./ui";
+import { Button, Eyebrow, ICONS, Icon } from "./ui";
 
 const SECTIONS: { key: keyof LocationNote; title: string; icon: string }[] = [
-  { key: "ai_summary", title: "Celkový dojem", icon: "🏘️" },
-  { key: "infrastructure_notes", title: "Infraštruktúra a dostupnosť", icon: "🚆" },
-  { key: "climate_risk_notes", title: "Počasie a klimatické riziká", icon: "🌡️" },
-  { key: "groundwater_risk_notes", title: "Spodná voda, záplavy, zosuvy", icon: "💧" },
+  { key: "ai_summary", title: "Celkový dojem", icon: ICONS.home },
+  { key: "infrastructure_notes", title: "Infraštruktúra a dostupnosť", icon: ICONS.navigate },
+  { key: "climate_risk_notes", title: "Počasie a klimatické riziká", icon: ICONS.sun },
+  { key: "groundwater_risk_notes", title: "Spodná voda, záplavy, zosuvy", icon: ICONS.droplet },
 ];
 
 export function LocationSummary({
@@ -147,8 +147,9 @@ export function LocationSummary({
           {SECTIONS.map(({ key, title, icon }) =>
             note[key] ? (
               <div key={key}>
-                <h3 className="font-semibold text-ink">
-                  <span aria-hidden>{icon}</span> {title}
+                <h3 className="flex items-center gap-2 font-semibold text-ink">
+                  <Icon d={icon} size={18} className="shrink-0 text-accent-ink" />
+                  {title}
                 </h3>
                 <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink-2">{note[key]}</p>
               </div>

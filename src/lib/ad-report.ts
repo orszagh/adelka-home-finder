@@ -55,7 +55,7 @@ export function buildAdEmail(event: AdChoiceEvent, at: Date) {
   const milestone = event.choice.startsWith("milestone");
   const subject =
     event.choice === "milestone-yes"
-      ? `Adelka: „${event.label}“ – ${event.kisses} ${kissWord(event.kisses)} 😏`
+      ? `Adelka: „${event.label}“ – ${event.kisses} ${kissWord(event.kisses)}`
       : event.choice === "refuse"
         ? "Adelka sa pokúsila vypnúť reklamy"
         : `Adelka ťukla na „${event.label}“`;

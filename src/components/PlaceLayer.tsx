@@ -7,6 +7,7 @@ import { formatPriceShort } from "@/lib/format";
 import { pointInArea } from "@/lib/geo";
 import { type Place, REGIONS, areaNameFor, provincesOf } from "@/lib/italy";
 import type { AreaGeometry, Property } from "@/lib/types";
+import { ICONS, iconHtml } from "./ui";
 
 export type PlaceChooser = {
   /** null = all of Italy (pick a region), otherwise the region whose provinces are shown. */
@@ -85,7 +86,7 @@ function labelIcon(place: Place, stats: Stats, followed: boolean, partial: numbe
   const classes = ["place-label", `is-${place.kind}`, selected ? "is-selected" : "", place.coastal ? "" : "is-inland"].join(" ");
   return L.divIcon({
     className: "place-label-icon",
-    html: `<span class="${classes}"><b>${selected ? "✓ " : ""}${escapeHtml(place.name)}</b>${
+    html: `<span class="${classes}"><b>${selected ? `${iconHtml(ICONS.check, 12)} ` : ""}${escapeHtml(place.name)}</b>${
       detail ? `<small>${escapeHtml(detail)}</small>` : ""
     }</span>`,
     iconSize: [0, 0],
