@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { ButtonLink, Eyebrow } from "@/components/ui";
+import { ButtonLink, Eyebrow, ICONS, Icon } from "@/components/ui";
 import { hasSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Nápoveda" };
@@ -54,7 +55,10 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     question: "Čo nájdem v detaile domčeka?",
     answer: (
       <>
-        <p>Fotky, cenu, plochu, izby, vzdialenosť od mora a odkaz na <b>pôvodný inzerát</b> na portáli. <b>Na mape</b> ti ukáže, kde presne leží.</p>
+        <p>
+          Fotky, cenu, plochu, izby, vzdialenosť od mora a odkaz na <b>pôvodný inzerát</b> na portáli. Tlačidlá <b>Google Maps</b> a{" "}
+          <b>Waze</b> ťa k domčeku rovno navigujú. Poloha z portálu býva len približná.
+        </p>
         <p>Pod tým sú dva pomocníci s umelou inteligenciou – Prehľad lokality a Napísať realitke.</p>
       </>
     ),
@@ -112,10 +116,20 @@ export default async function HelpPage() {
   if (!(await hasSession())) redirect("/prihlasenie?next=/napoveda");
   return (
     <main className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6">
-      <div>
-        <Eyebrow>Ako na to</Eyebrow>
-        <h1 className="font-display text-3xl font-semibold text-ink">Nápoveda</h1>
-        <p className="mt-1 text-muted">Ťukni na otázku a rozbalí sa odpoveď.</p>
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          <Eyebrow>Ako na to</Eyebrow>
+          <h1 className="font-display text-3xl font-semibold text-ink">Nápoveda</h1>
+          <p className="mt-1 text-muted">Ťukni na otázku a rozbalí sa odpoveď.</p>
+        </div>
+        {/* The app on the home screen has no browser back button. */}
+        <Link
+          href="/"
+          aria-label="Zavrieť nápovedu"
+          className="-mr-1 grid size-11 shrink-0 place-items-center rounded-full bg-surface text-ink shadow-sm ring-1 ring-line hover:bg-surface-2"
+        >
+          <Icon d={ICONS.close} size={20} />
+        </Link>
       </div>
 
       <div className="space-y-2.5">

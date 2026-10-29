@@ -93,16 +93,29 @@ export async function ListingDetail({ id }: { id: string }) {
                 Ukážkový inzerát bez odkazu na portál
               </span>
             )}
+            {/* On a phone these open the Google Maps or Waze app straight into navigation. */}
             <a
-              href={`https://www.openstreetmap.org/?mlat=${property.latitude}&mlon=${property.longitude}#map=15/${property.latitude}/${property.longitude}`}
+              href={`https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
               className={buttonClass("secondary")}
             >
-              <Icon d={ICONS.map} size={18} />
-              Na mape
+              <Icon d={ICONS.navigate} size={18} />
+              Google Maps
+            </a>
+            <a
+              href={`https://waze.com/ul?ll=${property.latitude},${property.longitude}&navigate=yes`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClass("secondary")}
+            >
+              <Icon d={ICONS.navigate} size={18} />
+              Waze
             </a>
           </div>
+          <p className="-mt-3 text-xs text-muted">
+            Portály často uvádzajú len približnú polohu, adresu si over v inzeráte alebo u realitky.
+          </p>
 
           {savedEntry && (
             <section className="rounded-3xl bg-surface p-5 shadow-card">
