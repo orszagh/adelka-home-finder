@@ -1,11 +1,13 @@
 import type {
   AreaGeometry,
+  GeoBox,
   LocationNote,
   Property,
   ProviderListing,
   SavedListing,
   SearchArea,
 } from "../types";
+import { inBox } from "../geo";
 import type { LocationNoteInput, Repository } from "./repo";
 
 const GLOBAL_KEY = Symbol.for("adelka.memoryRepository");
@@ -31,6 +33,10 @@ export class MemoryRepository implements Repository {
 
   async listProperties() {
     return [...this.properties.values()];
+  }
+
+  async listPropertiesIn(box: GeoBox) {
+    return [...this.properties.values()].filter((p) => inBox(p, box));
   }
 
   async getProperty(id: string) {

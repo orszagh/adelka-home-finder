@@ -1,4 +1,4 @@
-import type { AreaGeometry, Position } from "./types";
+import type { AreaGeometry, GeoBox, Position } from "./types";
 
 function pointInRing(lng: number, lat: number, ring: Position[]): boolean {
   let inside = false;
@@ -147,4 +147,15 @@ export function sampleRing(ring: Position[], max: number): Position[] {
   if (open.length <= max) return open;
   const step = open.length / max;
   return Array.from({ length: max }, (_, i) => open[Math.floor(i * step)]);
+}
+
+/** A box reaching at least `km` from the point in every direction. */
+export function boxAround(latitude: number, longitude: number, km: number): GeoBox {
+  const dLat = km / 110.5;
+  const dLng = km / (111.3 * Math.max(Math.cos((latitude * Math.PI) / 180), 0.01));
+  return { south: latitude - dLat, north: latitude + dLat, west: longitude - dLng, east: longitude + dLng };
+}
+
+export function inBox(p: { latitude: number; longitude: number }, box: GeoBox): boolean {
+  return p.latitude >= box.south && p.latitude <= box.north && p.longitude >= box.west && p.longitude <= box.east;
 }

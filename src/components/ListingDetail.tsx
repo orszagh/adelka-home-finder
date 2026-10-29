@@ -9,8 +9,9 @@ import { VisitForm } from "@/components/VisitForm";
 import { ICONS, Icon, buttonClass } from "@/components/ui";
 import { isAiConfigured } from "@/lib/ai/claude";
 import { distanceToSeaKm } from "@/lib/coast";
-import { sameHouse } from "@/lib/duplicates";
+import { SAME_PLACE_KM, sameHouse } from "@/lib/duplicates";
 import { getRepo } from "@/lib/db/repo";
+import { boxAround } from "@/lib/geo";
 import { formatDate, formatPrice, roomsLabel, seaLabel, sourceLabel } from "@/lib/format";
 import { isStale } from "@/lib/freshness";
 import { getProvider } from "@/lib/providers";
@@ -22,15 +23,14 @@ import { getVisits } from "@/lib/visits";
  */
 export async function ListingDetail({ id }: { id: string }) {
   const repo = getRepo();
-  const [property, saved, all, visits] = await Promise.all([
-    repo.getProperty(id),
-    repo.listSaved(),
-    repo.listProperties(),
-    getVisits(repo),
-  ]);
+  const [property, saved, visits] = await Promise.all([repo.getProperty(id), repo.listSaved(), getVisits(repo)]);
   if (!property) notFound();
-  const locationNote = await repo.getLocationNote(property.city, property.region);
-  const twins = all.filter((p) => p.id !== property.id && sameHouse(property, p));
+  // Only the houses right around this one can be the same house on the other portal (not the whole database).
+  const [locationNote, nearby] = await Promise.all([
+    repo.getLocationNote(property.city, property.region),
+    repo.listPropertiesIn(boxAround(property.latitude, property.longitude, SAME_PLACE_KM)),
+  ]);
+  const twins = nearby.filter((p) => p.id !== property.id && sameHouse(property, p));
   const savedEntry = saved.find((s) => s.property_id === property.id) ?? null;
 
   const facts = [

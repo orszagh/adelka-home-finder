@@ -7,6 +7,9 @@ export type MultiPolygonGeometry = {
 };
 export type AreaGeometry = PolygonGeometry | MultiPolygonGeometry;
 
+/** Latitude / longitude bounds of a small piece of the map. */
+export type GeoBox = { south: number; north: number; west: number; east: number };
+
 /** A listing as returned by a data provider, before it is stored. */
 export type ProviderListing = {
   external_id: string;

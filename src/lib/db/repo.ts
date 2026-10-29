@@ -1,6 +1,7 @@
 import "server-only";
 import type {
   AreaGeometry,
+  GeoBox,
   LocationNote,
   Property,
   ProviderListing,
@@ -18,6 +19,8 @@ export interface Repository {
 
   listProperties(): Promise<Property[]>;
   getProperty(id: string): Promise<Property | null>;
+  /** Listings inside a small box on the map (latitude / longitude bounds), e.g. around one house. */
+  listPropertiesIn(box: GeoBox): Promise<Property[]>;
   /** Inserts new listings and refreshes existing ones (matched by external_id). */
   upsertProperties(listings: ProviderListing[]): Promise<Property[]>;
   /** Deletes listings together with any saved entries pointing at them. */

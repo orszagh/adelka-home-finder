@@ -1,6 +1,7 @@
 import "server-only";
 import type {
   AreaGeometry,
+  GeoBox,
   LocationNote,
   Property,
   ProviderListing,
@@ -59,6 +60,19 @@ export class SupabaseRepository implements Repository {
       rows.push(...page.map(toProperty));
       if (page.length < PAGE_SIZE) return rows;
     }
+  }
+
+  async listPropertiesIn(box: GeoBox) {
+    const rows = check(
+      await getSupabase()
+        .from("properties")
+        .select("*")
+        .gte("latitude", box.south)
+        .lte("latitude", box.north)
+        .gte("longitude", box.west)
+        .lte("longitude", box.east),
+    ) as Record<string, unknown>[];
+    return rows.map(toProperty);
   }
 
   async getProperty(id: string) {

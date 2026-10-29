@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeGeometry, pointInArea, polygonFromLatLngs, toLatLngRings } from "./geo";
+import { boxAround, distanceKm, inBox, normalizeGeometry, pointInArea, polygonFromLatLngs, toLatLngRings } from "./geo";
 import type { AreaGeometry } from "./types";
 
 const square: AreaGeometry = {
@@ -88,5 +88,24 @@ describe("polygonFromLatLngs", () => {
       ],
     });
     expect(toLatLngRings(geometry)[0][1]).toEqual([43, 11]);
+  });
+});
+
+describe("boxAround", () => {
+  it("holds every point within the distance, in Liguria and in Sicily", () => {
+    for (const [lat, lng] of [
+      [43.9, 8.08],
+      [37.5, 15.09],
+    ]) {
+      const box = boxAround(lat, lng, 0.6);
+      for (let deg = 0; deg < 360; deg += 15) {
+        const a = (deg * Math.PI) / 180;
+        // About 0.59 km away in direction `deg`.
+        const p = { latitude: lat + (0.59 / 111.2) * Math.cos(a), longitude: lng + (0.59 / (111.2 * Math.cos((lat * Math.PI) / 180))) * Math.sin(a) };
+        expect(distanceKm([lng, lat], [p.longitude, p.latitude])).toBeLessThan(0.6);
+        expect(inBox(p, box)).toBe(true);
+      }
+      expect(inBox({ latitude: lat + 0.02, longitude: lng }, box)).toBe(false);
+    }
   });
 });

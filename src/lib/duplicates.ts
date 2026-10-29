@@ -2,7 +2,7 @@ import { distanceKm } from "./geo";
 import type { Property } from "./types";
 
 /** Portals place pins roughly (often only the street or the village), so "the same place" is generous. */
-const SAME_PLACE_KM = 0.6;
+export const SAME_PLACE_KM = 0.6;
 const PRICE_TOLERANCE = 0.03;
 const AREA_TOLERANCE = 0.1;
 
