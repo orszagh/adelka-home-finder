@@ -1,10 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { type Novelty, NOVELTIES, nextNovelty } from "@/lib/novelties";
 import { Button, Eyebrow, ICONS, Icon } from "./ui";
 
-/** Remembered per phone: Adelka sees each novelty once. */
-const SEEN_KEY = "adelka.novelty.near";
 const SHOW_AFTER_MS = 1200;
 
 /** Hearts drifting up behind the icon: left position (%), size, delay (s). */
@@ -18,45 +18,48 @@ const HEARTS: [number, number, number][] = [
   [48, 10, 3.1],
 ];
 
-function seen(): boolean | null {
+/** Keys of the novelties already seen on this phone, or null without storage. */
+function seenKeys(): Set<string> | null {
   try {
-    return localStorage.getItem(SEEN_KEY) !== null;
+    return new Set(NOVELTIES.map((n) => n.storageKey).filter((key) => localStorage.getItem(key) !== null));
   } catch {
     return null;
   }
 }
 
 /**
- * A small window introducing a new feature, shown once: "Domčeky v okolí".
+ * A small window introducing a new feature: at most one per visit, the oldest one not seen yet (lib/novelties).
  * In a visit with a novelty the ad waits for the next one (AdPopup checks data-novelty-shown).
  */
 export function FeatureAnnouncement() {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const [novelty, setNovelty] = useState<Novelty | null>(null);
 
   useEffect(() => {
     // Without storage it would come back on every visit, so it stays away.
-    if (seen() !== false || new URLSearchParams(window.location.search).has("reklama")) return;
+    const seen = seenKeys();
+    if (!seen || new URLSearchParams(window.location.search).has("reklama")) return;
+    const next = nextNovelty(seen);
+    if (!next) return;
     const id = setTimeout(() => {
       document.documentElement.dataset.noveltyShown = "1";
-      setOpen(true);
+      setNovelty(next);
     }, SHOW_AFTER_MS);
     return () => clearTimeout(id);
   }, []);
 
-  if (!open) return null;
-  return (
-    <NoveltyDialog
-      onClose={() => {
-        try {
-          localStorage.setItem(SEEN_KEY, new Date().toISOString());
-        } catch {}
-        setOpen(false);
-      }}
-    />
-  );
+  if (!novelty) return null;
+  const close = (href?: string) => {
+    try {
+      localStorage.setItem(novelty.storageKey, new Date().toISOString());
+    } catch {}
+    setNovelty(null);
+    if (href) router.push(href);
+  };
+  return <NoveltyDialog novelty={novelty} onClose={() => close()} onPrimary={() => close(novelty.primary.href)} />;
 }
 
-function NoveltyDialog({ onClose }: { onClose: () => void }) {
+function NoveltyDialog({ novelty, onClose, onPrimary }: { novelty: Novelty; onClose: () => void; onPrimary: () => void }) {
   const dialog = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,7 +95,7 @@ function NoveltyDialog({ onClose }: { onClose: () => void }) {
             </svg>
           ))}
           <span className="absolute left-1/2 top-1/2 grid size-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface text-accent-ink shadow-lift">
-            <Icon d={ICONS.locate} size={40} />
+            <Icon d={ICONS[novelty.icon]} size={40} />
           </span>
         </div>
         <button
@@ -114,22 +117,21 @@ function NoveltyDialog({ onClose }: { onClose: () => void }) {
             </span>
           </Eyebrow>
           <h2 id="novelty-title" className="font-display text-[26px] font-semibold leading-tight text-ink">
-            Domčeky v okolí
+            {novelty.title}
           </h2>
-          <p className="text-[15px] leading-relaxed text-ink-2">
-            Prídeš do nového mestečka? Ťukni na mape dole na <b>Hľadať v okolí</b> (alebo v menu na <b>Domčeky v okolí</b>). Appka
-            zistí, kde stojíš, a ukáže domčeky na predaj v kruhu okolo teba – do 5, 10, 20 alebo 40 km.
-          </p>
-          <p className="text-[15px] leading-relaxed text-ink-2">
-            Keď je to v provincii, ktorú ešte nesledujem, jedným ťuknutím z nej stiahnem ponuky. Tvoja poloha sa nikam neukladá.
-          </p>
-          <div className="pt-1">
-            <Button variant="danger" size="lg" className="w-full" onClick={onClose}>
+          <div className="space-y-3 text-[15px] leading-relaxed text-ink-2">{novelty.body()}</div>
+          <div className="flex flex-col gap-2 pt-1">
+            <Button variant="danger" size="lg" className="w-full" onClick={onPrimary}>
               <svg aria-hidden width={20} height={20} viewBox="0 0 24 24" fill="currentColor" className="animate-pop">
                 <path d={ICONS.heart} />
               </svg>
-              Rozumiem
+              {novelty.primary.label}
             </Button>
+            {novelty.later && (
+              <Button variant="ghost" className="w-full" onClick={onClose}>
+                {novelty.later}
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -9,11 +9,11 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 
 ## Current Position
 
-Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – Complete
-Phase: 8 of 8 (Značka a zábava) – Complete
-Plan: 08-01, 08-02 complete
-Status: Milestone v0.3 complete
-Last activity: 2026-10-29 — Domčeky v okolí, štítky Nové/Nevidela/Videla, Apify Starter (rozpočet podľa limitu účtu, 200 ponúk), okno s novinkou
+Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
+Phase: 10 (Novinky) — Complete
+Plan: 10-01 complete
+Status: Loop closed, nasadené
+Last activity: 2026-10-29 — Okno s novinkou ako zoznam (src/lib/novelties.tsx), novinka Plán obhliadok; pusinky z reklám od nuly a len Adelke (d9e025f)
 
 Progress:
 - v0.1: [██████████] 100% (live)
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [v0.3 complete - ready for next milestone]
+  ✓        ✓        ✓     [10-01 complete – ďalšie úpravy podľa Ľuba]
 ```
 
 ## Accumulated Context
@@ -59,6 +59,8 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Okolie: poloha len v stave stránky (?near=1 bez súradníc) | 10/2026 | Súkromie |
 | Apify Starter: rozpočet = limit účtu − 0,5 USD, 200 ponúk/portál/oblasť, 16 behov naraz | 10/2026 | ~0,29 USD za oblasť, odhad v okne sťahovania |
 | Žiadne emoji v UI, len ICONS | 10/2026 | Pokyn Ľuba natrvalo |
+| Novinky v zozname NOVELTIES (src/lib/novelties.tsx), max 1 za návštevu, najstaršia nevidená, kľúč na zariadení | 10 | Nová novinka = nová položka |
+| Pusinky z reklám pod kľúčom adelka.ad.kisses.v2, na Lubkových zariadeniach sa nepočítajú ani neposielajú | 10/2026 | Počíta sa len Adelke |
 
 ### Deferred Issues
 
@@ -69,7 +71,6 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Mesačný rozpočet na API (PRD §7) | Init | S | Po týždni reálneho behu |
 | Otestovať naživo: AI prehľad lokality, draft emailu, Resend | 2 | S | Teraz (kľúče sú nastavené) |
 | P1: porovnanie inzerátov, push notifikácie, filter vzdialenosti od mora | PRD | M | Ďalší milestone |
-| Okno s novinkou pre Plán obhliadok: FeatureAnnouncement ako zoznam noviniek (najviac 1 za návštevu, najstaršia nevidená), kalendár, text o stavoch + Plán obhliadok v Uložených, tlačidlá „Pozrieť Uložené“ (červené) / „Neskôr“ / ✕ | 10/2026 | S | Keď Ľubo povie |
 
 ### Git State
 Last commit: 49599e8, branch main, pushnuté a nasadené na Vercel 2026-10-29
@@ -86,9 +87,9 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-10-29 (večer)
-Stopped at: všetko nasadené (posledný kód 49599e8), nič rozpracované
-Next action: v novej session spraviť okno s novinkou pre Plán obhliadok (plán v Deferred Issues a v HANDOFF-2026-10-29.md)
-Resume file: .paul/HANDOFF-2026-10-29.md
+Stopped at: 10-01 nasadené (okno s novinkou Plán obhliadok), nič rozpracované
+Next action: spätná väzba od Adelky; ďalšia novinka = nová položka v NOVELTIES
+Resume file: .paul/phases/10-novinky/10-01-SUMMARY.md
 Resume context:
 - Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)
 - Adelka cestuje po Taliansku – okolie, Google Maps/Waze, štítky Nové/Nevidela/Videla

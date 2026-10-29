@@ -31,6 +31,8 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 6 | Hamburger menu, odhlásenie, tmavý režim | 2/2 | ✅ Complete | 2026-09-25 |
 | 7 | Dizajnový systém, animácie, výrazné stavy | 2/2 | ✅ Complete | 2026-09-25 |
 | 8 | Značka a zábava (logo, „reklamy“ od Lubka) | 2/2 | ✅ Complete | 2026-09-25 |
+| 9 | Rozpočet Apify, offline (PWA) | 1/1 | ✅ Complete | 10/2026 |
+| 10 | Novinky (okno s novinkou ako zoznam, Plán obhliadok) | 1/1 | ✅ Complete | 2026-10-29 |
 
 ## Phase Details
 
