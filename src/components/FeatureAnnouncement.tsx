@@ -105,7 +105,14 @@ function NoveltyDialog({ onClose }: { onClose: () => void }) {
         </button>
 
         <div className="space-y-3 p-5">
-          <Eyebrow>Novinka v appke</Eyebrow>
+          <Eyebrow>
+            <span className="inline-flex items-center gap-1.5">
+              Novinka pre Adelku
+              <svg aria-hidden width={12} height={12} viewBox="0 0 24 24" fill="currentColor">
+                <path d={ICONS.heart} />
+              </svg>
+            </span>
+          </Eyebrow>
           <h2 id="novelty-title" className="font-display text-[26px] font-semibold leading-tight text-ink">
             Domčeky v okolí
           </h2>
