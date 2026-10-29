@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/prihlaseni
 
       <div className="mt-8 w-full max-w-sm space-y-4 rounded-[28px] bg-white/15 p-6 shadow-lift ring-1 ring-white/35 backdrop-blur-md">
         <LoginForm next={safeNextPath(next)} />
-        <p className="text-center text-sm opacity-90">Zabudla si heslo? Lubko ti ho povie. A Sebino ti to dá vytetovať niekam.</p>
+        <p className="text-center text-sm opacity-90">Zabudla si heslo? Lubko ti ho povie a Sebino ti ho dá niekde vytetovať.</p>
       </div>
     </main>
   );
