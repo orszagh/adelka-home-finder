@@ -6,6 +6,7 @@ import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/g
 import { getProvider } from "@/lib/providers";
 import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
 import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings } from "@/lib/search-settings";
+import { SEEN_KEY, getSeenIds } from "@/lib/seen";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import type { SearchArea } from "@/lib/types";
@@ -103,6 +104,16 @@ export async function saveSearchSettings(input: unknown): Promise<SaveSettingsRe
 }
 
 /** Adelka has seen the news from the greeting (or dismissed it). */
+/** Adelka opened a listing. No page refresh: the cards learn it in the browser (seen-store). */
+export async function markListingSeen(propertyId: string) {
+  await assertSession();
+  if (typeof propertyId !== "string" || propertyId.length > 100) return;
+  const repo = getRepo();
+  const seen = await getSeenIds(repo);
+  if (seen.includes(propertyId)) return;
+  await repo.setState(SEEN_KEY, [...seen, propertyId]);
+}
+
 export async function markNewsSeen() {
   await assertSession();
   await getRepo().setState(LAST_SEEN_KEY, new Date().toISOString());

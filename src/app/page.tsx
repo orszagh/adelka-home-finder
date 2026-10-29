@@ -7,6 +7,7 @@ import { LAST_SEEN_KEY, MANUAL_SYNC_KEY, buildGreeting, manualSyncWaitMinutes } 
 import { insideAreas } from "@/lib/geo";
 import { getDataNotices } from "@/lib/notices";
 import { getProvider } from "@/lib/providers";
+import { getSeenIds } from "@/lib/seen";
 import { bandKm, formatSearchSettings, getSearchSettings, withinBand } from "@/lib/search-settings";
 import { hasSession } from "@/lib/session";
 
@@ -17,13 +18,14 @@ export const maxDuration = 300;
 export default async function Home() {
   if (!(await hasSession())) redirect("/prihlasenie");
   const repo = getRepo();
-  const [allProperties, areas, saved, lastSeen, lastManualSync, settings] = await Promise.all([
+  const [allProperties, areas, saved, lastSeen, lastManualSync, settings, seenIds] = await Promise.all([
     getProperties(),
     repo.listSearchAreas(),
     repo.listSaved(),
     repo.getState<string>(LAST_SEEN_KEY),
     repo.getState<string>(MANUAL_SYNC_KEY),
     getSearchSettings(repo),
+    getSeenIds(repo),
   ]);
 
   // Only houses within the chosen distance of the sea; the rest stay in the database, hidden.
@@ -41,6 +43,7 @@ export default async function Home() {
       properties={properties}
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
+      seenIds={seenIds}
       newIds={findNewIds(properties)}
       priceDrops={findPriceDrops(properties)}
       greeting={greeting}

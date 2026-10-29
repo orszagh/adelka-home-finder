@@ -90,6 +90,7 @@ export function HomeFinder({
   areas,
   savedIds,
   newIds,
+  seenIds,
   priceDrops,
   greeting,
   manualSync,
@@ -100,6 +101,8 @@ export function HomeFinder({
   areas: SearchArea[];
   savedIds: string[];
   newIds: string[];
+  /** Listings Adelka has opened before. */
+  seenIds: string[];
   priceDrops: Record<string, number>;
   greeting: Greeting | null;
   manualSync: { waitMinutes: number } | null;
@@ -119,6 +122,7 @@ export function HomeFinder({
 
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const fresh = useMemo(() => new Set(newIds), [newIds]);
+  const seen = useMemo(() => new Set(seenIds), [seenIds]);
   const areaNames = useMemo(() => new Set(areas.map((a) => a.name)), [areas]);
   const region = view.r ? findPlace("region", view.r)! : null;
 
@@ -261,6 +265,7 @@ export function HomeFinder({
             listings={shown}
             saved={saved}
             fresh={fresh}
+            seen={seen}
             priceDrops={priceDrops}
             sort={sort}
             setSort={setSort}
@@ -411,6 +416,7 @@ function ListingsLayer({
   listings,
   saved,
   fresh,
+  seen,
   priceDrops,
   sort,
   setSort,
@@ -423,6 +429,7 @@ function ListingsLayer({
   listings: Property[];
   saved: Set<string>;
   fresh: Set<string>;
+  seen: Set<string>;
   priceDrops: Record<string, number>;
   sort: Sort;
   setSort: (s: Sort) => void;
@@ -487,6 +494,7 @@ function ListingsLayer({
               property={p}
               saved={saved.has(p.id)}
               isNew={fresh.has(p.id)}
+              seen={seen.has(p.id)}
               previousPrice={priceDrops[p.id] ?? null}
             />
           ))}

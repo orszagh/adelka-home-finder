@@ -6,6 +6,7 @@ import { ButtonLink, Card, Eyebrow, ICONS } from "@/components/ui";
 import { getRepo } from "@/lib/db/repo";
 import { isStale } from "@/lib/freshness";
 import { getProvider } from "@/lib/providers";
+import { getSeenIds } from "@/lib/seen";
 import { hasSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,8 @@ export default async function SavedPage() {
   if (!(await hasSession())) redirect("/prihlasenie?next=/ulozene");
   const repo = getRepo();
   const trackFreshness = !getProvider().isMock;
-  const saved = await repo.listSaved();
+  const [saved, seenIds] = await Promise.all([repo.listSaved(), getSeenIds(repo)]);
+  const seen = new Set(seenIds);
   const entries = (
     await Promise.all(
       saved.map(async (s) => ({ saved: s, property: await repo.getProperty(s.property_id) })),
@@ -46,7 +48,7 @@ export default async function SavedPage() {
         <ul className="grid gap-5">
           {entries.map(({ saved: s, property }) => (
             <li key={s.id} className="space-y-3">
-              <ListingCard property={property!} saved gone={trackFreshness && isStale(property!)} />
+              <ListingCard property={property!} saved seen={seen.has(property!.id)} gone={trackFreshness && isStale(property!)} />
               <div className="rounded-3xl bg-surface p-4 shadow-card">
                 <NoteForm savedId={s.id} note={s.note} />
               </div>

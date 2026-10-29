@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/Gallery";
 import { LocationSummary } from "@/components/LocationSummary";
+import { MarkSeen } from "@/components/MarkSeen";
 import { MessageDraft } from "@/components/MessageDraft";
 import { NoteForm } from "@/components/NoteForm";
 import { SaveButton } from "@/components/SaveButton";
@@ -43,6 +44,7 @@ export async function ListingDetail({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
+      <MarkSeen propertyId={property.id} />
       {!getProvider().isMock && isStale(property) && (
         <p className="rounded-2xl bg-warn-soft px-4 py-3 text-sm text-warn-ink">
           Tento inzerát už na portáli nie je (naposledy videný {formatDate(property.last_seen_at)}). Dom je

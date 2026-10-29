@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { CloseBar } from "@/components/CloseBar";
-import { Eyebrow } from "@/components/ui";
+import { Eyebrow, ICONS, Icon } from "@/components/ui";
 import { hasSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Nápoveda" };
 
 /** Plain-language answers for Adelka: what each part of the app does and where the data comes from. */
+/** icon: an ICONS path, drawn in the same line style as the rest of the app. */
 const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
   {
-    icon: "🗺️",
+    icon: ICONS.map,
     question: "Ako nájdem domčeky?",
     answer: (
       <>
@@ -20,7 +21,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "🏠",
+    icon: ICONS.home,
     question: "Odkiaľ sú ponuky?",
     answer: (
       <>
@@ -31,7 +32,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "📍",
+    icon: ICONS.pin,
     question: "Ako zmením, kde hľadám?",
     answer: (
       <p>
@@ -41,7 +42,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "❤️",
+    icon: ICONS.heart,
     question: "Ako si domček odložím?",
     answer: (
       <p>
@@ -51,7 +52,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "🔎",
+    icon: ICONS.search,
     question: "Čo nájdem v detaile domčeka?",
     answer: (
       <>
@@ -64,7 +65,29 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "🏘️",
+    icon: ICONS.tag,
+    question: "Čo znamenajú štítky Nové, Nevidela a Videla?",
+    answer: (
+      <>
+        <p>Na fotke každého domčeka v zozname je jeden štítok:</p>
+        <ul className="list-disc space-y-1.5 pl-5">
+          <li>
+            <b>Nové</b> (žltý) – appka tento domček našla za posledné 3 dni. Je to nové v appke, nie nutne na portáli: keď pridáš novú
+            provinciu, aj staršie ponuky z nej budú pár dní svietiť ako nové.
+          </li>
+          <li>
+            <b>Nevidela</b> (tyrkysový) – detail tohto domčeka si ešte neotvorila.
+          </li>
+          <li>
+            <b>Videla</b> (svetlý, s fajkou) – detail si už otvorila. Platí na mobile aj na počítači.
+          </li>
+        </ul>
+        <p>Keď je domček nový, ukáže sa Nové. Po troch dňoch sa zmení na Videla alebo Nevidela.</p>
+      </>
+    ),
+  },
+  {
+    icon: ICONS.compass,
     question: "Čo je Prehľad lokality?",
     answer: (
       <>
@@ -77,7 +100,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "✉️",
+    icon: ICONS.mail,
     question: "Ako napíšem realitke po taliansky?",
     answer: (
       <p>
@@ -87,7 +110,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "📶",
+    icon: ICONS.wifi,
     question: "Funguje to aj bez signálu?",
     answer: (
       <p>
@@ -97,7 +120,7 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "🌙",
+    icon: ICONS.moon,
     question: "Dá sa zmeniť vzhľad?",
     answer: (
       <p>
@@ -106,9 +129,9 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
-    icon: "💌",
+    icon: ICONS.heart,
     question: "Čo sú tie reklamy?",
-    answer: <p>Tie platíš len pusami. Iná platba sa neprijíma. 😉</p>,
+    answer: <p>Tie platíš len pusami. Iná platba sa neprijíma.</p>,
   },
 ];
 
@@ -127,8 +150,8 @@ export default async function HelpPage() {
         {TOPICS.map((t) => (
           <details key={t.question} className="group rounded-3xl bg-surface shadow-card">
             <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
-              <span aria-hidden className="text-xl">
-                {t.icon}
+              <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-ink">
+                <Icon d={t.icon} size={18} />
               </span>
               <span className="flex-1">{t.question}</span>
               <svg

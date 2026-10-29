@@ -2,15 +2,24 @@
 
 import Link from "next/link";
 import { formatPrice, roomsLabel, seaLabel } from "@/lib/format";
+import { listingBadge } from "@/lib/seen";
 import type { Property } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
+import { useOpened } from "./seen-store";
 import { ICONS, Icon } from "./ui";
+
+const BADGES = {
+  new: { label: "Nové", className: "bg-sun text-on-sun" },
+  unseen: { label: "Nevidela", className: "bg-accent text-on-accent" },
+  seen: { label: "Videla", className: "bg-surface/90 text-ink-2" },
+} as const;
 
 export function ListingCard({
   property,
   saved,
   selected = false,
   isNew = false,
+  seen = false,
   previousPrice = null,
   gone = false,
   enterDelayMs = 0,
@@ -20,6 +29,8 @@ export function ListingCard({
   saved: boolean;
   selected?: boolean;
   isNew?: boolean;
+  /** Adelka has opened this listing before (remembered on the server). */
+  seen?: boolean;
   /** Price before a recent drop. */
   previousPrice?: number | null;
   /** No longer on offer (sold or withdrawn). */
@@ -28,6 +39,8 @@ export function ListingCard({
   enterDelayMs?: number;
   onSelect?: (id: string) => void;
 }) {
+  const opened = useOpened(property.id);
+  const badge = listingBadge(isNew, seen || opened);
   const photo = property.photos[0];
   const meta = [
     property.area_sqm ? `${property.area_sqm} m²` : null,
@@ -54,11 +67,13 @@ export function ListingCard({
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
             />
           )}
-          {isNew && (
-            <span className="absolute left-3 top-3 rounded-full bg-sun px-2.5 py-1 text-xs font-bold text-on-sun">
-              Nové
-            </span>
-          )}
+          {/* One badge: Nové (yellow), else whether she has opened it (Nevidela stands out, Videla stays quiet). */}
+          <span
+            className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${BADGES[badge].className}`}
+          >
+            {badge === "seen" && <Icon d={ICONS.check} size={12} />}
+            {BADGES[badge].label}
+          </span>
           {gone && (
             <span className="absolute inset-x-0 bottom-0 bg-slate-900/75 px-3 py-1.5 text-center text-xs font-semibold text-white">
               Už nie je v ponuke
