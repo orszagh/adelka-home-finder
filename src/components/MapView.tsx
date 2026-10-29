@@ -46,11 +46,20 @@ export default function MapView(props: Props) {
   const { mode, properties, savedIds, selectedId } = props;
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const [zoom, setZoom] = useState(6);
+  // Open straight on the region (or Italy) instead of Italy first and then zooming in: coming
+  // back to the map, the phone would load two sets of tiles and show the half-loaded zoom.
+  const [initial] = useState(() => ({
+    bounds: boundsOf(mode.kind === "region" ? [findPlace("region", mode.code)!] : REGIONS),
+    options: {
+      paddingTopLeft: [16, props.insets.top] as L.PointTuple,
+      paddingBottomRight: [16, props.insets.bottom] as L.PointTuple,
+    },
+  }));
 
   return (
     <MapContainer
-      center={[42.5, 12.5]}
-      zoom={6}
+      bounds={initial.bounds}
+      boundsOptions={initial.options}
       // Quarter steps let Italy (and each region) fill the map instead of snapping a level too far out.
       zoomSnap={0.25}
       zoomControl={false}
@@ -210,6 +219,10 @@ function MapEvents({ onZoom, onBackground }: { onZoom: (zoom: number) => void; o
       onBackground();
     },
   });
+  // The map opens already zoomed in, without a zoomend.
+  useEffect(() => {
+    onZoom(map.getZoom());
+  }, [map, onZoom]);
   return null;
 }
 

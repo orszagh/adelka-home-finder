@@ -9,12 +9,12 @@
  *  - anything that changes data (POST: saving, logging in, fetching from Apify) and
  *    the login page: always the network, never stored.
  */
-// v2: stopped storing RSC data; the new version drops the old copies.
-const VERSION = "v2";
-const PAGES = `pages-${VERSION}`;
-const STATIC = `static-${VERSION}`;
-const TILES = `tiles-${VERSION}`;
-const PHOTOS = `photos-${VERSION}`;
+// Each store has its own name. Bump only the one whose contents must go: renaming the
+// tiles or photos store throws away everything the phone saved over a weak signal.
+const PAGES = "pages-v2"; // v2: no more RSC data
+const STATIC = "static-v2";
+const TILES = "tiles-v2";
+const PHOTOS = "photos-v2";
 const KEEP = [PAGES, STATIC, TILES, PHOTOS];
 
 const PAGE_TIMEOUT_MS = 2500;
