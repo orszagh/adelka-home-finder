@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/prihlaseni
 
       <div className="flex flex-col items-center text-center [text-shadow:0_2px_18px_rgb(80_30_20/0.35)]">
         <span className="grid size-20 place-items-center rounded-full bg-[#fff8ec] shadow-lift">
-          <LogoMark size={60} />
+          <LogoMark size={60} inner="#fff8ec" />
         </span>
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.32em]">Liguria · Toscana · Puglia</p>
         <h1 className="mt-2 font-display text-[clamp(3rem,9vw,5.5rem)] font-semibold italic leading-[0.95]">
