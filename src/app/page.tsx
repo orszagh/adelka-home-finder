@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { HomeFinder } from "@/components/HomeFinder";
 import { distanceToSeaKm } from "@/lib/coast";
+import { rememberByPoint } from "@/lib/point-cache";
 import { dedupe } from "@/lib/duplicates";
 import { findNewIds, findPriceDrops, getProperties } from "@/lib/data";
 import { getRepo } from "@/lib/db/repo";
@@ -18,6 +19,12 @@ export const dynamic = "force-dynamic";
 /** Creating an area or "Pozrieť teraz" fetches listings from Apify inside the server action. */
 export const maxDuration = 300;
 
+/** Km to the sea, remembered per spot (houses do not move, the coast neither). */
+const seaKmAt = rememberByPoint((key) => {
+  const [lng, lat] = key.split(",").map(Number);
+  return Math.round(distanceToSeaKm(lng, lat) * 10) / 10;
+});
+
 export default async function Home() {
   if (!(await hasSession())) redirect("/prihlasenie");
   const repo = getRepo();
@@ -34,7 +41,7 @@ export default async function Home() {
   // Only houses within the chosen distance of the sea; the rest stay in the database, hidden.
   const band = bandKm(settings);
   const inBand = allProperties
-    .map((p) => ({ ...p, sea_km: Math.round(distanceToSeaKm(p.longitude, p.latitude) * 10) / 10 }))
+    .map((p) => ({ ...p, sea_km: seaKmAt(`${p.longitude},${p.latitude}`) }))
     .filter((p) => withinBand(p.sea_km, band));
   // The same house on both portals: one card (the saved one stays, so her heart and note do too).
   const { listings: properties, twins } = dedupe(inBand, new Set(saved.map((s) => s.property_id)));
@@ -45,16 +52,16 @@ export default async function Home() {
   // First visit: start counting from now instead of greeting with everything.
   if (lastSeen === null) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
   const greeting = lastSeen ? buildGreeting(insideAreas(properties, areas), lastSeen) : null;
+  const freshIds = new Set(findNewIds(properties));
 
   return (
     <HomeFinder
       // Only the numbers of each listing go to the phone; cards are fetched for the houses on screen.
-      index={encodeIndex(properties.map((p) => ({ ...p, region_code: regionOf(p) })))}
+      index={encodeIndex(properties.map((p) => ({ ...p, region_code: regionOf(p), is_new: freshIds.has(p.id) })))}
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
       seenIds={[...seen]}
       twinSources={twinSources}
-      newIds={findNewIds(properties)}
       priceDrops={findPriceDrops(properties)}
       greeting={greeting}
       manualSync={getProvider().isMock ? null : { waitMinutes: manualSyncWaitMinutes(lastManualSync) }}

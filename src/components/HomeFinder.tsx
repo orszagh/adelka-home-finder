@@ -79,7 +79,6 @@ export function HomeFinder({
   index,
   areas,
   savedIds,
-  newIds,
   seenIds,
   priceDrops,
   twinSources,
@@ -93,7 +92,6 @@ export function HomeFinder({
   index: EncodedIndex;
   areas: SearchArea[];
   savedIds: string[];
-  newIds: string[];
   /** Listings Adelka has opened before. */
   seenIds: string[];
   priceDrops: Record<string, number>;
@@ -123,7 +121,7 @@ export function HomeFinder({
 
   const properties = useMemo(() => decodeIndex(index), [index]);
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
-  const fresh = useMemo(() => new Set(newIds), [newIds]);
+  const fresh = useMemo(() => new Set(properties.filter((p) => p.is_new).map((p) => p.id)), [properties]);
   const seen = useMemo(() => new Set(seenIds), [seenIds]);
   const areaNames = useMemo(() => new Set(areas.map((a) => a.name)), [areas]);
   const region = view.r ? findPlace("region", view.r)! : null;
