@@ -56,13 +56,18 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
   const changed = settings.inland !== saved.inland || settings.inlandKm !== saved.inlandKm;
   // Only a wider search downloads (and costs); a narrower one just hides houses already stored.
   const fetches = changed && reachesFurther(saved, settings);
-  /** A wider search asks first, with what it may cost. */
+  /** Downloading right away asks first, with what it may cost. */
   const [confirming, setConfirming] = useState(false);
+  /** The save in progress downloads now (the sheet with the boat shows). */
+  const [fetchingNow, setFetchingNow] = useState(false);
 
-  const save = () =>
+  /** Without `now` the morning check downloads the houses further from the sea; nothing is paid now. */
+  const save = (now = false) =>
     startTransition(async () => {
       setConfirming(false);
-      const result = await saveSearchSettings(settings);
+      setFetchingNow(now);
+      const result = await saveSearchSettings(settings, now);
+      setFetchingNow(false);
       if (!result.ok) {
         toast.show({ tone: "error", text: result.error });
         return;
@@ -70,7 +75,8 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
       setSaved(settings);
       const back = { href: "/", label: "Ukáž mi ich" };
       if (result.error) toast.show({ tone: "error", text: result.error });
-      else if (result.fetched === null) toast.show({ tone: "success", text: "Uložené.", action: back });
+      else if (result.fetched === null)
+        toast.show({ tone: "success", text: fetches ? "Uložené. Domčeky ďalej od mora stiahnem ráno." : "Uložené.", action: back });
       else toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.`, action: back });
     });
 
@@ -144,7 +150,7 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
         Platí na mobile aj počítači. Podľa tohto hľadá Lubkov nočný pomocník každé ráno.
       </p>
 
-      <SyncSheet open={pending && fetches} subtitle={formatSearchSettings(settings)} costUsd={syncCostUsd} />
+      <SyncSheet open={pending && fetchingNow} subtitle={formatSearchSettings(settings)} costUsd={syncCostUsd} />
 
       {changed && !fetches && (
         <p className="px-1 text-sm text-muted">Tieto domčeky už mám stiahnuté, len skryjem tie ďalej od mora. Nič sa nesťahuje ani neplatí.</p>
@@ -166,7 +172,7 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
             Počas sťahovania ho môžeš zastaviť.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" onClick={save} className={buttonClass("primary", "md", "flex-1")}>
+            <button type="button" onClick={() => save(true)} className={buttonClass("primary", "md", "flex-1")}>
               Áno, hľadať
             </button>
             <button type="button" onClick={() => setConfirming(false)} className={buttonClass("secondary", "md", "flex-1")}>
@@ -176,14 +182,30 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
         </div>
       )}
 
+      {fetches && !confirming && !pending && (
+        <p className="px-1 text-sm text-muted">
+          Po uložení stiahnem domčeky ďalej od mora ráno, nič to hneď nestojí. Ak ich chceš teraz, ťukni na „Uložiť a hľadať hneď“.
+        </p>
+      )}
+
       <button
         type="button"
-        onClick={() => (fetches ? setConfirming(true) : save())}
-        disabled={pending || !changed || (confirming && fetches)}
+        onClick={() => save()}
+        disabled={pending || !changed || confirming}
         className={buttonClass("primary", "lg", "w-full")}
       >
-        {pending ? (fetches ? "Hľadám…" : "Ukladám…") : changed ? (fetches ? "Uložiť a hľadať" : "Uložiť") : "Uložené"}
+        {pending ? (fetchingNow ? "Hľadám…" : "Ukladám…") : changed ? "Uložiť" : "Uložené"}
       </button>
+      {fetches && !confirming && (
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          disabled={pending}
+          className={buttonClass("secondary", "lg", "w-full")}
+        >
+          Uložiť a hľadať hneď
+        </button>
+      )}
     </div>
   );
 }

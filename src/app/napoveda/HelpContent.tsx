@@ -34,7 +34,7 @@ const TOPICS: { id?: string; icon: string; question: string; answer: ReactNode }
         <p>
           Keď tu nič nie je, ťukni na <b>Prehľadať tento okruh</b>. Stiahnem ponuky len v tomto kruhu, vopred ti poviem, koľko to
           najviac bude stáť, a sťahovanie môžeš zastaviť. Okruh nezačnem sledovať, takže ráno sa za neho už neplatí. Ak chceš
-          dostávať nové ponuky z tejto oblasti každé ráno, ťukni na <b>Sledovať …</b> pri provincii.
+          dostávať nové ponuky z tejto oblasti každé ráno, ťukni na <b>Sledovať tu…</b> a vyber provincie.
         </p>
         <p>Tvoja poloha sa nikam neukladá – na server ide len raz, keď ťukneš na Prehľadať tento okruh.</p>
       </>
@@ -52,13 +52,28 @@ const TOPICS: { id?: string; icon: string; question: string; answer: ReactNode }
     ),
   },
   {
+    id: "sledovanie",
     icon: ICONS.pin,
     question: "Ako zmením, kde hľadám?",
     answer: (
-      <p>
-        V menu ťukni na <b>Nastavenia hľadania</b>. Vyberieš si provincie a či chceš len domčeky pri mori (do pár kilometrov od pobrežia) alebo aj
-        vo vnútrozemí.
-      </p>
+      <>
+        <p>
+          Na mape ťukni na región a potom na <b>Sledovať provincie</b> (alebo <b>Upraviť</b>). Otvorí sa zoznam jeho provincií – na
+          mobile zdola, na počítači vľavo. Zaškrtni, ktoré mám sledovať; ťukať môžeš aj priamo na mapu. Pri ťukaní sa nič nesťahuje.
+        </p>
+        <p>
+          <b>Celý región</b> je jedno hľadanie a je najlacnejšie. Jednotlivé provincie sú každá samostatné hľadanie – z každej príde viac
+          ponúk, ale stojí to viac. Dole vidíš, koľko ranné kontroly stoja za deň a za mesiac.
+        </p>
+        <p>
+          <b>Uložiť</b> nič hneď nestojí: nové ponuky stiahnem ráno. Keď ich chceš hneď, ťukni na <b>Uložiť a stiahnuť hneď</b> – cenu ti
+          poviem vopred a sťahovanie môžeš zastaviť.
+        </p>
+        <p>
+          V menu pod <b>Nastavenia hľadania</b> si vyberieš, či chceš len domčeky pri mori alebo aj vo vnútrozemí. Aj tam platí: uložené
+          stiahnem ráno, hneď len keď chceš.
+        </p>
+      </>
     ),
   },
   {

@@ -11,7 +11,7 @@ See: .paul/PROJECT.md (updated 2026-09-25)
 
 Milestone: v0.3 Dizajn, UX a domčeky pri mori (v0.3.0) – priebežné úpravy
 Phase: 12 (Okolie) — Planning
-Plan: 12-01 applied (Tasks 1–5 hotové), checkpoint: Ľubo overí na mobile po nasadení
+Plan: 12-01 complete (23b93c8, 14e85de); 12-02 applied (neskommitované), checkpoint: Ľubo overí po nasadení
 Status: APPLY complete, ready for UNIFY
 Last activity: 2026-10-30 — 12-01-PLAN.md: okolie bez pásu, 100 km, Prehľadať tento okruh (bez ťahania); CONTEXT.md pre 12-02
 
@@ -25,7 +25,7 @@ Progress:
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ○     [12-01 APPLY hotový, čaká na overenie Ľubom a UNIFY]
+  ✓        ✓        ○     [12-02 APPLY hotový, čaká na nasadenie a overenie]
 ```
 
 ## Accumulated Context
@@ -67,6 +67,7 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Okolie bez pásu od mora (index posiela aj domy mimo pásu, riedky zoznam `out`); okruh 5–100 km len čipmi; Prehľadať tento okruh = jednorazový Apify kruh (bandKm null), nesleduje sa, pauza 10 min | 12 | Fosdinovo: domy vo vnútrozemí viditeľné v okolí |
 | Verzia appky: package.json + commit z Vercelu + dátum buildu, v menu a Nápovede; fáza = +0.1, oprava = +0.0.1 | 12 | 0.4.0 od fázy 12 |
 | HelpTip (otáznik s vysvetlením) pri zložitejších funkciách, odkaz na /napoveda#id | 12 | V 12-02 povinne v paneli provincií |
+| „Celý región“ = jedno lacné hľadanie (záznam regiónu); všetky provincie zaškrtnuté sa uložia ako región; nikdy región + jeho provincie | 12 | Ligúria 5 hľadaní → 1, ~9 $ mesačne namiesto ~45 $ |
 
 ### Deferred Issues
 
@@ -93,8 +94,8 @@ Feature branches merged: none
 ## Session Continuity
 
 Last session: 2026-10-29 (večer)
-Stopped at: 12-01 APPLY hotový (neskommitované), checkpoint human-verify
-Next action: Ľubo: „vyhoď to“ a overiť na mobile; potom /paul:unify .paul/phases/12-okolie/12-01-PLAN.md
+Stopped at: 12-02 APPLY hotový, overený v dev-mock (375 px aj 1280 px)
+Next action: „vyhoď to“, Ľubo otvorí Ligúriu → Upraviť → Uložiť (5 hľadaní → 1); potom /paul:unify 12-02
 Resume file: .paul/phases/12-okolie/12-01-PLAN.md
 Resume context:
 - Od rána pribudlo: duplicity z 2 portálov = 1 karta (lib/duplicates.ts), Plán obhliadok (lib/visits.ts, VisitForm, Uložené), prihlásenie ako západ slnka s plachetnicami a srdiečkami (prihlasenie/RivieraScene.tsx), logo so srdiečkom vyrezaným maskou, /aktivita pre Lubka (lib/activity.ts, ActivityPing; Lubkove zariadenia označené cez /aktivita alebo ?lubko=1)

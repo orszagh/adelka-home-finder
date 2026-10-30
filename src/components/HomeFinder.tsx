@@ -3,9 +3,10 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useEffectEvent, useMemo, useState, useTransition } from "react";
-import { addPlaceArea, deleteArea, searchNear, type AreaResult } from "@/app/actions";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { searchNear } from "@/app/actions";
 import { formatUsd } from "@/lib/budget";
+import { followedByRegion } from "@/lib/follow";
 import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
 import { distanceKm, pointInArea } from "@/lib/geo";
 import type { Greeting } from "@/lib/greeting";
@@ -16,6 +17,7 @@ import type { SearchArea } from "@/lib/types";
 import { AdPopup } from "./AdPopup";
 import { CheckNowButton } from "./CheckNowButton";
 import { FeatureAnnouncement } from "./FeatureAnnouncement";
+import { FollowPanel } from "./FollowPanel";
 import { GreetingCard } from "./GreetingCard";
 import { HelpTip } from "./HelpTip";
 import { ListingCard, ListingCardSkeleton } from "./ListingCard";
@@ -111,9 +113,10 @@ export function HomeFinder({
   const [minRooms, setMinRooms] = useState<number | null>(null);
   const [sort, setSort] = useState<Sort>("newest");
   const [showGreeting, setShowGreeting] = useState(greeting !== null);
-  const [placeBusy, startPlace] = useTransition();
-  /** Name of the place whose listings are being fetched right now. */
-  const [syncingPlace, setSyncingPlace] = useState<string | null>(null);
+  /** Provinces ticked in the follow panel and not saved yet (per region; the saved ones otherwise). */
+  const [draft, setDraft] = useState<{ region: string; chosen: Set<string> } | null>(null);
+  /** Room the follow panel takes over the map. */
+  const [panelPad, setPanelPad] = useState({ bottom: 0, left: 0 });
   /** Where Adelka stands, after she asked for the houses around her. */
   const [here, setHere] = useState<[lat: number, lng: number] | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
@@ -189,22 +192,19 @@ export function HomeFinder({
   const peek = view.p ? (shown.find((p) => p.id === view.p) ?? null) : null;
   const peekCard = useListingCards(peek ? [peek.id] : []).cards.get(peek?.id ?? "") ?? null;
 
-  const onAreaCreated = (result: AreaResult) => {
-    setSyncingPlace(null);
-    if (result.error) toast.show({ tone: "error", text: result.error });
-    else if (result.fetched !== null) toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.` });
+  const followed = useMemo(() => followedByRegion(areaNames), [areaNames]);
+  const chosen =
+    region && draft?.region === region.code ? draft.chosen : (region && followed.get(region.code)?.provinces) || new Set<string>();
+  const setChosen = (next: Set<string>) => region && setDraft({ region: region.code, chosen: next });
+  /** Opens the follow panel of a region, optionally with a province already ticked (not saved yet). */
+  const openFollow = (regionCode: string, tick?: string) => {
+    const saved = followed.get(regionCode)?.provinces ?? new Set<string>();
+    setDraft(tick ? { region: regionCode, chosen: new Set([...saved, tick]) } : null);
+    go({ r: regionCode, pick: true });
   };
-
-  /** Follows the place, or stops following it when Adelka already does. */
-  const togglePlace = (place: Place) => {
-    const existing = areas.find((a) => a.name === areaNameFor(place));
-    if (existing) {
-      toast.show({ tone: "info", text: `${place.name} už nesleduješ.` });
-      startPlace(() => deleteArea(existing.id));
-      return;
-    }
-    setSyncingPlace(place.name);
-    startPlace(async () => onAreaCreated(await addPlaceArea(place.kind, place.code)));
+  const closeFollow = () => {
+    setDraft(null);
+    go({ r: view.r }, true);
   };
 
   /** The province Adelka stands in, and whether its houses are being downloaded. */
@@ -268,7 +268,18 @@ export function HomeFinder({
     : view.pick
       ? {
           kind: "pick",
-          chooser: { regionCode: region.code, areaNames: [...areaNames], properties: banded, busy: placeBusy, onPick: togglePlace },
+          chooser: {
+            regionCode: region.code,
+            chosen,
+            properties: banded,
+            onPick: (p: Place) => {
+              const next = new Set(chosen);
+              if (next.has(p.code)) next.delete(p.code);
+              else next.add(p.code);
+              setChosen(next);
+            },
+            padding: { top: 76, ...panelPad },
+          },
         }
       : { kind: "region", code: region.code };
 
@@ -282,8 +293,7 @@ export function HomeFinder({
       radiusKm={near.radiusKm}
       province={hereProvince}
       followed={hereFollowed}
-      busy={placeBusy}
-      onFollow={() => hereProvince && togglePlace(hereProvince)}
+      onFollow={() => hereProvince && openFollow(hereProvince.regionCode, hereProvince.code)}
       onWider={() => setRadiusKm(NEAR_RADII.find((r) => r > near.radiusKm) ?? near.radiusKm)}
       onSearch={canSearchNear ? () => setNearSearch("confirm") : null}
     />
@@ -293,11 +303,7 @@ export function HomeFinder({
     <>
       <AdPopup />
       <FeatureAnnouncement />
-      <SyncSheet
-        open={syncingPlace !== null || nearSearch === "busy"}
-        subtitle={syncingPlace ?? `Okruh ${near?.radiusKm ?? ""} km`}
-        costUsd={costPerAreaUsd}
-      />
+      <SyncSheet open={nearSearch === "busy"} subtitle={`Okruh ${near?.radiusKm ?? ""} km`} costUsd={costPerAreaUsd} />
       {nearSearch === "confirm" && near && costPerAreaUsd !== null && (
         <NearSearchConfirm
           radiusKm={near.radiusKm}
@@ -388,7 +394,7 @@ export function HomeFinder({
               ) : view.v === "new" ? (
                 <p className="text-muted">Novinky si už videla.</p>
               ) : (
-                <EmptyRegion onPick={() => go({ r: view.r, pick: true })} />
+                <EmptyRegion onPick={() => region && openFollow(region.code)} />
               )
             }
           />
@@ -400,7 +406,7 @@ export function HomeFinder({
             <div className="pointer-events-auto flex max-w-full items-center gap-2">
               <button
                 type="button"
-                onClick={() => (view.pick ? go({ r: view.r }, true) : go({}))}
+                onClick={() => (view.pick ? closeFollow() : go({}))}
                 aria-label={view.pick ? "Hotovo s výberom provincií" : "Späť na celé Taliansko"}
                 className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-ink shadow-lift"
               >
@@ -453,12 +459,11 @@ export function HomeFinder({
                 {hereProvince && !hereFollowed && (
                   <button
                     type="button"
-                    disabled={placeBusy}
-                    onClick={() => togglePlace(hereProvince)}
-                    className={chipClass(false, "min-h-10 shadow-lift disabled:opacity-50")}
+                    onClick={() => openFollow(hereProvince.regionCode, hereProvince.code)}
+                    className={chipClass(false, "min-h-10 shadow-lift")}
                   >
                     <Icon d={ICONS.heart} size={15} className="text-love" />
-                    Sledovať {hereProvince.name}
+                    Sledovať tu…
                   </button>
                 )}
               </div>
@@ -466,7 +471,7 @@ export function HomeFinder({
             {region && !view.pick && (
               <button
                 type="button"
-                onClick={() => go({ r: view.r, pick: true })}
+                onClick={() => openFollow(region.code)}
                 className={chipClass(false, "pointer-events-auto min-h-10 shadow-lift")}
               >
                 <Icon d={ICONS.heart} size={15} className="text-love" />
@@ -480,26 +485,20 @@ export function HomeFinder({
           </div>
         )}
 
-        {/* Picking provinces to follow (the old chooser, now inside the region). */}
+        {/* What to follow in the region: ticked in the panel or on the map, nothing downloaded on a tap. */}
         {region && view.pick && (
-          <Card className="absolute inset-x-3 top-[68px] z-[1150] mx-auto max-w-md animate-drop space-y-2 p-4">
-            <p className="text-sm text-ink-2">
-              Ťukni na provinciu, ktorú mám sledovať. Ďalším ťuknutím ju zrušíš. Pre sledované provincie sťahujem ponuky
-              každé ráno.
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <button
-                type="button"
-                disabled={placeBusy}
-                onClick={() => togglePlace(region)}
-                className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-ink underline disabled:opacity-50"
-              >
-                {wholeRegionFollowed && <Icon d={ICONS.check} size={16} />}
-                {wholeRegionFollowed ? "Sleduješ celý región (zrušiť)" : "Sledovať celý región"}
-              </button>
-              <Button onClick={() => go({ r: view.r }, true)}>Hotovo</Button>
-            </div>
-          </Card>
+          <FollowPanel
+            key={region.code}
+            region={region}
+            chosen={chosen}
+            setChosen={setChosen}
+            areaNames={areas.map((a) => a.name)}
+            properties={banded}
+            costPerAreaUsd={costPerAreaUsd}
+            onDone={closeFollow}
+            onSwitchRegion={(code) => openFollow(code)}
+            onLayout={setPanelPad}
+          />
         )}
 
         {/* Around Adelka, nothing inside the circle: say why and what helps. */}
@@ -603,7 +602,6 @@ function NearEmpty({
   radiusKm,
   province,
   followed,
-  busy,
   onFollow,
   onWider,
   onSearch,
@@ -611,7 +609,7 @@ function NearEmpty({
   radiusKm: number;
   province: Place | null;
   followed: boolean;
-  busy: boolean;
+  /** Opens the follow panel of the region she stands in. */
   onFollow: () => void;
   onWider: () => void;
   /** "Prehľadať tento okruh", when it is possible here. */
@@ -626,13 +624,13 @@ function NearEmpty({
           ? "Si mimo Talianska, tu domčeky nehľadám."
           : followed
             ? `Provinciu ${province.name} sledujem, len v tomto okruhu teraz nič nie je.`
-            : `Provinciu ${province.name} zatiaľ nesledujem. Keď ju začneš sledovať, ponuky z nej hneď stiahnem.`}
+            : `Tu ešte nehľadám. Vybrať, čo mám v regióne ${findPlace("region", province.regionCode)?.name ?? ""} sledovať? Ponuky stiahnem ráno.`}
       </p>
       <div className="flex flex-wrap gap-2">
         {onSearch && <Button onClick={onSearch}>Prehľadať tento okruh</Button>}
         {province && !followed && (
-          <Button variant={onSearch ? "secondary" : "primary"} onClick={onFollow} disabled={busy}>
-            Sledovať {province.name}
+          <Button variant={onSearch ? "secondary" : "primary"} onClick={onFollow}>
+            Vybrať, čo sledovať
           </Button>
         )}
         {wider && (
@@ -694,7 +692,7 @@ function EmptyRegion({ onPick }: { onPick: () => void }) {
   return (
     <Card className="mx-auto max-w-md space-y-3 p-6 text-center">
       <h2 className="font-display text-xl font-semibold text-ink">Tu zatiaľ nič nemám</h2>
-      <p className="text-muted">Vyber provincie, ktoré mám sledovať, a ponuky z nich hneď stiahnem.</p>
+      <p className="text-muted">Vyber provincie, ktoré mám sledovať. Ponuky z nich stiahnem ráno, alebo hneď, keď chceš.</p>
       <Button onClick={onPick}>Sledovať provincie</Button>
     </Card>
   );

@@ -17,7 +17,9 @@ const provider: PropertyProvider = {
 };
 vi.mock("@/lib/providers", () => ({ getProvider: () => provider }));
 
-const { addPlaceArea, checkNow, markNewsSeen, saveSearchSettings, searchNear } = await import("./actions");
+const { addPlaceArea, checkNow, markNewsSeen, saveFollowed, saveSearchSettings, searchNear, unfollowRegion } = await import(
+  "./actions"
+);
 const repo = MemoryRepository.shared();
 
 beforeEach(() => {
@@ -69,18 +71,22 @@ describe("server actions", () => {
   });
 
   it("saves the search setting and fetches listings for a new distance from the sea", async () => {
-    const result = await saveSearchSettings({ inland: true, inlandKm: 20 });
+    // Saved without "hneď": the morning check brings the houses, nothing is paid now.
+    expect(await saveSearchSettings({ inland: true, inlandKm: 10 })).toEqual({ ok: true, fetched: null, error: null });
+    expect(fetchListings).not.toHaveBeenCalled();
+
+    const result = await saveSearchSettings({ inland: true, inlandKm: 20 }, true);
     expect(result).toEqual({ ok: true, fetched: 2, error: null });
     expect(await getSearchSettings(repo)).toEqual({ inland: true, inlandKm: 20 });
     expect(fetchListings).toHaveBeenCalledTimes(1);
     expect(fetchListings.mock.calls[0][1]).toMatchObject({ bandKm: 20 });
 
     // Saving the same setting again costs nothing.
-    expect(await saveSearchSettings({ inland: true, inlandKm: 20 })).toEqual({ ok: true, fetched: null, error: null });
+    expect(await saveSearchSettings({ inland: true, inlandKm: 20 }, true)).toEqual({ ok: true, fetched: null, error: null });
     expect(fetchListings).toHaveBeenCalledTimes(1);
 
     // The whole area; nonsense falls back to the defaults (coast only).
-    await saveSearchSettings({ inland: true, inlandKm: null });
+    await saveSearchSettings({ inland: true, inlandKm: null }, true);
     expect(fetchListings.mock.calls.at(-1)![1]).toMatchObject({ bandKm: null });
     const calls = fetchListings.mock.calls.length;
     // Back to the coast only: the houses are already stored, nothing is downloaded (nor paid).
@@ -101,7 +107,7 @@ describe("server actions", () => {
 
   it("keeps the setting when fetching fails", async () => {
     fetchListings.mockRejectedValue(new Error("Apify down"));
-    const result = await saveSearchSettings({ inland: true, inlandKm: 40 });
+    const result = await saveSearchSettings({ inland: true, inlandKm: 40 }, true);
     expect(result).toMatchObject({ ok: true, fetched: 0 });
     expect(await getSearchSettings(repo)).toEqual({ inland: true, inlandKm: 40 });
   });
@@ -129,6 +135,33 @@ describe("server actions", () => {
     });
     expect(await searchNear({ latitude: 44.13, longitude: 10.02, radiusKm: 7 })).toMatchObject({ fetched: null });
     expect(fetchListings).not.toHaveBeenCalled();
+  });
+
+  it("follows a region from the panel: one search for the whole region, nothing fetched unless asked", async () => {
+    const names = async () => (await repo.listSearchAreas()).map((a) => a.name).filter((n) => /Ligúria|Imperia|Savona|Genova|Spezia/.test(n));
+    // Today's mess: the region and all its provinces.
+    for (const code of ["07"]) await addPlaceArea("region", code);
+    for (const code of ["IM", "SV", "GE", "SP"]) await addPlaceArea("province", code);
+    fetchListings.mockClear();
+
+    expect(await saveFollowed("07", ["IM", "SV", "GE", "SP"])).toEqual({ ok: true, fetched: null, error: null });
+    expect(await names()).toEqual(["Ligúria (celý región)"]);
+
+    await saveFollowed("07", ["IM", "SV", "GE"]);
+    expect((await names()).sort()).toEqual(["Genova", "Imperia", "Savona"]);
+    expect(fetchListings).not.toHaveBeenCalled();
+
+    // "Uložiť a stiahnuť hneď": only the newly followed place is fetched.
+    expect(await saveFollowed("07", ["IM", "SV", "GE", "SP"], true)).toMatchObject({ ok: true, fetched: 2 });
+    expect(fetchListings).toHaveBeenCalledTimes(1);
+    expect(fetchListings.mock.calls[0][0].map((a: { name: string }) => a.name)).toEqual(["Ligúria (celý región)"]);
+
+    await unfollowRegion("07");
+    expect(await names()).toEqual([]);
+  });
+
+  it("rejects provinces of another region", async () => {
+    expect(await saveFollowed("07", ["LU"])).toMatchObject({ ok: false });
   });
 
   it("remembers when Adelka saw the news", async () => {

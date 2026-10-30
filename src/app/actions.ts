@@ -12,6 +12,7 @@ import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import { stopAskedSince } from "@/lib/sync-stop";
+import { planFollow, withoutOverlaps } from "@/lib/follow";
 import { NEAR_SEARCH_COOLDOWN_MS, NEAR_SEARCH_KEY, nearArea, parseNearSearch } from "@/lib/near-search";
 import type { SearchArea } from "@/lib/types";
 
@@ -74,11 +75,12 @@ export type SaveSettingsResult =
 
 /**
  * "Kde hľadať domček": stores the search setting (also used by the morning
- * cron) and, when it now reaches further from the sea, fetches listings for it
- * right away. A narrower setting costs nothing: the houses are already stored,
+ * cron). Only when Adelka asks for it now (`fetchNow`) and it reaches further
+ * from the sea are listings fetched right away; otherwise the morning check
+ * brings them. A narrower setting costs nothing: the houses are already stored,
  * the home page only hides the ones further away.
  */
-export async function saveSearchSettings(input: unknown): Promise<SaveSettingsResult> {
+export async function saveSearchSettings(input: unknown, fetchNow = false): Promise<SaveSettingsResult> {
   await assertSession();
   const repo = getRepo();
   const settings = parseSearchSettings(input);
@@ -91,9 +93,9 @@ export async function saveSearchSettings(input: unknown): Promise<SaveSettingsRe
   }
 
   const provider = getProvider();
-  const areas = await repo.listSearchAreas();
+  const areas = withoutOverlaps(await repo.listSearchAreas());
   let result: SaveSettingsResult = { ok: true, fetched: null, error: null };
-  if (reachesFurther(before, settings) && !provider.isMock && areas.length > 0) {
+  if (fetchNow && reachesFurther(before, settings) && !provider.isMock && areas.length > 0) {
     try {
       const sync = await syncFromProvider(repo, provider, areas, {
         bandKm: bandKm(settings),
@@ -169,7 +171,7 @@ export async function checkNow(): Promise<CheckNowResult> {
   const provider = getProvider();
   if (provider.isMock) return { ok: false, error: "Pri ukážkových dátach nie je čo sťahovať." };
 
-  const areas = await repo.listSearchAreas();
+  const areas = withoutOverlaps(await repo.listSearchAreas());
   if (areas.length === 0) return { ok: false, error: "Najprv si pridaj oblasť." };
 
   const last = await repo.getState<string>(MANUAL_SYNC_KEY);
@@ -261,6 +263,67 @@ export async function addPlaceArea(kind: PlaceKind, code: string): Promise<AreaR
   const result = await withListings(area);
   refreshAll();
   return result;
+}
+
+export type FollowResult = {
+  ok: boolean;
+  /** Listings fetched for the newly followed places, or null when nothing was fetched. */
+  fetched: number | null;
+  error: string | null;
+};
+
+/**
+ * Saves what Adelka follows in one region (from the panel). All provinces ticked = the whole
+ * region, one cheap search; never the region and its provinces together. Nothing is fetched
+ * unless she asks for it now: the morning check downloads the new places.
+ */
+export async function saveFollowed(regionCode: string, provinceCodes: string[], fetchNow = false): Promise<FollowResult> {
+  await assertSession();
+  const region = findPlace("region", String(regionCode));
+  if (!region || !Array.isArray(provinceCodes)) return { ok: false, fetched: null, error: "Neznámy región." };
+  const chosen = new Set(provinceCodes.map(String));
+  if ([...chosen].some((code) => findPlace("province", code)?.regionCode !== region.code)) {
+    return { ok: false, fetched: null, error: "Neznámy región." };
+  }
+
+  const repo = getRepo();
+  const areas = await repo.listSearchAreas();
+  const { create, remove } = planFollow(region.code, chosen, areas.map((a) => a.name));
+  for (const area of areas.filter((a) => remove.includes(a.name))) await repo.deleteSearchArea(area.id);
+  const created: SearchArea[] = [];
+  for (const place of create) created.push(await repo.createSearchArea(areaNameFor(place), place.geometry));
+
+  const result: FollowResult = { ok: true, fetched: null, error: null };
+  const provider = getProvider();
+  if (fetchNow && created.length > 0 && !provider.isMock) {
+    try {
+      const settings = await getSearchSettings(repo);
+      const sync = await syncFromProvider(repo, provider, created, {
+        bandKm: bandKm(settings),
+        budget: "manual",
+        shouldStop: stopAskedSince(repo),
+      });
+      if (sync.skipped) Object.assign(result, { fetched: 0, error: `Uložené. ${sync.skipped.reason}` });
+      else if (sync.stopped) Object.assign(result, { fetched: sync.total, error: `Uložené. ${STOPPED_MESSAGE}` });
+      else {
+        await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
+        Object.assign(result, {
+          fetched: sync.total,
+          error: sync.errors.length > 0 ? "Časť ponúk sa nepodarilo stiahnuť, doplnia sa ráno." : null,
+        });
+      }
+    } catch (error) {
+      console.error("Fetching newly followed places failed", error);
+      Object.assign(result, { fetched: 0, error: "Uložené, ale ponuky sa teraz nepodarilo stiahnuť. Doplnia sa ráno." });
+    }
+  }
+  refreshAll();
+  return result;
+}
+
+/** Stops following a region and all its provinces. */
+export async function unfollowRegion(regionCode: string) {
+  await saveFollowed(regionCode, []);
 }
 
 export async function deleteArea(id: string) {

@@ -10,6 +10,7 @@ import { rejectUnlessCronSecret } from "@/lib/secrets";
 /** Billing cycle (its start) for which Lubko was already told that the Apify budget is spent. */
 const BUDGET_WARNED_KEY = "apify_budget_warned";
 import { syncFromProvider } from "@/lib/sync";
+import { withoutOverlaps } from "@/lib/follow";
 
 export const dynamic = "force-dynamic";
 /** Apify runs for all areas happen in parallel; each is capped at 240 s. */
@@ -26,7 +27,8 @@ export async function GET(request: Request) {
   const repo = getRepo();
   const provider = getProvider();
   const [areas, settings] = await Promise.all([repo.listSearchAreas(), getSearchSettings(repo)]);
-  const result = await syncFromProvider(repo, provider, areas, { recheck: true, bandKm: bandKm(settings), budget: "nightly" });
+  // A province whose whole region is followed too is searched with the region, not paid twice.
+  const result = await syncFromProvider(repo, provider, withoutOverlaps(areas), { recheck: true, bandKm: bandKm(settings), budget: "nightly" });
   if (result.skipped) {
     // Lubko hears about a spent budget once per billing cycle; a skipped night to stay on pace is routine.
     let warned = false;

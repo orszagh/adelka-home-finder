@@ -87,6 +87,25 @@ export const NOVELTIES: Novelty[] = [
     primary: { label: "Vyskúšať", href: "/?locate=1" },
     later: "Neskôr",
   },
+  {
+    id: "follow-panel",
+    storageKey: "adelka.novelty.follow-panel",
+    icon: "heart",
+    title: "Nový výber provincií",
+    body: () => (
+      <>
+        <p>
+          Ťukni na región a na <b>Sledovať provincie</b>. Otvorí sa zoznam provincií, kde ich pokojne pozaškrtávaš – pri ťukaní sa už
+          nič nesťahuje. <b>Celý región</b> je jedno ťuknutie a najlacnejšie hľadanie.
+        </p>
+        <p>
+          Po uložení stiahnem nové ponuky ráno. Keď ich chceš hneď, dá sa aj to, cenu ti poviem vopred. Dole vidíš, koľko ranné kontroly
+          stoja.
+        </p>
+      </>
+    ),
+    primary: { label: "Rozumiem" },
+  },
 ];
 
 /** The oldest novelty whose key is not among the seen ones. */

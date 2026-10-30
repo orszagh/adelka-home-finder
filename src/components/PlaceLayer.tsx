@@ -4,19 +4,20 @@ import L from "leaflet";
 import { useEffect, useMemo } from "react";
 import { Marker, Polygon, useMap } from "react-leaflet";
 import { formatPriceShort } from "@/lib/format";
-import { inBox, pointInArea } from "@/lib/geo";
-import { type Place, REGIONS, areaNameFor, provincesOf } from "@/lib/italy";
-import type { AreaGeometry, GeoBox, MapListing } from "@/lib/types";
+import { type Place, REGIONS, provincesOf } from "@/lib/italy";
+import { type Stats, statsFor } from "@/lib/place-stats";
+import type { AreaGeometry, MapListing } from "@/lib/types";
 import { ICONS, iconHtml } from "./ui";
 
 export type PlaceChooser = {
   /** null = all of Italy (pick a region), otherwise the region whose provinces are shown. */
   regionCode: string | null;
-  /** Names of Adelka's current areas; places are matched to areas by name. */
-  areaNames: string[];
+  /** Codes of the places ticked right now (in the follow panel, not yet saved). */
+  chosen: ReadonlySet<string>;
   properties: MapListing[];
-  busy: boolean;
   onPick: (place: Place) => void;
+  /** Room taken by the panel over the map, px: the region is framed in what is left. */
+  padding: { top: number; bottom: number; left: number };
 };
 
 /** Pastel fill per coastal region (ISTAT code), in the spirit of a travel poster. */
@@ -39,8 +40,6 @@ export const REGION_COLORS: Record<string, string> = {
 };
 export const INLAND = "#dee2e6";
 
-type Stats = { count: number; minPrice: number | null };
-
 export function latLngs(geometry: AreaGeometry): L.LatLngExpression[][][] {
   const polys = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
   return polys.map((rings) => rings.map((ring) => ring.map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
@@ -48,39 +47,6 @@ export function latLngs(geometry: AreaGeometry): L.LatLngExpression[][][] {
 
 export function boundsOf(places: Place[]): L.LatLngBounds {
   return L.latLngBounds(places.flatMap((p) => latLngs(p.geometry).flat(2) as L.LatLngTuple[]));
-}
-
-/** The box around a place, so that houses far away skip the exact (slow) test. */
-const boxes = new Map<string, GeoBox>();
-
-function boxOf(place: Place): GeoBox {
-  const key = `${place.kind}:${place.code}`;
-  let box = boxes.get(key);
-  if (!box) {
-    box = { south: Infinity, north: -Infinity, west: Infinity, east: -Infinity };
-    for (const ring of latLngs(place.geometry).flat() as [number, number][][]) {
-      for (const [lat, lng] of ring) {
-        box.south = Math.min(box.south, lat);
-        box.north = Math.max(box.north, lat);
-        box.west = Math.min(box.west, lng);
-        box.east = Math.max(box.east, lng);
-      }
-    }
-    boxes.set(key, box);
-  }
-  return box;
-}
-
-function statsFor(place: Place, properties: MapListing[]): Stats {
-  let count = 0;
-  let minPrice: number | null = null;
-  const box = boxOf(place);
-  for (const p of properties) {
-    if (!inBox(p, box) || !pointInArea(p.longitude, p.latitude, place.geometry)) continue;
-    count++;
-    if (p.price !== null && (minPrice === null || p.price < minPrice)) minPrice = p.price;
-  }
-  return { count, minPrice };
 }
 
 function escapeHtml(text: string): string {
@@ -115,15 +81,16 @@ function labelIcon(place: Place, stats: Stats, followed: boolean, partial: numbe
   });
 }
 
-export function PlaceLayer({ regionCode, areaNames, properties, busy, onPick }: PlaceChooser) {
+export function PlaceLayer({ regionCode, chosen, properties, onPick, padding }: PlaceChooser) {
   const map = useMap();
   const places = useMemo(() => (regionCode ? provincesOf(regionCode) : REGIONS), [regionCode]);
-  const names = useMemo(() => new Set(areaNames), [areaNames]);
+  const { top, bottom, left } = padding;
   const stats = useMemo(() => new Map(places.map((p) => [p.code, statsFor(p, properties)])), [places, properties]);
 
   useEffect(() => {
-    // Extra top padding keeps shapes clear of the chooser panel floating over the map.
-    const fit = () => map.fitBounds(boundsOf(places), { paddingTopLeft: [16, 130], paddingBottomRight: [16, 16] });
+    // The shapes stay clear of the follow panel and the bar floating over the map.
+    const fit = () =>
+      map.fitBounds(boundsOf(places), { paddingTopLeft: [16 + left, top], paddingBottomRight: [16, 16 + bottom] });
     const { x, y } = map.getSize();
     if (x > 0 && y > 0) fit();
     // The container settles its final size after the first paint (and on phone/desktop switches).
@@ -131,9 +98,9 @@ export function PlaceLayer({ regionCode, areaNames, properties, busy, onPick }: 
     return () => {
       map.off("resize", fit);
     };
-  }, [map, places]);
+  }, [map, places, top, bottom, left]);
 
-  const isSelected = (place: Place) => names.has(areaNameFor(place));
+  const isSelected = (place: Place) => chosen.has(place.code);
   const selectedProvinces = (region: Place) => provincesOf(region.code).filter(isSelected).length;
 
   return (
@@ -161,7 +128,7 @@ export function PlaceLayer({ regionCode, areaNames, properties, busy, onPick }: 
               fillColor: fill,
               fillOpacity: selected ? 0.45 : place.coastal ? 0.75 : 0.5,
             }}
-            eventHandlers={{ click: () => !busy && onPick(place) }}
+            eventHandlers={{ click: () => onPick(place) }}
           />
         );
       })}
@@ -178,7 +145,7 @@ export function PlaceLayer({ regionCode, areaNames, properties, busy, onPick }: 
             isSelected(place),
             place.kind === "region" ? selectedProvinces(place) : 0,
           )}
-          eventHandlers={{ click: () => !busy && onPick(place) }}
+          eventHandlers={{ click: () => onPick(place) }}
         />
       ))}
     </>
