@@ -227,7 +227,7 @@ export function HelpContent() {
         ))}
       </div>
       <OpenFromHash />
-      <p className="text-center text-xs text-faint">{APP_VERSION}</p>
+      <p className="text-center text-sm font-medium text-muted">{APP_VERSION}</p>
 
     </div>
   );

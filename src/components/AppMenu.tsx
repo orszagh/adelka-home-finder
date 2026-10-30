@@ -228,7 +228,7 @@ export function AppMenu({
               Odhlásiť sa
             </button>
           </form>
-          <p className="px-3.5 pt-1 text-xs text-faint">{APP_VERSION}</p>
+          <p className="px-3.5 pt-2 text-sm font-medium text-muted">{APP_VERSION}</p>
         </div>
       </div>
     </>
