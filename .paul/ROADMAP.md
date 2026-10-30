@@ -34,6 +34,7 @@ Zadanie: [.paul/phases/v0.3-dizajn-ux/ZADANIE.md](phases/v0.3-dizajn-ux/ZADANIE.
 | 9 | Rozpočet Apify, offline (PWA) | 1/1 | ✅ Complete | 10/2026 |
 | 10 | Novinky (okno s novinkou ako zoznam, Plán obhliadok, kalendár) | 2/2 | ✅ Complete | 2026-10-29 |
 | 11 | Rýchlosť (server fra1, malý index ponúk, mapa pod menu) | 3/3 | ✅ Complete | 2026-10-30 |
+| 12 | Okolie a sledovanie (12-01 okolie bez pásu, 100 km, Prehľadať okruh; 12-02 panel provincií, sťahovanie ráno) | 0/2 | Planning | – |
 
 ## Phase Details
 

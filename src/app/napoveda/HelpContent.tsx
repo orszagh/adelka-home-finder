@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { Eyebrow, ICONS, Icon } from "@/components/ui";
+import { APP_VERSION } from "@/lib/version";
+import { OpenFromHash } from "./OpenFromHash";
 
 /** Plain-language answers for Adelka: what each part of the app does and where the data comes from. */
-/** icon: an ICONS path, drawn in the same line style as the rest of the app. */
-const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
+/** icon: an ICONS path, drawn in the same line style as the rest of the app; id: link target (/napoveda#okolie). */
+const TOPICS: { id?: string; icon: string; question: string; answer: ReactNode }[] = [
   {
     icon: ICONS.map,
     question: "Ako nájdem domčeky?",
@@ -15,19 +17,26 @@ const TOPICS: { icon: string; question: string; answer: ReactNode }[] = [
     ),
   },
   {
+    id: "okolie",
     icon: ICONS.locate,
     question: "Ako nájdem domčeky okolo seba?",
     answer: (
       <>
         <p>
           Na mape dole ťukni na <b>Hľadať v okolí</b> (alebo v menu úplne hore na <b>Domčeky v okolí</b>). Telefón sa raz opýta, či môže appka použiť tvoju polohu – povoľ to. Mapa sa
-          priblíži na miesto, kde stojíš (modrá bodka), a ukáže domčeky v kruhu okolo teba. Okruh si prepneš na 5, 10, 20 alebo 40 km.
+          priblíži na miesto, kde stojíš (modrá bodka), a ukáže domčeky v kruhu okolo teba. Okruh si prepneš na 5, 10, 20, 40 alebo 100 km.
         </p>
         <p>V zozname sú zoradené od najbližšieho a pri každom vidíš, ako ďaleko je od teba.</p>
         <p>
-          Ukazujem len domčeky z provincií, ktoré sledujem. Keď si v provincii, ktorú ešte nesledujem, ťukni na <b>Sledovať …</b> a
-          ponuky z nej hneď stiahnem. Tvoja poloha sa nikam neukladá ani neposiela.
+          V okolí ukazujem všetky domčeky, ktoré už mám stiahnuté – aj tie ďalej od mora, než máš v Nastaveniach. Prepínanie okruhu nič
+          nestojí.
         </p>
+        <p>
+          Keď tu nič nie je, ťukni na <b>Prehľadať tento okruh</b>. Stiahnem ponuky len v tomto kruhu, vopred ti poviem, koľko to
+          najviac bude stáť, a sťahovanie môžeš zastaviť. Okruh nezačnem sledovať, takže ráno sa za neho už neplatí. Ak chceš
+          dostávať nové ponuky z tejto oblasti každé ráno, ťukni na <b>Sledovať …</b> pri provincii.
+        </p>
+        <p>Tvoja poloha sa nikam neukladá – na server ide len raz, keď ťukneš na Prehľadať tento okruh.</p>
       </>
     ),
   },
@@ -193,7 +202,7 @@ export function HelpContent() {
 
       <div className="space-y-2.5">
         {TOPICS.map((t) => (
-          <details key={t.question} className="group rounded-3xl bg-surface shadow-card">
+          <details key={t.question} id={t.id} className="group scroll-mt-20 rounded-3xl bg-surface shadow-card">
             <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
               <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-ink">
                 <Icon d={t.icon} size={18} />
@@ -217,6 +226,8 @@ export function HelpContent() {
           </details>
         ))}
       </div>
+      <OpenFromHash />
+      <p className="text-center text-xs text-faint">{APP_VERSION}</p>
 
     </div>
   );

@@ -12,6 +12,7 @@ import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
 import { stopAskedSince } from "@/lib/sync-stop";
+import { NEAR_SEARCH_COOLDOWN_MS, NEAR_SEARCH_KEY, nearArea, parseNearSearch } from "@/lib/near-search";
 import type { SearchArea } from "@/lib/types";
 
 const MAX_NOTE = 2000;
@@ -198,6 +199,52 @@ export async function checkNow(): Promise<CheckNowResult> {
   } catch (error) {
     console.error("Manual sync failed", error);
     return { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." };
+  }
+}
+
+export type NearSearchResult = { fetched: number | null; error: string | null };
+
+/**
+ * "Prehľadať tento okruh": fetches the listings in the circle around Adelka once – the whole
+ * circle, inland too. The circle is not followed, so the morning check never pays for it again.
+ */
+export async function searchNear(input: unknown): Promise<NearSearchResult> {
+  await assertSession();
+  const repo = getRepo();
+  const provider = getProvider();
+  if (provider.isMock) return { fetched: null, error: "Pri ukážkových dátach nie je čo sťahovať." };
+  const search = parseNearSearch(input);
+  if (!search) return { fetched: null, error: "Toto miesto neviem prehľadať." };
+
+  const last = await repo.getState<string>(NEAR_SEARCH_KEY);
+  const waitMs = last ? Date.parse(last) + NEAR_SEARCH_COOLDOWN_MS - Date.now() : 0;
+  if (waitMs > 0) return { fetched: null, error: `Znova to pôjde o ${Math.ceil(waitMs / 60_000)} min.` };
+  if (!(await repo.setState(NEAR_SEARCH_KEY, new Date().toISOString()))) {
+    return { fetched: null, error: "Hľadanie v okolí potrebuje databázovú migráciu (pozri README)." };
+  }
+
+  try {
+    const result = await syncFromProvider(repo, provider, [nearArea(search)], {
+      bandKm: null,
+      budget: "manual",
+      shouldStop: stopAskedSince(repo),
+    });
+    if (result.skipped) {
+      // Nothing was spent, so the wait does not apply.
+      await repo.setState(NEAR_SEARCH_KEY, last ?? "");
+      return { fetched: 0, error: result.skipped.reason };
+    }
+    refreshAll();
+    if (result.stopped) return { fetched: result.total, error: STOPPED_MESSAGE };
+    // Adelka is looking at these right now; they are not news for tomorrow's greeting.
+    await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
+    return {
+      fetched: result.total,
+      error: result.errors.length > 0 && result.total === 0 ? "Portály teraz neodpovedajú, skús to neskôr." : null,
+    };
+  } catch (error) {
+    console.error("Searching around Adelka failed", error);
+    return { fetched: 0, error: "Portály teraz neodpovedajú, skús to neskôr." };
   }
 }
 

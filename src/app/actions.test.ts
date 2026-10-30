@@ -17,7 +17,7 @@ const provider: PropertyProvider = {
 };
 vi.mock("@/lib/providers", () => ({ getProvider: () => provider }));
 
-const { addPlaceArea, checkNow, markNewsSeen, saveSearchSettings } = await import("./actions");
+const { addPlaceArea, checkNow, markNewsSeen, saveSearchSettings, searchNear } = await import("./actions");
 const repo = MemoryRepository.shared();
 
 beforeEach(() => {
@@ -104,6 +104,31 @@ describe("server actions", () => {
     const result = await saveSearchSettings({ inland: true, inlandKm: 40 });
     expect(result).toMatchObject({ ok: true, fetched: 0 });
     expect(await getSearchSettings(repo)).toEqual({ inland: true, inlandKm: 40 });
+  });
+
+  it("searches the circle around Adelka once, whole, without following it", async () => {
+    const areasBefore = await repo.listSearchAreas();
+    const fosdinovo = { latitude: 44.13, longitude: 10.02, radiusKm: 10 };
+    expect(await searchNear(fosdinovo)).toEqual({ fetched: 2, error: null });
+    expect(fetchListings).toHaveBeenCalledTimes(1);
+    const [areas, options] = fetchListings.mock.calls[0];
+    expect(areas).toHaveLength(1);
+    expect(areas[0].polygon.type).toBe("Polygon");
+    expect(options).toMatchObject({ bandKm: null });
+    expect(await repo.listSearchAreas()).toEqual(areasBefore);
+
+    // A second tap within 10 minutes costs nothing.
+    expect(await searchNear(fosdinovo)).toEqual({ fetched: null, error: "Znova to pôjde o 10 min." });
+    expect(fetchListings).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not search places outside Italy or other circles", async () => {
+    expect(await searchNear({ latitude: 48.15, longitude: 17.11, radiusKm: 10 })).toEqual({
+      fetched: null,
+      error: "Toto miesto neviem prehľadať.",
+    });
+    expect(await searchNear({ latitude: 44.13, longitude: 10.02, radiusKm: 7 })).toMatchObject({ fetched: null });
+    expect(fetchListings).not.toHaveBeenCalled();
   });
 
   it("remembers when Adelka saw the news", async () => {

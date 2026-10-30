@@ -68,6 +68,25 @@ export const NOVELTIES: Novelty[] = [
     primary: { label: "Pozrieť Uložené", href: "/ulozene" },
     later: "Neskôr",
   },
+  {
+    id: "near-search",
+    storageKey: "adelka.novelty.near-search",
+    icon: "locate",
+    title: "Okolie až do 100 km",
+    body: () => (
+      <>
+        <p>
+          V <b>Hľadať v okolí</b> teraz uvidíš všetky domčeky, ktoré už mám, aj tie ďalej od mora. Kruh si zväčšíš až na <b>100 km</b>.
+        </p>
+        <p>
+          Keď tam nič nie je, ťukni na <b>Prehľadať tento okruh</b>. Stiahnem ponuky len tam, cenu ti poviem vopred a sťahovanie môžeš
+          kedykoľvek zastaviť. Keď ťa pri tom okno zavadzia, zbaľ ho – ostane z neho len loďka vľavo dole.
+        </p>
+      </>
+    ),
+    primary: { label: "Vyskúšať", href: "/?locate=1" },
+    later: "Neskôr",
+  },
 ];
 
 /** The oldest novelty whose key is not among the seen ones. */

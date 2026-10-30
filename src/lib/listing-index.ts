@@ -17,6 +17,11 @@ export type IndexedListing = {
   region_code: string | null;
   /** Appeared in the last few days (the "Nové" badge). */
   is_new: boolean;
+  /**
+   * Within the distance from the sea set in Nastavenia. Regions, counts and the greeting show only
+   * these; the circle around Adelka shows every house.
+   */
+  in_band: boolean;
 };
 
 /**
@@ -37,6 +42,8 @@ export type EncodedIndex = {
   regions: string[];
   /** 1 = new. */
   fresh: (0 | 1)[];
+  /** Positions of the listings further from the sea than the setting (usually few). */
+  out: number[];
 };
 
 const round = (value: number, digits: number) => Math.round(value * 10 ** digits) / 10 ** digits;
@@ -45,12 +52,13 @@ export function encodeIndex(
   listings: (Pick<Property, "id" | "latitude" | "longitude" | "price" | "rooms" | "sea_km" | "first_seen_at"> & {
     region_code: string | null;
     is_new: boolean;
+    in_band: boolean;
   })[],
 ): EncodedIndex {
   const regions: string[] = [];
   const regionAt = new Map<string, number>();
-  const encoded: EncodedIndex = { ids: [], lat: [], lng: [], price: [], rooms: [], sea: [], added: [], region: [], regions, fresh: [] };
-  for (const p of listings) {
+  const encoded: EncodedIndex = { ids: [], lat: [], lng: [], price: [], rooms: [], sea: [], added: [], region: [], regions, fresh: [], out: [] };
+  for (const [i, p] of listings.entries()) {
     encoded.ids.push(p.id);
     encoded.lat.push(round(p.latitude, 4));
     encoded.lng.push(round(p.longitude, 4));
@@ -59,6 +67,7 @@ export function encodeIndex(
     encoded.sea.push(p.sea_km ?? null);
     encoded.added.push(Math.floor(Date.parse(p.first_seen_at) / 60_000));
     encoded.fresh.push(p.is_new ? 1 : 0);
+    if (!p.in_band) encoded.out.push(i);
     if (p.region_code === null) encoded.region.push(-1);
     else {
       if (!regionAt.has(p.region_code)) regionAt.set(p.region_code, regions.push(p.region_code) - 1);
@@ -69,6 +78,7 @@ export function encodeIndex(
 }
 
 export function decodeIndex(encoded: EncodedIndex): IndexedListing[] {
+  const out = new Set(encoded.out);
   return encoded.ids.map((id, i) => ({
     id,
     latitude: encoded.lat[i],
@@ -79,5 +89,6 @@ export function decodeIndex(encoded: EncodedIndex): IndexedListing[] {
     first_seen_at: new Date(encoded.added[i] * 60_000).toISOString(),
     region_code: encoded.region[i] === -1 ? null : encoded.regions[encoded.region[i]],
     is_new: encoded.fresh[i] === 1,
+    in_band: !out.has(i),
   }));
 }

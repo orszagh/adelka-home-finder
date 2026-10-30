@@ -38,13 +38,13 @@ export default async function Home() {
     getSeenIds(repo),
   ]);
 
-  // Only houses within the chosen distance of the sea; the rest stay in the database, hidden.
+  // Regions, counts and the greeting show only houses within the chosen distance of the sea; the
+  // circle around Adelka shows every stored house, so the others go along, marked.
   const band = bandKm(settings);
-  const inBand = allProperties
-    .map((p) => ({ ...p, sea_km: seaKmAt(`${p.longitude},${p.latitude}`) }))
-    .filter((p) => withinBand(p.sea_km, band));
+  const withSea = allProperties.map((p) => ({ ...p, sea_km: seaKmAt(`${p.longitude},${p.latitude}`) }));
   // The same house on both portals: one card (the saved one stays, so her heart and note do too).
-  const { listings: properties, twins } = dedupe(inBand, new Set(saved.map((s) => s.property_id)));
+  const { listings: all, twins } = dedupe(withSea, new Set(saved.map((s) => s.property_id)));
+  const properties = all.filter((p) => withinBand(p.sea_km, band));
   const seen = new Set(seenIds);
   for (const [id, others] of Object.entries(twins)) if (others.some((t) => seen.has(t.id))) seen.add(id);
   const twinSources = Object.fromEntries(Object.entries(twins).map(([id, others]) => [id, others.map((t) => t.source)]));
@@ -52,17 +52,20 @@ export default async function Home() {
   // First visit: start counting from now instead of greeting with everything.
   if (lastSeen === null) await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
   const greeting = lastSeen ? buildGreeting(insideAreas(properties, areas), lastSeen) : null;
-  const freshIds = new Set(findNewIds(properties));
+  // Badges (Nové, zlacnel) on every card, the circle around Adelka included.
+  const freshIds = new Set(findNewIds(all));
 
   return (
     <HomeFinder
       // Only the numbers of each listing go to the phone; cards are fetched for the houses on screen.
-      index={encodeIndex(properties.map((p) => ({ ...p, region_code: regionOf(p), is_new: freshIds.has(p.id) })))}
+      index={encodeIndex(
+        all.map((p) => ({ ...p, region_code: regionOf(p), is_new: freshIds.has(p.id), in_band: withinBand(p.sea_km, band) })),
+      )}
       areas={areas}
       savedIds={saved.map((s) => s.property_id)}
       seenIds={[...seen]}
       twinSources={twinSources}
-      priceDrops={findPriceDrops(properties)}
+      priceDrops={findPriceDrops(all)}
       greeting={greeting}
       manualSync={getProvider().isMock ? null : { waitMinutes: manualSyncWaitMinutes(lastManualSync) }}
       notices={getDataNotices({ areaCount: areas.length })}

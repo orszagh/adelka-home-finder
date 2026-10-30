@@ -159,3 +159,14 @@ export function boxAround(latitude: number, longitude: number, km: number): GeoB
 export function inBox(p: { latitude: number; longitude: number }, box: GeoBox): boolean {
   return p.latitude >= box.south && p.latitude <= box.north && p.longitude >= box.west && p.longitude <= box.east;
 }
+
+/** A circle as a closed polygon of `points` vertices ([lng, lat], ~0.1 % accurate at Italian latitudes). */
+export function circlePolygon(longitude: number, latitude: number, km: number, points = 32): AreaGeometry {
+  const dLat = km / 110.574;
+  const dLng = km / (111.32 * Math.cos((latitude * Math.PI) / 180));
+  const ring: Position[] = Array.from({ length: points }, (_, i) => {
+    const angle = (2 * Math.PI * i) / points;
+    return [Math.round((longitude + dLng * Math.sin(angle)) * 1e5) / 1e5, Math.round((latitude + dLat * Math.cos(angle)) * 1e5) / 1e5];
+  });
+  return { type: "Polygon", coordinates: [[...ring, ring[0]]] };
+}

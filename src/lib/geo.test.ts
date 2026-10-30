@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boxAround, distanceKm, inBox, normalizeGeometry, pointInArea, polygonFromLatLngs, toLatLngRings } from "./geo";
+import { boxAround, circlePolygon, distanceKm, inBox, normalizeGeometry, pointInArea, polygonFromLatLngs, toLatLngRings } from "./geo";
 import type { AreaGeometry } from "./types";
 
 const square: AreaGeometry = {
@@ -107,5 +107,16 @@ describe("boxAround", () => {
       }
       expect(inBox({ latitude: lat + 0.02, longitude: lng }, box)).toBe(false);
     }
+  });
+});
+
+describe("circlePolygon", () => {
+  it("is a closed ring of points `km` from the centre", () => {
+    const circle = circlePolygon(9.97, 44.13, 20);
+    if (circle.type !== "Polygon") throw new Error("expected a Polygon");
+    const [ring] = circle.coordinates;
+    expect(ring).toHaveLength(33);
+    expect(ring[0]).toEqual(ring.at(-1));
+    for (const point of ring) expect(Math.abs(distanceKm([9.97, 44.13], point) - 20)).toBeLessThan(0.2);
   });
 });

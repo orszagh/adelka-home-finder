@@ -95,10 +95,17 @@ export default function MapView(props: Props) {
             pathOptions={{ className: "near-circle", weight: 2, fillOpacity: 0.08 }}
             interactive={false}
           />
+          {/* See-through, so the name of the town underneath stays readable; a small solid core marks the spot. */}
           <CircleMarker
             center={mode.center}
-            radius={8}
-            pathOptions={{ className: "near-me", weight: 3, fillOpacity: 1 }}
+            radius={11}
+            pathOptions={{ className: "near-me", weight: 2, fillOpacity: 0.3 }}
+            interactive={false}
+          />
+          <CircleMarker
+            center={mode.center}
+            radius={3.5}
+            pathOptions={{ className: "near-me-core", weight: 1.5, fillOpacity: 1 }}
             interactive={false}
           />
         </>

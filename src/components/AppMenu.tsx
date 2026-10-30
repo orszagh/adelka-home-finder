@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useId, useRef, useState, useTransition } from "react";
 import { logout } from "@/app/session-actions";
+import { APP_VERSION } from "@/lib/version";
 import { setTheme } from "@/app/theme-actions";
 import type { Theme } from "@/lib/theme";
 import { Logo } from "./Logo";
@@ -227,6 +228,7 @@ export function AppMenu({
               Odhlásiť sa
             </button>
           </form>
+          <p className="px-3.5 pt-1 text-xs text-faint">{APP_VERSION}</p>
         </div>
       </div>
     </>

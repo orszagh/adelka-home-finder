@@ -219,7 +219,12 @@ body {
   fill: var(--c-accent);
 }
 .near-me {
-  stroke: var(--c-surface);
+  stroke: #2f7de1;
+  stroke-opacity: 0.9;
+  fill: #2f7de1;
+}
+.near-me-core {
+  stroke: #fff;
   fill: #2f7de1;
 }
 .place-label.is-region-count small {
@@ -334,6 +339,7 @@ body {
   --animate-sheen: sheen 1.8s ease-in-out infinite;
   --animate-rise: rise 420ms var(--ease-wave) both;
   --animate-drop: drop 320ms var(--ease-wave) both;
+  --animate-fold-in: fold-in 360ms var(--ease-wave) both;
   --animate-fade-up: fade-up 420ms var(--ease-wave) both;
   --animate-pop: pop 520ms var(--ease-wave);
   --animate-burst: burst 700ms var(--ease-wave) forwards;
@@ -356,6 +362,11 @@ body {
   @keyframes rise {
     from { transform: translateY(24px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+  }
+  /* The download card folding into the little boat in the bottom-left corner. */
+  @keyframes fold-in {
+    from { transform: translate(40vw, 30vh) scale(3); opacity: 0; }
+    to { transform: translate(0, 0) scale(1); opacity: 1; }
   }
   @keyframes drop {
     from { transform: translateY(-12px); opacity: 0; }

@@ -4,24 +4,27 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent, useMemo, useState, useTransition } from "react";
-import { addPlaceArea, deleteArea, type AreaResult } from "@/app/actions";
+import { addPlaceArea, deleteArea, searchNear, type AreaResult } from "@/app/actions";
+import { formatUsd } from "@/lib/budget";
 import { formatPrice, homesLabel, roomsLabel, seaLabel } from "@/lib/format";
 import { distanceKm, pointInArea } from "@/lib/geo";
 import type { Greeting } from "@/lib/greeting";
 import { PROVINCES, type Place, REGIONS, areaNameFor, findPlace, provincesOf } from "@/lib/italy";
 import { type EncodedIndex, type IndexedListing, decodeIndex } from "@/lib/listing-index";
+import { NEAR_RADII } from "@/lib/near-search";
 import type { SearchArea } from "@/lib/types";
 import { AdPopup } from "./AdPopup";
 import { CheckNowButton } from "./CheckNowButton";
 import { FeatureAnnouncement } from "./FeatureAnnouncement";
 import { GreetingCard } from "./GreetingCard";
+import { HelpTip } from "./HelpTip";
 import { ListingCard, ListingCardSkeleton } from "./ListingCard";
 import { useListingCards } from "./listing-cards";
 import { markReplace } from "./navigation";
 import type { MapMode } from "./MapView";
 import { SyncSheet } from "./SyncSheet";
 import { useToast } from "./Toast";
-import { Button, Card, ICONS, Icon, chipClass } from "./ui";
+import { Button, Card, ICONS, Icon, buttonClass, chipClass } from "./ui";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -30,8 +33,6 @@ const MapView = dynamic(() => import("./MapView"), {
 
 type Sort = "newest" | "cheapest" | "sea" | "me";
 const NEAR_SORT: { value: Sort; label: string } = { value: "me", label: "Najbližšie ku mne" };
-/** Circles Adelka can choose around herself, in km. */
-const NEAR_RADII = [5, 10, 20, 40];
 const SORTS: { value: Sort; label: string }[] = [
   { value: "newest", label: "Najnovšie" },
   { value: "cheapest", label: "Najlacnejšie" },
@@ -117,9 +118,13 @@ export function HomeFinder({
   const [here, setHere] = useState<[lat: number, lng: number] | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
   const [locating, setLocating] = useState(false);
+  /** "Prehľadať tento okruh": asking first (it costs Apify credit), then fetching. */
+  const [nearSearch, setNearSearch] = useState<"confirm" | "busy" | null>(null);
   const toast = useToast();
 
+  /** Every stored house; `banded` are those within the distance from the sea set in Nastavenia. */
   const properties = useMemo(() => decodeIndex(index), [index]);
+  const banded = useMemo(() => properties.filter((p) => p.in_band), [properties]);
   const saved = useMemo(() => new Set(savedIds), [savedIds]);
   const fresh = useMemo(() => new Set(properties.filter((p) => p.is_new).map((p) => p.id)), [properties]);
   const seen = useMemo(() => new Set(seenIds), [seenIds]);
@@ -132,7 +137,7 @@ export function HomeFinder({
     [here, properties],
   );
 
-  const regionByListing = useMemo(() => new Map(properties.map((p) => [p.id, p.region_code])), [properties]);
+  const regionByListing = useMemo(() => new Map(banded.map((p) => [p.id, p.region_code])), [banded]);
   const regionCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const code of regionByListing.values()) if (code) counts.set(code, (counts.get(code) ?? 0) + 1);
@@ -156,7 +161,8 @@ export function HomeFinder({
   /** Houses of the chosen region (or the greeting's news), with the list filters applied. */
   const shown = useMemo(() => {
     const wanted = view.v === "new" && greeting ? new Set(greeting.ids) : null;
-    const base = properties.filter((p) =>
+    // Around Adelka every stored house counts, also those further from the sea than the setting.
+    const base = (nearRadius !== null && !wanted ? properties : banded).filter((p) =>
       wanted
         ? wanted.has(p.id)
         : nearRadius !== null
@@ -178,7 +184,7 @@ export function HomeFinder({
           ? (a.sea_km ?? 99) - (b.sea_km ?? 99)
           : b.first_seen_at.localeCompare(a.first_seen_at),
     );
-  }, [properties, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort, nearRadius, distances]);
+  }, [properties, banded, region, regionByListing, view.v, greeting, maxPrice, minRooms, sort, nearRadius, distances]);
 
   const peek = view.p ? (shown.find((p) => p.id === view.p) ?? null) : null;
   const peekCard = useListingCards(peek ? [peek.id] : []).cards.get(peek?.id ?? "") ?? null;
@@ -206,6 +212,18 @@ export function HomeFinder({
   const hereFollowed =
     hereProvince !== null &&
     (followedProvinces.has(hereProvince.code) || areaNames.has(areaNameFor(findPlace("region", hereProvince.regionCode)!)));
+
+  /** Fetches the circle once (see searchNear); the new houses arrive with the refreshed page. */
+  const runNearSearch = async () => {
+    if (!near) return;
+    setNearSearch("busy");
+    const result = await searchNear({ latitude: near.center[0], longitude: near.center[1], radiusKm: near.radiusKm });
+    setNearSearch(null);
+    if (result.error) toast.show({ tone: "error", text: result.error });
+    else if (result.fetched !== null) toast.show({ tone: "success", text: `Hotovo, našiel som ${homesLabel(result.fetched)}.` });
+  };
+  /** Only with real listings (a price to show) and in Italy. */
+  const canSearchNear = near !== null && costPerAreaUsd !== null && hereProvince !== null;
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
@@ -250,7 +268,7 @@ export function HomeFinder({
     : view.pick
       ? {
           kind: "pick",
-          chooser: { regionCode: region.code, areaNames: [...areaNames], properties, busy: placeBusy, onPick: togglePlace },
+          chooser: { regionCode: region.code, areaNames: [...areaNames], properties: banded, busy: placeBusy, onPick: togglePlace },
         }
       : { kind: "region", code: region.code };
 
@@ -267,6 +285,7 @@ export function HomeFinder({
       busy={placeBusy}
       onFollow={() => hereProvince && togglePlace(hereProvince)}
       onWider={() => setRadiusKm(NEAR_RADII.find((r) => r > near.radiusKm) ?? near.radiusKm)}
+      onSearch={canSearchNear ? () => setNearSearch("confirm") : null}
     />
   );
 
@@ -274,7 +293,19 @@ export function HomeFinder({
     <>
       <AdPopup />
       <FeatureAnnouncement />
-      <SyncSheet open={syncingPlace !== null} subtitle={syncingPlace ?? ""} costUsd={costPerAreaUsd} />
+      <SyncSheet
+        open={syncingPlace !== null || nearSearch === "busy"}
+        subtitle={syncingPlace ?? `Okruh ${near?.radiusKm ?? ""} km`}
+        costUsd={costPerAreaUsd}
+      />
+      {nearSearch === "confirm" && near && costPerAreaUsd !== null && (
+        <NearSearchConfirm
+          radiusKm={near.radiusKm}
+          costUsd={costPerAreaUsd}
+          onYes={runNearSearch}
+          onNo={() => setNearSearch(null)}
+        />
+      )}
       <main className="relative isolate h-[calc(100dvh-65px)] overflow-hidden">
         <section className="absolute inset-0" aria-label="Mapa">
           <MapView
@@ -383,6 +414,17 @@ export function HomeFinder({
                   {shown.length > 0 ? homesLabel(shown.length) : "zatiaľ nič"}
                 </span>
               </span>
+              {near && (
+                <HelpTip label="Ako funguje okolie" title="Domčeky v okolí" href="/napoveda#okolie" className="shrink-0">
+                  <p>Ukazujem všetky domčeky, ktoré už mám stiahnuté, aj tie ďalej od mora. Veľkosť kruhu meníš tlačidlami s km.</p>
+                  {canSearchNear && (
+                    <p>
+                      <b>Prehľadať tento okruh</b> stiahne nové ponuky len tu. Cenu ti poviem vopred, dá sa to zastaviť a okruh nezačnem
+                      sledovať.
+                    </p>
+                  )}
+                </HelpTip>
+              )}
             </div>
             {near && (
               <div className="pointer-events-auto flex max-w-full flex-wrap gap-1.5">
@@ -397,6 +439,17 @@ export function HomeFinder({
                     {r} km
                   </button>
                 ))}
+                {canSearchNear && (
+                  <button
+                    type="button"
+                    disabled={nearSearch !== null}
+                    onClick={() => setNearSearch("confirm")}
+                    className={chipClass(false, "min-h-10 shadow-lift disabled:opacity-50")}
+                  >
+                    <Icon d={ICONS.search} size={15} className="text-accent" />
+                    Prehľadať tento okruh
+                  </button>
+                )}
                 {hereProvince && !hereFollowed && (
                   <button
                     type="button"
@@ -553,6 +606,7 @@ function NearEmpty({
   busy,
   onFollow,
   onWider,
+  onSearch,
 }: {
   radiusKm: number;
   province: Place | null;
@@ -560,6 +614,8 @@ function NearEmpty({
   busy: boolean;
   onFollow: () => void;
   onWider: () => void;
+  /** "Prehľadať tento okruh", when it is possible here. */
+  onSearch: (() => void) | null;
 }) {
   const wider = radiusKm < NEAR_RADII[NEAR_RADII.length - 1];
   return (
@@ -573,8 +629,9 @@ function NearEmpty({
             : `Provinciu ${province.name} zatiaľ nesledujem. Keď ju začneš sledovať, ponuky z nej hneď stiahnem.`}
       </p>
       <div className="flex flex-wrap gap-2">
+        {onSearch && <Button onClick={onSearch}>Prehľadať tento okruh</Button>}
         {province && !followed && (
-          <Button onClick={onFollow} disabled={busy}>
+          <Button variant={onSearch ? "secondary" : "primary"} onClick={onFollow} disabled={busy}>
             Sledovať {province.name}
           </Button>
         )}
@@ -585,6 +642,51 @@ function NearEmpty({
         )}
       </div>
     </Card>
+  );
+}
+
+/** Before "Prehľadať tento okruh": what it does and what it costs at most. */
+function NearSearchConfirm({
+  radiusKm,
+  costUsd,
+  onYes,
+  onNo,
+}: {
+  radiusKm: number;
+  costUsd: number;
+  onYes: () => void;
+  onNo: () => void;
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[1500] flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div
+        role="alertdialog"
+        aria-labelledby="near-search-title"
+        className="w-full max-w-[420px] animate-rise space-y-3 rounded-[28px] bg-surface p-5 shadow-lift"
+      >
+        <h2 id="near-search-title" className="font-display text-xl font-semibold text-ink">
+          Prehľadať okruh {radiusKm} km?
+        </h2>
+        <p className="text-[15px] text-ink-2">
+          Stiahnem ponuky z Idealista a Immobiliare v celom kruhu, aj ďalej od mora.
+          {costUsd > 0 && (
+            <>
+              {" "}
+              Bude to stáť Lubka najviac asi <strong>{formatUsd(costUsd)}</strong> z kreditu na Apify.
+            </>
+          )}{" "}
+          Tento okruh nezačnem sledovať a počas sťahovania ho môžeš zastaviť.
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button type="button" onClick={onYes} className={buttonClass("primary", "md", "flex-1")}>
+            Áno, prehľadať
+          </button>
+          <button type="button" onClick={onNo} className={buttonClass("secondary", "md", "flex-1")}>
+            Zrušiť
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
