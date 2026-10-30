@@ -7,6 +7,8 @@ export type FetchResult = {
   listings: ProviderListing[];
   /** Partial failures (e.g. one portal down); the rest of the listings are still usable. */
   errors: string[];
+  /** Adelka stopped the download; what had arrived is still usable. */
+  stopped?: boolean;
 };
 
 /**
@@ -33,11 +35,15 @@ export interface PropertyProvider {
   usage?(): Promise<{ usedUsd: number; budgetUsd: number } | null>;
   /** At most what fetching one area costs, in USD (none for the demo data). */
   costPerAreaUsd?(): number;
+  /** Stops the downloads running at the source right now; returns how many were stopped. */
+  abortRunning?(): Promise<number>;
 }
 
 export type FetchOptions = {
   /** Search only this far from the coast (km); null or missing means the whole area. */
   bandKm?: number | null;
+  /** Asked before each further download starts; true = Adelka pressed "Zastaviť". */
+  shouldStop?: () => Promise<boolean>;
 };
 
 const PROVIDERS: Record<string, PropertyProvider> = {

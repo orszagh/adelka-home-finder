@@ -35,7 +35,7 @@ describe("server actions", () => {
     expect(result).toMatchObject({ fetched: 2, error: null });
     expect(fetchListings).toHaveBeenCalledTimes(1);
     // New areas are searched with the stored setting: along the coast by default.
-    expect(fetchListings.mock.calls[0][1]).toEqual({ bandKm: 3 });
+    expect(fetchListings.mock.calls[0][1]).toMatchObject({ bandKm: 3 });
     expect(await repo.getState(LAST_SEEN_KEY)).not.toBeNull();
   });
 
@@ -73,7 +73,7 @@ describe("server actions", () => {
     expect(result).toEqual({ ok: true, fetched: 2, error: null });
     expect(await getSearchSettings(repo)).toEqual({ inland: true, inlandKm: 20 });
     expect(fetchListings).toHaveBeenCalledTimes(1);
-    expect(fetchListings.mock.calls[0][1]).toEqual({ bandKm: 20 });
+    expect(fetchListings.mock.calls[0][1]).toMatchObject({ bandKm: 20 });
 
     // Saving the same setting again costs nothing.
     expect(await saveSearchSettings({ inland: true, inlandKm: 20 })).toEqual({ ok: true, fetched: null, error: null });
@@ -81,7 +81,7 @@ describe("server actions", () => {
 
     // The whole area; nonsense falls back to the defaults (coast only).
     await saveSearchSettings({ inland: true, inlandKm: null });
-    expect(fetchListings.mock.calls.at(-1)![1]).toEqual({ bandKm: null });
+    expect(fetchListings.mock.calls.at(-1)![1]).toMatchObject({ bandKm: null });
     const calls = fetchListings.mock.calls.length;
     // Back to the coast only: the houses are already stored, nothing is downloaded (nor paid).
     expect(await saveSearchSettings("nonsense")).toEqual({ ok: true, fetched: null, error: null });

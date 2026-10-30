@@ -93,4 +93,6 @@ export type SyncResult = {
   rechecked?: { checked: number; alive: number };
   /** Nothing was fetched because of the monthly budget. */
   skipped?: { reason: string; hard: boolean; cycleStart: string };
+  /** Adelka stopped the download; what had arrived is stored. */
+  stopped?: boolean;
 };

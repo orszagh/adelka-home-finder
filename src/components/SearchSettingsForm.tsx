@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveSearchSettings } from "@/app/actions";
+import { formatUsd } from "@/lib/budget";
 import { homesLabel } from "@/lib/format";
 import { COAST_BAND_KM, INLAND_OPTIONS, type SearchSettings, formatSearchSettings, reachesFurther } from "@/lib/search-settings";
 import { SyncSheet } from "./SyncSheet";
@@ -55,9 +56,12 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
   const changed = settings.inland !== saved.inland || settings.inlandKm !== saved.inlandKm;
   // Only a wider search downloads (and costs); a narrower one just hides houses already stored.
   const fetches = changed && reachesFurther(saved, settings);
+  /** A wider search asks first, with what it may cost. */
+  const [confirming, setConfirming] = useState(false);
 
   const save = () =>
     startTransition(async () => {
+      setConfirming(false);
       const result = await saveSearchSettings(settings);
       if (!result.ok) {
         toast.show({ tone: "error", text: result.error });
@@ -146,10 +150,36 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
         <p className="px-1 text-sm text-muted">Tieto domčeky už mám stiahnuté, len skryjem tie ďalej od mora. Nič sa nesťahuje ani neplatí.</p>
       )}
 
+      {confirming && fetches && !pending && (
+        <div role="alertdialog" aria-labelledby="widen-title" className="space-y-3 rounded-3xl bg-surface p-4 shadow-lift">
+          <h2 id="widen-title" className="font-display text-xl font-semibold text-ink">
+            Hľadať aj ďalej od mora?
+          </h2>
+          <p className="text-[15px] text-ink-2">
+            Stiahnem ponuky pre „{formatSearchSettings(settings)}“ vo všetkých tvojich oblastiach.
+            {syncCostUsd !== null && syncCostUsd > 0 && (
+              <>
+                {" "}
+                Bude to stáť Lubka najviac asi <strong>{formatUsd(syncCostUsd)}</strong> z kreditu na Apify.
+              </>
+            )}{" "}
+            Počas sťahovania ho môžeš zastaviť.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button type="button" onClick={save} className={buttonClass("primary", "md", "flex-1")}>
+              Áno, hľadať
+            </button>
+            <button type="button" onClick={() => setConfirming(false)} className={buttonClass("secondary", "md", "flex-1")}>
+              Zrušiť
+            </button>
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
-        onClick={save}
-        disabled={pending || !changed}
+        onClick={() => (fetches ? setConfirming(true) : save())}
+        disabled={pending || !changed || (confirming && fetches)}
         className={buttonClass("primary", "lg", "w-full")}
       >
         {pending ? (fetches ? "Hľadám…" : "Ukladám…") : changed ? (fetches ? "Uložiť a hľadať" : "Uložiť") : "Uložené"}

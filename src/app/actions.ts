@@ -11,6 +11,7 @@ import { SEEN_KEY, getSeenIds } from "@/lib/seen";
 import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
 import { assertSession } from "@/lib/session";
 import { syncFromProvider } from "@/lib/sync";
+import { stopAskedSince } from "@/lib/sync-stop";
 import type { SearchArea } from "@/lib/types";
 
 const MAX_NOTE = 2000;
@@ -20,6 +21,9 @@ function cleanText(value: unknown, max: number): string | null {
   const text = value.trim().slice(0, max);
   return text.length > 0 ? text : null;
 }
+
+/** Said after "Zastaviť": nothing is lost, what arrived stays. */
+const STOPPED_MESSAGE = "Sťahovanie som zastavil. Čo sa stihlo stiahnuť, je uložené.";
 
 function refreshAll() {
   revalidatePath("/", "layout");
@@ -39,8 +43,13 @@ async function withListings(area: SearchArea): Promise<AreaResult> {
   try {
     const repo = getRepo();
     const settings = await getSearchSettings(repo);
-    const result = await syncFromProvider(repo, provider, [area], { bandKm: bandKm(settings), budget: "manual" });
+    const result = await syncFromProvider(repo, provider, [area], {
+      bandKm: bandKm(settings),
+      budget: "manual",
+      shouldStop: stopAskedSince(repo),
+    });
     if (result.skipped) return { areaId: area.id, fetched: 0, error: result.skipped.reason };
+    if (result.stopped) return { areaId: area.id, fetched: result.total, error: STOPPED_MESSAGE };
     // Adelka is looking at these right now; they are not news for tomorrow's greeting.
     await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
     return {
@@ -85,9 +94,15 @@ export async function saveSearchSettings(input: unknown): Promise<SaveSettingsRe
   let result: SaveSettingsResult = { ok: true, fetched: null, error: null };
   if (reachesFurther(before, settings) && !provider.isMock && areas.length > 0) {
     try {
-      const sync = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings), budget: "manual" });
+      const sync = await syncFromProvider(repo, provider, areas, {
+        bandKm: bandKm(settings),
+        budget: "manual",
+        shouldStop: stopAskedSince(repo),
+      });
       if (sync.skipped) {
         result = { ok: true, fetched: null, error: `Nastavenie je uložené. ${sync.skipped.reason}` };
+      } else if (sync.stopped) {
+        result = { ok: true, fetched: sync.total, error: `Nastavenie je uložené. ${STOPPED_MESSAGE}` };
       } else {
         // Adelka is looking at these right now; they are not news for tomorrow's greeting.
         await repo.setState(LAST_SEEN_KEY, new Date().toISOString());
@@ -165,13 +180,18 @@ export async function checkNow(): Promise<CheckNowResult> {
 
   try {
     const settings = await getSearchSettings(repo);
-    const result = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings), budget: "manual" });
+    const result = await syncFromProvider(repo, provider, areas, {
+      bandKm: bandKm(settings),
+      budget: "manual",
+      shouldStop: stopAskedSince(repo),
+    });
     if (result.skipped) {
       // Nothing was spent, so the hour's wait does not apply.
       await repo.setState(MANUAL_SYNC_KEY, last ?? "");
       return { ok: false, error: result.skipped.reason };
     }
     refreshAll();
+    if (result.stopped) return { ok: false, error: STOPPED_MESSAGE };
     return result.errors.length > 0 && result.total === 0
       ? { ok: false, error: "Portály teraz neodpovedajú, skús to neskôr." }
       : { ok: true };

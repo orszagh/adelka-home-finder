@@ -3,7 +3,7 @@ import { enclosingCircle, outerRings, ringArea } from "../../geo";
 import type { Position, Property, ProviderListing, SearchArea } from "../../types";
 import type { FetchOptions, FetchResult, PropertyProvider } from "../index";
 import { budgetUsd, checkBudget, estimateAreaUsd } from "../../budget";
-import { ApifyError, getApifyUsage, runActor } from "./client";
+import { ApifyError, abortRunningRuns, getApifyUsage, runActor } from "./client";
 import {
   IDEALISTA_ACTOR,
   idealistaCircleInput,
@@ -178,15 +178,26 @@ export async function settleLimited<T>(tasks: (() => Promise<T>)[], limit: numbe
   return results;
 }
 
-async function runJobs(jobs: Job[]): Promise<FetchResult> {
+async function runJobs(jobs: Job[], shouldStop?: () => Promise<boolean>): Promise<FetchResult> {
+  let stopped = false;
+  // Once Adelka stops it, the jobs still waiting for a free slot do not start (and cost nothing).
+  const tasks = jobs.map((job) => async () => {
+    if (stopped || (shouldStop && (await shouldStop().catch(() => false)))) {
+      stopped = true;
+      return [];
+    }
+    return job.run();
+  });
   // Jobs alternate Idealista / Immobiliare per coast piece, so both portals get slots early.
-  const settled = await settleLimited(jobs.map((job) => job.run), concurrency());
+  const settled = await settleLimited(tasks, concurrency());
   const listings: ProviderListing[] = [];
   const errors: string[] = [];
   settled.forEach((result, i) => {
     if (result.status === "fulfilled") listings.push(...result.value);
     else errors.push(`${jobs[i].label}: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`);
   });
+  // Runs stopped at Apify end with an error too; after "Zastaviť" that is expected, not a failure.
+  if (stopped) return { listings, errors: [], stopped };
   if (jobs.length > 0 && errors.length === jobs.length) {
     throw new ApifyError(`Všetky Apify behy zlyhali. ${errors[0]}`);
   }
@@ -203,7 +214,10 @@ export const apifyProvider: PropertyProvider = {
   isMock: false,
   ownsExternalId: (id) => id.startsWith("idealista-") || id.startsWith("immobiliare-"),
   fetchListings: (areas, options?: FetchOptions) =>
-    runJobs(areas.flatMap((area) => jobsFor(area, options?.bandKm ?? null))),
+    runJobs(
+      areas.flatMap((area) => jobsFor(area, options?.bandKm ?? null)),
+      options?.shouldStop,
+    ),
   recheck: (listings) => runJobs(recheckJobs(listings)),
   // Unknown spending (API down) does not block: the Apify account's own limit is the backstop.
   budget: async (kind) => {
@@ -215,4 +229,5 @@ export const apifyProvider: PropertyProvider = {
     const usage = await getApifyUsage();
     return usage ? { usedUsd: usage.usedUsd, budgetUsd: budgetUsd(usage.limitUsd) } : null;
   },
+  abortRunning: () => abortRunningRuns([IDEALISTA_ACTOR, IMMOBILIARE_ACTOR]),
 };

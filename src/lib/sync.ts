@@ -44,7 +44,7 @@ export async function syncFromProvider(
   repo: Repository,
   provider: PropertyProvider,
   areas: SearchArea[],
-  options: { recheck?: boolean; bandKm?: number | null; budget?: BudgetKind } = {},
+  options: { recheck?: boolean; bandKm?: number | null; budget?: BudgetKind; shouldStop?: () => Promise<boolean> } = {},
 ): Promise<SyncResult> {
   if (options.budget && provider.budget) {
     const check = await provider.budget(options.budget);
@@ -63,7 +63,7 @@ export async function syncFromProvider(
   }
   const bandKm = options.bandKm ?? null;
   const inBand = nearSea(bandKm);
-  const fetched = await provider.fetchListings(areas, { bandKm });
+  const fetched = await provider.fetchListings(areas, { bandKm, shouldStop: options.shouldStop });
   const listings = fetched.listings.filter(inBand);
   const errors = [...fetched.errors];
 
@@ -74,7 +74,7 @@ export async function syncFromProvider(
 
   const rechecked: ProviderListing[] = [];
   let checked = 0;
-  if (options.recheck && provider.recheck) {
+  if (options.recheck && provider.recheck && !fetched.stopped) {
     const candidates = recheckCandidates(existing.filter(inBand), new Set(listings.map((l) => l.external_id)));
     if (candidates.length > 0) {
       checked = candidates.length;
@@ -117,6 +117,7 @@ export async function syncFromProvider(
     removed: foreign.length,
     rechecked: checked > 0 ? { checked, alive: rechecked.length } : undefined,
     errors,
+    stopped: fetched.stopped,
   };
 }
 

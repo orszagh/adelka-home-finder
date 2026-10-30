@@ -50,6 +50,37 @@ export async function runActor(actorId: string, input: unknown, options: RunOpti
   return data;
 }
 
+/**
+ * Stops the runs of these Actors that are waiting or running right now
+ * (https://docs.apify.com/api/v2/act-runs-get, https://docs.apify.com/api/v2/actor-run-abort-post).
+ * What a stopped run has found so far is still returned to the request that started it.
+ */
+export async function abortRunningRuns(actorIds: string[]): Promise<number> {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) return 0;
+  const headers = { Authorization: `Bearer ${token}` };
+  const runIds: string[] = [];
+  for (const actorId of actorIds) {
+    for (const status of ["READY", "RUNNING"]) {
+      const response = await fetch(`${API_BASE}/acts/${actorId}/runs?status=${status}&limit=100&desc=true`, {
+        headers,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!response.ok) throw new ApifyError(`Apify ${actorId} runs ${response.status}`, response.status);
+      const body = (await response.json()) as { data?: { items?: { id?: unknown }[] } };
+      for (const item of body.data?.items ?? []) if (typeof item.id === "string") runIds.push(item.id);
+    }
+  }
+  const results = await Promise.allSettled(
+    runIds.map((id) =>
+      fetch(`${API_BASE}/actor-runs/${id}/abort`, { method: "POST", headers, signal: AbortSignal.timeout(10_000) }).then((r) => {
+        if (!r.ok) throw new ApifyError(`Apify abort ${r.status}`, r.status);
+      }),
+    ),
+  );
+  return results.filter((r) => r.status === "fulfilled").length;
+}
+
 /** This month's spending on the Apify account (https://docs.apify.com/api/v2/user-limits-get). Null when unknown. */
 export async function getApifyUsage(): Promise<Usage | null> {
   const token = process.env.APIFY_TOKEN;

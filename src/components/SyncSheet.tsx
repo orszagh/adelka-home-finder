@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatUsd } from "@/lib/budget";
+import { Button } from "./ui";
 
 const MESSAGES = [
   "Pýtam sa Idealista.it…",
@@ -20,8 +21,22 @@ export function SyncSheet({ open, subtitle, costUsd = null }: { open: boolean; s
   return <SyncSheetCard subtitle={subtitle} costUsd={costUsd} />;
 }
 
+type StopState = "idle" | "stopping" | "stopped" | "failed";
+
 function SyncSheetCard({ subtitle, costUsd }: { subtitle: string; costUsd: number | null }) {
   const [message, setMessage] = useState(0);
+  const [stop, setStop] = useState<StopState>("idle");
+
+  /** The page's own request ends by itself once the runs stop; what arrived until then is kept. */
+  const stopNow = async () => {
+    setStop("stopping");
+    try {
+      const response = await fetch("/api/sync/stop", { method: "POST" });
+      setStop(response.ok ? "stopped" : "failed");
+    } catch {
+      setStop("failed");
+    }
+  };
   useEffect(() => {
     const id = setInterval(() => setMessage((m) => Math.min(m + 1, MESSAGES.length - 1)), 4000);
     return () => clearInterval(id);
@@ -55,8 +70,14 @@ function SyncSheetCard({ subtitle, costUsd }: { subtitle: string; costUsd: numbe
         <div aria-hidden className="relative h-2.5 overflow-hidden rounded-full bg-surface-2">
           <div className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-accent" />
         </div>
-        <p key={message} className="animate-fade-up text-sm font-medium text-ink-2">
-          {MESSAGES[message]}
+        <p key={stop === "idle" ? message : stop} className="animate-fade-up text-sm font-medium text-ink-2">
+          {stop === "idle"
+            ? MESSAGES[message]
+            : stop === "stopping"
+              ? "Zastavujem…"
+              : stop === "stopped"
+                ? "Zastavené. Ukladám, čo sa stihlo stiahnuť…"
+                : "Zastaviť sa nepodarilo, skús to ešte raz."}
         </p>
         <p className="rounded-2xl bg-canvas px-4 py-3 text-sm text-muted">
           Trvá to asi minútu. Pokojne zatiaľ listuj – keď budem hotový, zakývam.
@@ -68,6 +89,9 @@ function SyncSheetCard({ subtitle, costUsd }: { subtitle: string; costUsd: numbe
             Apify.
           </p>
         )}
+        <Button variant="secondary" className="w-full" disabled={stop === "stopping" || stop === "stopped"} onClick={stopNow}>
+          {stop === "stopped" ? "Zastavené" : "Zastaviť sťahovanie"}
+        </Button>
       </section>
     </div>
   );

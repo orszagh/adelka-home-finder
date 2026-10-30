@@ -309,4 +309,28 @@ describe("Apify concurrency", () => {
     expect(actors.filter((a) => a === "immobiliare").length).toBe(actors.filter((a) => a === "idealista").length);
     expect(actors.slice(0, 2).sort()).toEqual(["idealista", "immobiliare"]);
   });
+
+  it("starts nothing more after Zastaviť, and a stopped run is not a failure", async () => {
+    vi.stubEnv("APIFY_TOKEN", "apify_test");
+    vi.stubEnv("APIFY_CONCURRENCY", "2");
+    let started = 0;
+    let stop = false;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        started++;
+        await new Promise((r) => setTimeout(r, 5));
+        // Adelka presses "Zastaviť" while the first two run; Apify ends them with an error.
+        stop = true;
+        return new Response("aborted", { status: 400 });
+      }),
+    );
+    const sicily = findPlace("region", "19")!;
+    const result = await apifyProvider.fetchListings(
+      [{ id: "s", name: "Sicília (celý región)", created_at: "", polygon: sicily.geometry }],
+      { bandKm: 3, shouldStop: async () => stop },
+    );
+    expect(started).toBe(2);
+    expect(result).toEqual({ listings: [], errors: [], stopped: true });
+  });
 });
