@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { saveSearchSettings } from "@/app/actions";
 import { homesLabel } from "@/lib/format";
-import { COAST_BAND_KM, INLAND_OPTIONS, type SearchSettings, formatSearchSettings } from "@/lib/search-settings";
+import { COAST_BAND_KM, INLAND_OPTIONS, type SearchSettings, formatSearchSettings, reachesFurther } from "@/lib/search-settings";
 import { SyncSheet } from "./SyncSheet";
 import { useToast } from "./Toast";
 import { ICONS, Icon, buttonClass } from "./ui";
@@ -53,6 +53,8 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
   const [pending, startTransition] = useTransition();
   const toast = useToast();
   const changed = settings.inland !== saved.inland || settings.inlandKm !== saved.inlandKm;
+  // Only a wider search downloads (and costs); a narrower one just hides houses already stored.
+  const fetches = changed && reachesFurther(saved, settings);
 
   const save = () =>
     startTransition(async () => {
@@ -138,7 +140,11 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
         Platí na mobile aj počítači. Podľa tohto hľadá Lubkov nočný pomocník každé ráno.
       </p>
 
-      <SyncSheet open={pending} subtitle={formatSearchSettings(settings)} costUsd={syncCostUsd} />
+      <SyncSheet open={pending && fetches} subtitle={formatSearchSettings(settings)} costUsd={syncCostUsd} />
+
+      {changed && !fetches && (
+        <p className="px-1 text-sm text-muted">Tieto domčeky už mám stiahnuté, len skryjem tie ďalej od mora. Nič sa nesťahuje ani neplatí.</p>
+      )}
 
       <button
         type="button"
@@ -146,7 +152,7 @@ export function SearchSettingsForm({ initial, syncCostUsd = null }: { initial: S
         disabled={pending || !changed}
         className={buttonClass("primary", "lg", "w-full")}
       >
-        {pending ? "Hľadám…" : changed ? "Uložiť a hľadať" : "Uložené"}
+        {pending ? (fetches ? "Hľadám…" : "Ukladám…") : changed ? (fetches ? "Uložiť a hľadať" : "Uložiť") : "Uložené"}
       </button>
     </div>
   );

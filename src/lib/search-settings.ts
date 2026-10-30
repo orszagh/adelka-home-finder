@@ -31,6 +31,17 @@ export function bandKm(settings: SearchSettings): number | null {
   return settings.inland ? settings.inlandKm : COAST_BAND_KM;
 }
 
+/**
+ * Whether the new setting reaches further from the sea than the old one. Only then can there be
+ * houses the database does not have yet; a narrower band just hides some of those already there.
+ */
+export function reachesFurther(before: SearchSettings, after: SearchSettings): boolean {
+  const was = bandKm(before);
+  const now = bandKm(after);
+  if (was === null) return false;
+  return now === null || now > was;
+}
+
 /** Listings a little beyond the band still count (coastline and coordinates are approximate). */
 export const BAND_TOLERANCE_KM = 0.5;
 

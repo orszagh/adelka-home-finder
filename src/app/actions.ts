@@ -5,7 +5,7 @@ import { getRepo } from "@/lib/db/repo";
 import { LAST_SEEN_KEY, MANUAL_SYNC_COOLDOWN_MS, MANUAL_SYNC_KEY } from "@/lib/greeting";
 import { getProvider } from "@/lib/providers";
 import { type PlaceKind, areaNameFor, findPlace } from "@/lib/italy";
-import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings } from "@/lib/search-settings";
+import { SEARCH_SETTINGS_KEY, bandKm, getSearchSettings, parseSearchSettings, reachesFurther } from "@/lib/search-settings";
 import { recordLook, recordOpen } from "@/lib/activity";
 import { SEEN_KEY, getSeenIds } from "@/lib/seen";
 import { VISITS_KEY, getVisits, parseVisit } from "@/lib/visits";
@@ -64,8 +64,9 @@ export type SaveSettingsResult =
 
 /**
  * "Kde hľadať domček": stores the search setting (also used by the morning
- * cron) and, when the distance from the sea changed, fetches listings for it
- * right away.
+ * cron) and, when it now reaches further from the sea, fetches listings for it
+ * right away. A narrower setting costs nothing: the houses are already stored,
+ * the home page only hides the ones further away.
  */
 export async function saveSearchSettings(input: unknown): Promise<SaveSettingsResult> {
   await assertSession();
@@ -82,7 +83,7 @@ export async function saveSearchSettings(input: unknown): Promise<SaveSettingsRe
   const provider = getProvider();
   const areas = await repo.listSearchAreas();
   let result: SaveSettingsResult = { ok: true, fetched: null, error: null };
-  if (bandKm(before) !== bandKm(settings) && !provider.isMock && areas.length > 0) {
+  if (reachesFurther(before, settings) && !provider.isMock && areas.length > 0) {
     try {
       const sync = await syncFromProvider(repo, provider, areas, { bandKm: bandKm(settings), budget: "manual" });
       if (sync.skipped) {

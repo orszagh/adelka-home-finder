@@ -82,9 +82,11 @@ describe("server actions", () => {
     // The whole area; nonsense falls back to the defaults (coast only).
     await saveSearchSettings({ inland: true, inlandKm: null });
     expect(fetchListings.mock.calls.at(-1)![1]).toEqual({ bandKm: null });
-    await saveSearchSettings("nonsense");
+    const calls = fetchListings.mock.calls.length;
+    // Back to the coast only: the houses are already stored, nothing is downloaded (nor paid).
+    expect(await saveSearchSettings("nonsense")).toEqual({ ok: true, fetched: null, error: null });
     expect(await repo.getState(SEARCH_SETTINGS_KEY)).toEqual({ inland: false, inlandKm: 20 });
-    expect(fetchListings.mock.calls.at(-1)![1]).toEqual({ bandKm: 3 });
+    expect(fetchListings).toHaveBeenCalledTimes(calls);
   });
 
   it("says so when the app_state migration is missing", async () => {

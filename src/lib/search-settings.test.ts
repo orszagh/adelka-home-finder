@@ -3,6 +3,7 @@ import {
   DEFAULT_SEARCH_SETTINGS,
   bandKm,
   formatSearchSettings,
+  reachesFurther,
   getSearchSettings,
   parseSearchSettings,
   withinBand,
@@ -32,5 +33,26 @@ describe("search settings", () => {
     expect(withinBand(3.6, 3)).toBe(false);
     expect(withinBand(80, null)).toBe(true);
     expect(withinBand(undefined, 3)).toBe(true);
+  });
+});
+
+describe("reachesFurther", () => {
+  const coast = { inland: false, inlandKm: 20 } as const;
+  const km10 = { inland: true, inlandKm: 10 } as const;
+  const km40 = { inland: true, inlandKm: 40 } as const;
+  const whole = { inland: true, inlandKm: null } as const;
+
+  it("downloads only when the search reaches further from the sea", () => {
+    expect(reachesFurther(coast, km10)).toBe(true);
+    expect(reachesFurther(km10, km40)).toBe(true);
+    expect(reachesFurther(km40, whole)).toBe(true);
+  });
+
+  it("costs nothing when it gets narrower or stays the same", () => {
+    expect(reachesFurther(whole, coast)).toBe(false);
+    expect(reachesFurther(whole, km40)).toBe(false);
+    expect(reachesFurther(km40, km10)).toBe(false);
+    expect(reachesFurther(km10, coast)).toBe(false);
+    expect(reachesFurther(coast, coast)).toBe(false);
   });
 });
